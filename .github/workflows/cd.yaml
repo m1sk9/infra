@@ -28,6 +28,7 @@ jobs:
         run: terraform plan -input=false -lock-timeout=10m
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TF_VAR_cloudflare_api_token: ${{ secrets.TF_VAR_CLOUDFLARE_API_TOKEN }}
 
       - name: Terraform Apply
         run: terraform apply -input=false -no-color -auto-approve -lock-timeout=10m
