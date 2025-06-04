@@ -1,0 +1,32 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  pull-requests: write
+
+defaults:
+  run:
+    working-directory: ./terraform
+
+jobs:
+  plan:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Development Environment
+        uses: jdx/mise-action@v2
+      
+      - name: Terraform Plan
+        run: terraform plan -input=false -lock-timeout=10m
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Terraform Apply
+        run: terraform apply -input=false -no-color -auto-approve -lock-timeout=10m
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

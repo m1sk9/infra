@@ -1,0 +1,8 @@
+pre-commit:
+  commands:
+    terraform-fmt-check:
+      glob: "*.tf"
+      run: "terraform fmt -check terraform/"
+    tflint-check:
+      glob: "*.tf"
+      run: "tflint --chdir terraform/"

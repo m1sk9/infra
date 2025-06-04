@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  pull_request:
+    branches:
+      - main
+  merge_group:
+    branches:
+      - main
+
+permissions:
+  pull-requests: write
+
+defaults:
+  run:
+    working-directory: ./terraform
+
+jobs:
+  plan:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Development Environment
+        uses: jdx/mise-action@v2
+
+      - name: Terraform Format
+        run: terraform fmt -check -recursive
+
+      - name: Terraform Lint
+        run: tflint
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Validate
+        run: terraform validate
+      
+      - name: Terraform Plan
+        run: terraform plan -input=false -lock-timeout=10m
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
