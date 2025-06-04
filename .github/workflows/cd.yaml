@@ -20,6 +20,9 @@ jobs:
 
       - name: Setup Development Environment
         uses: jdx/mise-action@v2
+
+      - name: Terraform Init
+        run: terraform init
       
       - name: Terraform Plan
         run: terraform plan -input=false -lock-timeout=10m
