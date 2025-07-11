@@ -1,6 +1,6 @@
 services:
   kavita:
-    image: jvmilazz0/kavita:0.8.6    # Using the stable branch from the official dockerhub repo.
+    image: jvmilazz0/kavita:0.8.7    # Using the stable branch from the official dockerhub repo.
     container_name: kavita
     volumes:
         - /home/m1sk9/kavita-data:/kavita/config
