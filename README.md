@@ -45,3 +45,35 @@ Terraform configuration files are located under the `/terraform` directory to ma
 These configurations are applied using GitHub Actions, which interact with the Cloudflare API.
 
 - [`cloudflare_dns_record.tf`](./terraform/cloudflare_dns_record.tf): Manages DNS records
+- [`main.tf`](./terraform/main.tf): Main Terraform configuration file
+- [`provider.tf`](./terraform/provider.tf): Configures the Cloudflare provider
+- [`variables.tf`](./terraform/variables.tf): Defines variables used in the Terraform configuration
+
+## Configuration
+
+### Docker Compose
+
+Add configuration files under the `docker/` directory for Docker Compose. The minimum required files are as follows:
+
+- .compose-cd: Configuration file for [compose-cd](https://github.com/sksat/compose-cd).
+
+  ```
+  REPO="https://github.com/m1sk9/infra"
+  UPDATE_REPO_ONLY=true
+  UPDATE_IMAGE_BY_REPO=true
+  ```
+
+- compose.yaml: Docker Compose configuration file.
+
+  ```
+  services:
+    app:
+      image: ghcr.io/m1sk9/babyrite:v0.17.6
+      volumes:
+        - ./config.toml:/config/config.toml
+      restart: always
+  ```
+
+Tags must follow the `v*.*.*` format for compose-cd to work correctly.
+
+Add application-specific configuration files as needed. When doing so, mount the host directory using the `volumes` option.
