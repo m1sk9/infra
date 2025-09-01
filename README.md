@@ -30,6 +30,14 @@ This server configuration must meet the following requirements:
 - An Arch Linux server running on a laptop installed under the desk in the home office/library
 - Docker Compose is managed via [m1sk9/infra](https://github.com/m1sk9/infra), and image updates are handled by Renovate
 
+- OS: Arch Linux x86_64
+- Shell: fish
+- CPU: Intel Celeron 3855U
+- GPU: Intel HD Graphics 510
+- Memory: 4GB
+- Swap: 2GB
+- Disk: WDC WD10JPVX-08JC3T6
+
 ## Terraform
 
 Terraform configuration files are located under the `/terraform` directory to manage various Cloudflare settings, such as for `m1sk9.dev`, as Infrastructure as Code (IaC).
