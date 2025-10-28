@@ -1,2 +1,4 @@
 .terraform
 .env
+
+docker/monitor/alertmanager.yml
