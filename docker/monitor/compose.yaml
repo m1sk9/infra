@@ -17,10 +17,6 @@ services:
       - ./prometheus.yml:/etc/prometheus/prometheus.yml
       - ./alert.rules.yml:/etc/prometheus/alert.rules.yml
       - /home/m1sk9/prometheus_data:/prometheus
-    environment:
-      - "GRAFANA_REMOTE_URL=${GRAFANA_REMOTE_URL}"
-      - "GRAFANA_USERNAME=${GRAFANA_USERNAME}"
-      - "GRAFANA_PASSWORD=${GRAFANA_PASSWORD}"
     user: "1000:1000"
     depends_on:
       - node-exporter
