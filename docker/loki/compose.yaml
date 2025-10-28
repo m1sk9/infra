@@ -11,7 +11,7 @@ services:
     image: grafana/promtail:3.5.7
     container_name: promtail
     restart: always
-    user: "1000:1000"
+    user: "0:0"
     volumes:
       - /var/log:/var/log:ro
       - /run/log/journal:/run/log/journal:ro
