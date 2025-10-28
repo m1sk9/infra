@@ -1,2 +1,5 @@
 .terraform
 .env
+
+docker/monitor/prometheus.yml
+docker/monitor/alertmanager.yml

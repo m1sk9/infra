@@ -1,0 +1,10 @@
+groups:
+  - name: node_alerts
+    rules:
+      - alert: HighCPUUsage
+        expr: avg(rate(node_cpu_seconds_total{mode!="idle"}[5m])) > 0.9
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          description: "High CPU usage"
