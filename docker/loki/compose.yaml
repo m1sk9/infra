@@ -1,0 +1,20 @@
+services:
+  loki:
+    image: grafana/loki:3.5.7
+    container_name: loki
+    restart: always
+    volumes:
+      - /home/m1sk9/loki_data:/loki
+      - ./loki-config.yaml:/etc/loki/local-config.yaml
+    command: -config.file=/etc/loki/local-config.yaml
+  promtail:
+    image: grafana/promtail:3.5.7
+    container_name: promtail
+    restart: always
+    user: "1000:1000"
+    volumes:
+      - /var/log:/var/log:ro
+      - /run/log/journal:/run/log/journal:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./promtail-config.yml:/etc/promtail/promtail-config.yml
+    command: -config.file=/etc/promtail/promtail-config.yml

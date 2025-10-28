@@ -2,3 +2,4 @@
 .env
 
 docker/monitor/prometheus.yml
+docker/loki/promtail-config.yml
