@@ -1,0 +1,21 @@
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: "node"
+    static_configs:
+      - targets: ["172.17.0.1:9100"]
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: ["alertmanager:9093"]
+
+rule_files:
+  - "alert.rules.yml"
+
+remote_write:
+  - url: "${GRAFANA_REMOTE_URL}"
+    basic_auth:
+      username: "${GRAFANA_USERNAME}"
+      password: "${GRAFANA_PASSWORD}"
