@@ -27,6 +27,5 @@ storage_config:
   boltdb:
     directory: /loki/index
 
-table_manager:
-  retention_deletes_enabled: false
-  retention_period: 0s
+limits_config:
+  allow_structured_metadata: false
