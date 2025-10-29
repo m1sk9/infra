@@ -4,7 +4,6 @@
   "description": "infra.m1sk9.dev documentation",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "vitepress dev",
     "build": "vitepress build",
     "preview": "vitepress preview",

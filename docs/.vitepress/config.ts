@@ -47,12 +47,7 @@ export default defineConfig({
             ]
           }
       ],
-      '/reference/': [
-        {
-          text: 'はじめる',
-          link: '/guide/getting-started',
-        }
-      ]
+      '/reference/': []
     },
     socialLinks: [
       { icon: 'github', link: 'https://github.com/m1sk9/infra' },
