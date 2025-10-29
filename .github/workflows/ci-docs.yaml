@@ -1,6 +1,11 @@
-name: Deploy docs
+name: CI docs
 
 on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "docs/**"
   push:
     branches:
       - main
