@@ -6,7 +6,7 @@
 
 Managed infrastructure for my open source projects.
 
-![Diagram](./docs/diagram.svg)
+Go to [docs](https://infra.m1sk9.dev) for more information.
 
 ## Background
 
@@ -24,19 +24,6 @@ This server configuration must meet the following requirements:
 - Applications run in Docker containers, and dynamic data is managed on the host file system.
 - Users can only access the system if they are specifically invited, and only via Tailscale. Devices not connected to the Tailnet cannot access the servers.
 - If Tailscale Funnel is unavailable, Cloudflare Zero Trust is used for authentication. In this case, only users with administrator-level, enhanced email addresses can connect; all others are denied access.
-
-### dev-m1sk9-s1
-
-- An Arch Linux server running on a laptop installed under the desk in the home office/library
-- Docker Compose is managed via [m1sk9/infra](https://github.com/m1sk9/infra), and image updates are handled by Renovate
-
-- OS: Arch Linux x86_64
-- Shell: fish
-- CPU: Intel Celeron 3855U
-- GPU: Intel HD Graphics 510
-- Memory: 4GB
-- Swap: 2GB
-- Disk: WDC WD10JPVX-08JC3T6
 
 ## Terraform
 
