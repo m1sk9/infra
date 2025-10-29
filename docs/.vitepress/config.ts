@@ -3,7 +3,6 @@ import { defineConfig } from 'vitepress';
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
   srcDir: 'src',
-  base: '/infra/',
   title: "m1sk9's infra docs",
   titleTemplate: ':title - infra.m1sk9.dev',
   description: 'infra.m1sk9.dev documentation',
