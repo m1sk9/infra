@@ -27,8 +27,19 @@ export default defineConfig({
             link: "/guide/rule"
           },
           {
+            text: "トラブルシューティング",
+            link: "/guide/troubleshooting"
+          },
+          {
+            text: "FAQ",
+            link: "/guide/faq"
+          },
+          {
             text: 'Tailscale',
             items: [
+              {
+                text: "CLI クイックリファレンス", link: '/guide/tailscale/cli'
+              },
               {
                 text: "Exit Node を使用する", link: '/guide/tailscale/exit-node'
               },
