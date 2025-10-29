@@ -1,6 +1,6 @@
 [tools]
 lefthook = "1.13.6"
 node = "24.10.0"
-pnpm = "10.19.0"
+pnpm = "10.20.0"
 terraform = "1.13.4"
 tflint = "0.59.1"
