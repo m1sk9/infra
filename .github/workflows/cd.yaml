@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
 
 permissions:
   pull-requests: write
@@ -23,7 +24,7 @@ jobs:
 
       - name: Terraform Init
         run: terraform init
-      
+
       - name: Terraform Plan
         run: terraform plan -input=false -lock-timeout=10m
         env:
