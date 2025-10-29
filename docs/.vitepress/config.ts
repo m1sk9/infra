@@ -47,7 +47,17 @@ export default defineConfig({
             ]
           }
       ],
-      '/reference/': []
+      '/reference/': [
+        {
+          text: 'Bot',
+          items: [
+            {
+              text: "babyrite",
+              link: "/reference/bot/babyrite",
+            }
+          ]
+        }
+      ]
     },
     socialLinks: [
       { icon: 'github', link: 'https://github.com/m1sk9/infra' },
