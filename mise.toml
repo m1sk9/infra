@@ -1,5 +1,5 @@
 [tools]
-lefthook = "2.0.2"
+lefthook = "2.0.3"
 node = "24.11.0"
 pnpm = "10.21.0"
 terraform = "1.13.5"
