@@ -3,3 +3,4 @@
 
 docker/monitor/prometheus.yml
 docker/loki/promtail-config.yml
+docs/.pnpm-store/v10

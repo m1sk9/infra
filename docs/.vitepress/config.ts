@@ -49,6 +49,10 @@ export default defineConfig({
             ]
           },
           {
+            text: 'withoutbg (背景除去AI)',
+            link: '/guide/withoutbg',
+          },
+          {
             text: 'サーバガイド',
             items: [
               {
