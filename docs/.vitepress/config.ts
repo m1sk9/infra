@@ -54,6 +54,11 @@ export default defineConfig({
               {
                 text: "s1",
                 link: "/guide/server/s1",
+                items: [
+                  {
+                    text: "使用ポート番号", link: '/guide/server/s1/ports'
+                  }
+                ]
               }
             ]
           }
