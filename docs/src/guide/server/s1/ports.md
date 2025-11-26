@@ -14,4 +14,4 @@ layout: doc
 | Grafana Loki | `loki` | `3100/tcp` |
 | Prometheus | `prometheus` | `9090/tcp` |
 | Node Exporter | `node-exporter` | 未使用 |
-| withoutbg | `withoutbg-app-1` | `8080/tcp` |
+| withoutbg | `withoutbg-app-1` | `80/tcp` |
