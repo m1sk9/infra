@@ -31,6 +31,28 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TF_VAR_cloudflare_api_token: ${{ secrets.TF_VAR_CLOUDFLARE_API_TOKEN }}
 
+      - name: Import Existing DNS Records
+        run: |
+          # Import existing DNS records to avoid conflicts
+          # Get the record ID from Cloudflare API
+          ZONE_ID="279a766b433692abdbde9bdce86ac7ab"
+          RECORD_NAME="_github-pages-challenge-m1sk9"
+
+          RECORD_ID=$(curl -s -X GET "https://api.cloudflare.com/client/v4/zones/${ZONE_ID}/dns_records?name=${RECORD_NAME}" \
+            -H "Authorization: Bearer ${{ secrets.TF_VAR_CLOUDFLARE_API_TOKEN }}" \
+            -H "Content-Type: application/json" | jq -r '.result[0].id // empty')
+
+          if [ -n "$RECORD_ID" ] && [ "$RECORD_ID" != "null" ]; then
+            echo "Found existing DNS record with ID: $RECORD_ID"
+            terraform import cloudflare_dns_record.github_pages "$ZONE_ID/$RECORD_ID" || echo "Record already imported or doesn't exist"
+          else
+            echo "No existing DNS record found, will create new one"
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TF_VAR_cloudflare_api_token: ${{ secrets.TF_VAR_CLOUDFLARE_API_TOKEN }}
+        continue-on-error: true
+
       - name: Terraform Apply
         run: terraform apply -input=false -no-color -auto-approve -lock-timeout=10m
         env:
