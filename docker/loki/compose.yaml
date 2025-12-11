@@ -9,7 +9,7 @@ services:
       - ./loki-config.yaml:/etc/loki/local-config.yaml
     command: -config.file=/etc/loki/local-config.yaml
   promtail:
-    image: grafana/promtail:3.6.2
+    image: grafana/promtail:3.6.3
     container_name: promtail
     restart: always
     user: "0:0"
