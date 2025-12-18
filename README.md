@@ -6,8 +6,6 @@
 
 Managed infrastructure for my open source projects.
 
-Go to [docs](https://infra.m1sk9.dev) for more information.
-
 ## Background
 
 This server configuration must meet the following requirements:
