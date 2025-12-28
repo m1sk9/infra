@@ -6,4 +6,4 @@
 
 # JSON logging format (default is disabled)
 ## Output logs in JSON format. This is the recommended setting if you are using Grafana Loki or similar.
-json_logging = false
+json_logging = true
