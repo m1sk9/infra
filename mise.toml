@@ -1,4 +1,4 @@
 [tools]
 lefthook = "2.0.16"
-terraform = "1.14.3"
+terraform = "1.14.4"
 tflint = "0.60.0"
