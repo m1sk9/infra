@@ -15,6 +15,8 @@ defaults:
 jobs:
   plan:
     runs-on: ubuntu-24.04
+    env:
+      TF_TOKEN_app_terraform_io: ${{ secrets.TF_TOKEN_APP_TERRAFORM_IO }}
     steps:
       - uses: actions/checkout@v5
 
@@ -32,10 +34,7 @@ jobs:
 
       - name: Terraform Validate
         run: terraform validate
-      
+
       - name: Terraform Plan
         run: terraform plan -input=false -lock-timeout=10m
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TF_VAR_cloudflare_api_token: ${{ secrets.TF_VAR_CLOUDFLARE_API_TOKEN }}
 
