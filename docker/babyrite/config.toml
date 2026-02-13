@@ -1,9 +1,0 @@
-### babyrite configuration file ###
-# This file is used for babyrite configuration.
-# By changing this configuration, you can modify the behavior of babyrite. Please restart babyrite after changing the settings.
-# The settings are written in TOML format. To use the configuration file, specify the recursive path to the configuration file in the environment variable "CONFIG_FILE_PATH" injected into the container.
-# Note that babyrite will run with default settings if not configured.
-
-# JSON logging format (default is disabled)
-## Output logs in JSON format. This is the recommended setting if you are using Grafana Loki or similar.
-json_logging = true

@@ -1,5 +1,0 @@
-services:
-  app:
-    image: withoutbg/app:1.2.0
-    ports:
-      - "80:80"
