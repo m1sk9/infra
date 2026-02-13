@@ -76,6 +76,35 @@ resource "cloudflare_dns_record" "protonmail_dkim3" {
   comment = "Proton Mail"
 }
 
+# --- AAAA Records ---
+
+resource "cloudflare_dns_record" "blog" {
+  zone_id = local.cloudflare_zone_id
+  name    = "blog"
+  content = "100::"
+  type    = "AAAA"
+  ttl     = 1
+  proxied = true
+}
+
+resource "cloudflare_dns_record" "lc" {
+  zone_id = local.cloudflare_zone_id
+  name    = "lc"
+  content = "100::"
+  type    = "AAAA"
+  ttl     = 1
+  proxied = true
+}
+
+resource "cloudflare_dns_record" "ua" {
+  zone_id = local.cloudflare_zone_id
+  name    = "ua"
+  content = "100::"
+  type    = "AAAA"
+  ttl     = 1
+  proxied = true
+}
+
 # --- MX Records ---
 
 # Proton Mail
