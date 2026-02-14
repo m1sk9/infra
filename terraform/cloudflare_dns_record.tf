@@ -35,16 +35,6 @@ resource "cloudflare_dns_record" "lc_api_docs" {
   comment = "LunaticChat API Docs"
 }
 
-# Cloudflare Tunnel
-resource "cloudflare_dns_record" "withoutbg_s1" {
-  zone_id = local.cloudflare_zone_id
-  name    = "withoutbg-s1"
-  content = "f308eb34-6eb5-47e9-8878-6e01deab3e6a.cfargotunnel.com"
-  type    = "CNAME"
-  ttl     = 1
-  proxied = true
-}
-
 # Proton Mail DKIM
 resource "cloudflare_dns_record" "protonmail_dkim1" {
   zone_id = local.cloudflare_zone_id
