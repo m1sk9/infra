@@ -7,6 +7,9 @@ Managed infrastructure for my open source projects.
 
 ![](./docs/infra-overview.png)
 
+- [Status: m1sk9.dev](https://status.m1sk9.dev/status/all)
+- [Status: s1](https://status.m1sk9.dev/status/s1)
+
 ## Background
 
 This server configuration must meet the following requirements:
