@@ -11,8 +11,8 @@ resource "cloudflare_zero_trust_tunnel_cloudflared_config" "s1" {
   config = {
     ingress = [
       {
-        hostname = "status.m1sk9.dev"
-        service  = "http://localhost:3001"
+        hostname = "acrane.m1sk9.dev"
+        service  = "http://localhost:3552"
       },
       {
         service = "http_status:404"
@@ -21,13 +21,13 @@ resource "cloudflare_zero_trust_tunnel_cloudflared_config" "s1" {
   }
 }
 
-# DNS Record for status monitoring service
-resource "cloudflare_dns_record" "status" {
+# DNS Record for Arcane (Docker management UI)
+resource "cloudflare_dns_record" "acrane" {
   zone_id = local.cloudflare_zone_id
-  name    = "status"
+  name    = "acrane"
   content = "${cloudflare_zero_trust_tunnel_cloudflared.s1.id}.cfargotunnel.com"
   type    = "CNAME"
   ttl     = 1
   proxied = true
-  comment = "Cloudflare Tunnel - Status Monitoring"
+  comment = "Cloudflare Tunnel - Arcane (s1)"
 }

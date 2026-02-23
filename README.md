@@ -7,9 +7,6 @@ Managed infrastructure for my open source projects.
 
 ![](./docs/infra-overview.png)
 
-- [Status: m1sk9.dev](https://status.m1sk9.dev/status/all)
-- [Status: s1](https://status.m1sk9.dev/status/s1)
-
 ## Background
 
 This server configuration must meet the following requirements:
@@ -93,10 +90,3 @@ resource "cloudflare_dns_record" "newservice" {
 After updating the configuration, apply it with `terraform apply`. For server-side setup and cloudflared configuration, please contact [@m1sk9](https://github.com/m1sk9).
 
 **Note:** Use single-level subdomains (e.g., `service.m1sk9.dev`) instead of multi-level subdomains (e.g., `service.s1.m1sk9.dev`) to ensure compatibility with Universal SSL certificates (`*.m1sk9.dev`).
-
-## Dockge
-
-[Dockge](https://github.com/louislam/dockge) is used to manage Docker containers on the self-hosted server. The Dockge configuration is located under the [`/dockge`](./dockge) directory.
-
-- Runs on port `5001`
-- Manages Docker Compose stacks in `/opt/stacks`
