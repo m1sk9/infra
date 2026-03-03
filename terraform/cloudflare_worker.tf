@@ -38,8 +38,9 @@ resource "cloudflare_workers_custom_domain" "ua" {
 resource "cloudflare_workers_script" "lc" {
   account_id         = local.cloudflare_account_id
   script_name        = "lunaticchat-docs"
-  content            = "export default { async fetch() { return new Response('Deploying...') } }"
-  main_module        = "index.js"
+  content_file       = "${path.module}/workers/lc.js"
+  content_sha256     = filesha256("${path.module}/workers/lc.js")
+  main_module        = "lc.js"
   compatibility_date = "2024-09-23"
 
   lifecycle {
