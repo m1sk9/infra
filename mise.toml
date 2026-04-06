@@ -1,4 +1,4 @@
 [tools]
-lefthook = "2.1.4"
+lefthook = "2.1.5"
 terraform = "1.14.8"
 tflint = "0.61.0"
