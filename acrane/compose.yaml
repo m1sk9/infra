@@ -1,6 +1,6 @@
 services:
   arcane:
-    image: ghcr.io/getarcaneapp/arcane:v1.17.2
+    image: ghcr.io/getarcaneapp/arcane:v1.17.3
     restart: unless-stopped
     ports:
       - 3552:3552
