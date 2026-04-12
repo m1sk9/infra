@@ -1,36 +1,42 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <mxfile>
   <diagram name="m1sk9 Infrastructure" id="infra-overview">
-    <mxGraphModel dx="1400" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1000" math="0" shadow="0">
+    <mxGraphModel dx="1600" dy="1100" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1800" pageHeight="1050" math="0" shadow="0">
       <root>
         <mxCell id="0"/>
         <mxCell id="1" parent="0"/>
 
         <!-- Title -->
-        <mxCell id="title" value="m1sk9/infra - Infrastructure Overview" style="text;html=1;fontSize=20;fontStyle=1;align=center;verticalAlign=middle;" vertex="1" parent="1">
-          <mxGeometry x="500" y="20" width="500" height="40" as="geometry"/>
+        <mxCell id="title" value="m1sk9/infra - Infrastructure Overview (2026-04-13)" style="text;html=1;fontSize=22;fontStyle=1;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="500" y="20" width="600" height="40" as="geometry"/>
         </mxCell>
 
-        <!-- GitHub Repository -->
+        <!-- ===== GitHub Repository ===== -->
         <mxCell id="gh-group" value="GitHub (m1sk9/infra)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=14;fontStyle=1;verticalAlign=top;spacingTop=5;" vertex="1" parent="1">
-          <mxGeometry x="40" y="90" width="340" height="280" as="geometry"/>
+          <mxGeometry x="40" y="80" width="360" height="260" as="geometry"/>
         </mxCell>
-        <mxCell id="ci" value="&lt;b&gt;CI&lt;/b&gt;&lt;br&gt;(Pull Request)&lt;br&gt;&lt;hr&gt;terraform fmt&lt;br&gt;tflint&lt;br&gt;terraform validate&lt;br&gt;terraform plan" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=11;align=center;" vertex="1" parent="1">
-          <mxGeometry x="60" y="140" width="140" height="130" as="geometry"/>
+        <mxCell id="ci" value="&lt;b&gt;CI&lt;/b&gt;&lt;br&gt;(Pull Request)&lt;hr&gt;terraform fmt&lt;br&gt;tflint&lt;br&gt;terraform validate&lt;br&gt;terraform plan" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=10;align=center;" vertex="1" parent="1">
+          <mxGeometry x="55" y="120" width="155" height="120" as="geometry"/>
         </mxCell>
-        <mxCell id="cd" value="&lt;b&gt;CD&lt;/b&gt;&lt;br&gt;(Push to main)&lt;br&gt;&lt;hr&gt;terraform plan&lt;br&gt;terraform apply" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=11;align=center;" vertex="1" parent="1">
-          <mxGeometry x="220" y="140" width="140" height="130" as="geometry"/>
+        <mxCell id="cd" value="&lt;b&gt;CD&lt;/b&gt;&lt;br&gt;(Push to main)&lt;hr&gt;terraform plan&lt;br&gt;terraform apply&lt;br&gt;(auto-approve)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=10;align=center;" vertex="1" parent="1">
+          <mxGeometry x="230" y="120" width="155" height="120" as="geometry"/>
         </mxCell>
-        <mxCell id="gh-actions-label" value="GitHub Actions" style="text;html=1;fontSize=10;fontStyle=2;align=center;fontColor=#666666;" vertex="1" parent="1">
-          <mxGeometry x="100" y="280" width="200" height="20" as="geometry"/>
+        <mxCell id="gh-actions-label" value="GitHub Actions (ubuntu-24.04)" style="text;html=1;fontSize=9;fontStyle=2;align=center;fontColor=#666666;" vertex="1" parent="1">
+          <mxGeometry x="80" y="245" width="200" height="15" as="geometry"/>
         </mxCell>
-        <mxCell id="lefthook" value="lefthook (pre-commit)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=10;align=center;" vertex="1" parent="1">
-          <mxGeometry x="110" y="305" width="160" height="30" as="geometry"/>
+        <mxCell id="lefthook" value="lefthook&lt;br&gt;(pre-commit)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=9;align=center;" vertex="1" parent="1">
+          <mxGeometry x="55" y="265" width="100" height="35" as="geometry"/>
+        </mxCell>
+        <mxCell id="renovate" value="Renovate&lt;br&gt;(deps update)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=9;align=center;" vertex="1" parent="1">
+          <mxGeometry x="170" y="265" width="100" height="35" as="geometry"/>
+        </mxCell>
+        <mxCell id="mise" value="mise&lt;br&gt;(tool mgmt)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666666;fontSize=9;align=center;" vertex="1" parent="1">
+          <mxGeometry x="285" y="265" width="100" height="35" as="geometry"/>
         </mxCell>
 
-        <!-- HCP Terraform -->
-        <mxCell id="tf-cloud" value="&lt;b&gt;HCP Terraform&lt;/b&gt;&lt;br&gt;&lt;hr&gt;Org: m1sk9-terraform-org&lt;br&gt;Workspace: infra&lt;br&gt;(State Management)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;align=center;" vertex="1" parent="1">
-          <mxGeometry x="480" y="120" width="200" height="100" as="geometry"/>
+        <!-- ===== HCP Terraform ===== -->
+        <mxCell id="tf-cloud" value="&lt;b&gt;HCP Terraform&lt;/b&gt;&lt;hr&gt;Org: m1sk9-terraform-org&lt;br&gt;Workspace: infra&lt;br&gt;(Remote State)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;align=center;" vertex="1" parent="1">
+          <mxGeometry x="500" y="100" width="200" height="100" as="geometry"/>
         </mxCell>
 
         <!-- Arrow: CD -> HCP Terraform -->
@@ -41,139 +47,220 @@
           <mxGeometry x="-0.1" relative="1" as="geometry"/>
         </mxCell>
 
-        <!-- Cloudflare DNS Zone -->
-        <mxCell id="cf-group" value="Cloudflare DNS (m1sk9.dev)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=14;fontStyle=1;verticalAlign=top;spacingTop=5;" vertex="1" parent="1">
-          <mxGeometry x="440" y="280" width="720" height="320" as="geometry"/>
+        <!-- ===== Internet ===== -->
+        <mxCell id="internet" value="&lt;b&gt;Internet&lt;br&gt;/ Users&lt;/b&gt;" style="shape=cloud;whiteSpace=wrap;html=1;fillColor=#E6E6E6;strokeColor=#999;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1370" y="80" width="170" height="100" as="geometry"/>
         </mxCell>
 
-        <!-- CNAME Records -->
-        <mxCell id="cname-group" value="&lt;b&gt;CNAME Records&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF9E6;strokeColor=#d6b656;fontSize=11;verticalAlign=top;" vertex="1" parent="1">
-          <mxGeometry x="460" y="320" width="220" height="170" as="geometry"/>
-        </mxCell>
-        <mxCell id="cname-portfolio" value="m1sk9.dev → m1sk9.github.io" style="rounded=0;whiteSpace=wrap;html=1;fontSize=9;fillColor=#FFFFFF;strokeColor=#d6b656;" vertex="1" parent="1">
-          <mxGeometry x="470" y="350" width="200" height="25" as="geometry"/>
-        </mxCell>
-        <mxCell id="cname-babyrite" value="babyrite.api → m1sk9.github.io" style="rounded=0;whiteSpace=wrap;html=1;fontSize=9;fillColor=#FFFFFF;strokeColor=#d6b656;" vertex="1" parent="1">
-          <mxGeometry x="470" y="380" width="200" height="25" as="geometry"/>
-        </mxCell>
-        <mxCell id="cname-lc-api" value="lc.api → m1sk9.github.io" style="rounded=0;whiteSpace=wrap;html=1;fontSize=9;fillColor=#FFFFFF;strokeColor=#d6b656;" vertex="1" parent="1">
-          <mxGeometry x="470" y="410" width="200" height="25" as="geometry"/>
-        </mxCell>
-        <mxCell id="cname-dkim" value="protonmail DKIM x3" style="rounded=0;whiteSpace=wrap;html=1;fontSize=9;fillColor=#FFFFFF;strokeColor=#d6b656;" vertex="1" parent="1">
-          <mxGeometry x="470" y="440" width="200" height="25" as="geometry"/>
-        </mxCell>
-
-        <!-- AAAA Records (Proxied) -->
-        <mxCell id="aaaa-group" value="&lt;b&gt;AAAA Records (Proxied)&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF9E6;strokeColor=#d6b656;fontSize=11;verticalAlign=top;" vertex="1" parent="1">
-          <mxGeometry x="700" y="320" width="200" height="140" as="geometry"/>
-        </mxCell>
-        <mxCell id="aaaa-blog" value="blog.m1sk9.dev → 100::" style="rounded=0;whiteSpace=wrap;html=1;fontSize=9;fillColor=#FFFFFF;strokeColor=#d6b656;" vertex="1" parent="1">
-          <mxGeometry x="710" y="350" width="180" height="25" as="geometry"/>
-        </mxCell>
-        <mxCell id="aaaa-lc" value="lc.m1sk9.dev → 100::" style="rounded=0;whiteSpace=wrap;html=1;fontSize=9;fillColor=#FFFFFF;strokeColor=#d6b656;" vertex="1" parent="1">
-          <mxGeometry x="710" y="380" width="180" height="25" as="geometry"/>
-        </mxCell>
-        <mxCell id="aaaa-ua" value="ua.m1sk9.dev → 100::" style="rounded=0;whiteSpace=wrap;html=1;fontSize=9;fillColor=#FFFFFF;strokeColor=#d6b656;" vertex="1" parent="1">
-          <mxGeometry x="710" y="410" width="180" height="25" as="geometry"/>
-        </mxCell>
-
-        <!-- MX + Mail -->
-        <mxCell id="mx-group" value="&lt;b&gt;MX Records&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF9E6;strokeColor=#d6b656;fontSize=11;verticalAlign=top;" vertex="1" parent="1">
-          <mxGeometry x="700" y="480" width="200" height="80" as="geometry"/>
-        </mxCell>
-        <mxCell id="mx1" value="mail.protonmail.ch (pri:10)" style="rounded=0;whiteSpace=wrap;html=1;fontSize=9;fillColor=#FFFFFF;strokeColor=#d6b656;" vertex="1" parent="1">
-          <mxGeometry x="710" y="505" width="180" height="20" as="geometry"/>
-        </mxCell>
-        <mxCell id="mx2" value="mailsec.protonmail.ch (pri:20)" style="rounded=0;whiteSpace=wrap;html=1;fontSize=9;fillColor=#FFFFFF;strokeColor=#d6b656;" vertex="1" parent="1">
-          <mxGeometry x="710" y="530" width="180" height="20" as="geometry"/>
-        </mxCell>
-
-        <!-- TXT Records -->
-        <mxCell id="txt-group" value="&lt;b&gt;TXT Records&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF9E6;strokeColor=#d6b656;fontSize=11;verticalAlign=top;" vertex="1" parent="1">
-          <mxGeometry x="920" y="320" width="220" height="200" as="geometry"/>
-        </mxCell>
-        <mxCell id="txt-ghp" value="GitHub Pages verification" style="rounded=0;whiteSpace=wrap;html=1;fontSize=9;fillColor=#FFFFFF;strokeColor=#d6b656;" vertex="1" parent="1">
-          <mxGeometry x="930" y="350" width="200" height="22" as="geometry"/>
-        </mxCell>
-        <mxCell id="txt-bsky" value="Bluesky (_atproto)" style="rounded=0;whiteSpace=wrap;html=1;fontSize=9;fillColor=#FFFFFF;strokeColor=#d6b656;" vertex="1" parent="1">
-          <mxGeometry x="930" y="377" width="200" height="22" as="geometry"/>
-        </mxCell>
-        <mxCell id="txt-discord" value="Discord verification" style="rounded=0;whiteSpace=wrap;html=1;fontSize=9;fillColor=#FFFFFF;strokeColor=#d6b656;" vertex="1" parent="1">
-          <mxGeometry x="930" y="404" width="200" height="22" as="geometry"/>
-        </mxCell>
-        <mxCell id="txt-dmarc" value="DMARC (p=quarantine)" style="rounded=0;whiteSpace=wrap;html=1;fontSize=9;fillColor=#FFFFFF;strokeColor=#d6b656;" vertex="1" parent="1">
-          <mxGeometry x="930" y="431" width="200" height="22" as="geometry"/>
-        </mxCell>
-        <mxCell id="txt-spf" value="Proton Mail SPF + verification" style="rounded=0;whiteSpace=wrap;html=1;fontSize=9;fillColor=#FFFFFF;strokeColor=#d6b656;" vertex="1" parent="1">
-          <mxGeometry x="930" y="458" width="200" height="22" as="geometry"/>
+        <!-- ===== Cloudflare Zone ===== -->
+        <mxCell id="cf-group" value="Cloudflare (m1sk9.dev) — Terraform Cloudflare Provider v5.18.0" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=14;fontStyle=1;verticalAlign=top;spacingTop=5;" vertex="1" parent="1">
+          <mxGeometry x="440" y="270" width="1140" height="460" as="geometry"/>
         </mxCell>
 
         <!-- Arrow: CD -> Cloudflare -->
         <mxCell id="e-cd-cf" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#d6b656;strokeWidth=2;" edge="1" source="cd" target="cf-group" parent="1">
           <mxGeometry relative="1" as="geometry">
             <Array as="points">
-              <mxPoint x="400" y="200"/>
-              <mxPoint x="400" y="260"/>
-              <mxPoint x="800" y="260"/>
+              <mxPoint x="420" y="180"/>
+              <mxPoint x="420" y="250"/>
+              <mxPoint x="800" y="250"/>
             </Array>
           </mxGeometry>
         </mxCell>
         <mxCell id="e-cd-cf-label" value="terraform apply" style="edgeLabel;html=1;fontSize=9;fontColor=#d6b656;fontStyle=1;" vertex="1" connectable="0" parent="e-cd-cf">
-          <mxGeometry x="-0.2" relative="1" as="geometry"/>
+          <mxGeometry x="-0.3" relative="1" as="geometry"/>
         </mxCell>
 
-        <!-- Dockge / Server -->
-        <mxCell id="server-group" value="Self-hosted Server" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=14;fontStyle=1;verticalAlign=top;spacingTop=5;" vertex="1" parent="1">
-          <mxGeometry x="40" y="430" width="340" height="210" as="geometry"/>
+        <!-- Arrow: Internet -> Cloudflare -->
+        <mxCell id="e-inet-cf" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#999;strokeWidth=1;" edge="1" source="internet" target="cf-group" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
         </mxCell>
-        <mxCell id="arcane" value="&lt;b&gt;Arcane&lt;/b&gt;&lt;br&gt;Port: 3552&lt;br&gt;Container Management UI" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#82b366;fontSize=11;align=center;" vertex="1" parent="1">
-          <mxGeometry x="60" y="470" width="200" height="60" as="geometry"/>
-        </mxCell>
-        <mxCell id="docker" value="&lt;b&gt;Docker Containers&lt;/b&gt;&lt;br&gt;(/opt/stacks)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#82b366;fontSize=11;align=center;" vertex="1" parent="1">
-          <mxGeometry x="60" y="550" width="200" height="50" as="geometry"/>
-        </mxCell>
-        <mxCell id="docker-sock" value="docker.sock" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#82b366;fontSize=9;" vertex="1" parent="1">
-          <mxGeometry x="280" y="480" width="80" height="30" as="geometry"/>
+        <mxCell id="e-inet-cf-label" value="HTTPS" style="edgeLabel;html=1;fontSize=9;fontColor=#999;" vertex="1" connectable="0" parent="e-inet-cf">
+          <mxGeometry relative="1" as="geometry"/>
         </mxCell>
 
-        <!-- Arrow: Dockge -> Docker -->
+        <!-- ===== DNS Records Section ===== -->
+        <mxCell id="dns-group" value="DNS Records" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF9E6;strokeColor=#d6b656;fontSize=12;fontStyle=1;verticalAlign=top;spacingTop=5;" vertex="1" parent="1">
+          <mxGeometry x="460" y="310" width="300" height="400" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="cname-hdr" value="CNAME" style="text;html=1;fontSize=10;fontStyle=1;fontColor=#666;align=left;" vertex="1" parent="1">
+          <mxGeometry x="475" y="340" width="60" height="15" as="geometry"/>
+        </mxCell>
+        <mxCell id="cname-portfolio" value="m1sk9.dev → m1sk9.github.io" style="rounded=0;whiteSpace=wrap;html=1;fontSize=9;fillColor=#FFF;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="475" y="358" width="270" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="cname-babyrite" value="babyrite.api → m1sk9.github.io" style="rounded=0;whiteSpace=wrap;html=1;fontSize=9;fillColor=#FFF;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="475" y="382" width="270" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="cname-lc-api" value="lc.api → m1sk9.github.io" style="rounded=0;whiteSpace=wrap;html=1;fontSize=9;fillColor=#FFF;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="475" y="406" width="270" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="cname-acrane" value="acrane → {tunnel_id}.cfargotunnel.com" style="rounded=0;whiteSpace=wrap;html=1;fontSize=9;fillColor=#FFF;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="475" y="430" width="270" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="cname-dkim" value="protonmail._domainkey x3 (DKIM)" style="rounded=0;whiteSpace=wrap;html=1;fontSize=9;fillColor=#FFF;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="475" y="454" width="270" height="20" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="mx-hdr" value="MX" style="text;html=1;fontSize=10;fontStyle=1;fontColor=#666;align=left;" vertex="1" parent="1">
+          <mxGeometry x="475" y="485" width="30" height="15" as="geometry"/>
+        </mxCell>
+        <mxCell id="mx1" value="mail.protonmail.ch (pri: 10)" style="rounded=0;whiteSpace=wrap;html=1;fontSize=9;fillColor=#FFF;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="475" y="503" width="270" height="20" as="geometry"/>
+        </mxCell>
+        <mxCell id="mx2" value="mailsec.protonmail.ch (pri: 20)" style="rounded=0;whiteSpace=wrap;html=1;fontSize=9;fillColor=#FFF;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="475" y="527" width="270" height="20" as="geometry"/>
+        </mxCell>
+
+        <mxCell id="txt-hdr" value="TXT" style="text;html=1;fontSize=10;fontStyle=1;fontColor=#666;align=left;" vertex="1" parent="1">
+          <mxGeometry x="475" y="558" width="30" height="15" as="geometry"/>
+        </mxCell>
+        <mxCell id="txt-ghp" value="GitHub Pages verification" style="rounded=0;whiteSpace=wrap;html=1;fontSize=8;fillColor=#FFF;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="475" y="576" width="130" height="18" as="geometry"/>
+        </mxCell>
+        <mxCell id="txt-bsky" value="Bluesky (_atproto)" style="rounded=0;whiteSpace=wrap;html=1;fontSize=8;fillColor=#FFF;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="615" y="576" width="130" height="18" as="geometry"/>
+        </mxCell>
+        <mxCell id="txt-discord" value="Discord verification" style="rounded=0;whiteSpace=wrap;html=1;fontSize=8;fillColor=#FFF;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="475" y="598" width="130" height="18" as="geometry"/>
+        </mxCell>
+        <mxCell id="txt-dmarc" value="DMARC (p=quarantine)" style="rounded=0;whiteSpace=wrap;html=1;fontSize=8;fillColor=#FFF;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="615" y="598" width="130" height="18" as="geometry"/>
+        </mxCell>
+        <mxCell id="txt-spf" value="SPF (Proton Mail)" style="rounded=0;whiteSpace=wrap;html=1;fontSize=8;fillColor=#FFF;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="475" y="620" width="130" height="18" as="geometry"/>
+        </mxCell>
+        <mxCell id="txt-proton" value="Proton Mail verification" style="rounded=0;whiteSpace=wrap;html=1;fontSize=8;fillColor=#FFF;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="615" y="620" width="130" height="18" as="geometry"/>
+        </mxCell>
+
+        <!-- ===== Cloudflare Workers ===== -->
+        <mxCell id="workers-group" value="Workers (Custom Domain)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF9E6;strokeColor=#d6b656;fontSize=12;fontStyle=1;verticalAlign=top;spacingTop=5;" vertex="1" parent="1">
+          <mxGeometry x="780" y="310" width="280" height="190" as="geometry"/>
+        </mxCell>
+        <mxCell id="w-blog" value="&lt;b&gt;blog-redirect&lt;/b&gt;&lt;br&gt;blog.m1sk9.dev → m1sk9.dev/posts/" style="rounded=1;whiteSpace=wrap;html=1;fontSize=9;fillColor=#FFF;strokeColor=#d6b656;align=center;" vertex="1" parent="1">
+          <mxGeometry x="795" y="345" width="250" height="38" as="geometry"/>
+        </mxCell>
+        <mxCell id="w-ua" value="&lt;b&gt;ua-echo&lt;/b&gt;&lt;br&gt;ua.m1sk9.dev (User-Agent echo)" style="rounded=1;whiteSpace=wrap;html=1;fontSize=9;fillColor=#FFF;strokeColor=#d6b656;align=center;" vertex="1" parent="1">
+          <mxGeometry x="795" y="393" width="250" height="38" as="geometry"/>
+        </mxCell>
+        <mxCell id="w-lc" value="&lt;b&gt;lunaticchat-docs&lt;/b&gt;&lt;br&gt;lc.m1sk9.dev (VitePress, CI/CD deploy)" style="rounded=1;whiteSpace=wrap;html=1;fontSize=9;fillColor=#FFF;strokeColor=#d6b656;align=center;" vertex="1" parent="1">
+          <mxGeometry x="795" y="441" width="250" height="38" as="geometry"/>
+        </mxCell>
+
+        <!-- ===== Cloudflare Zero Trust ===== -->
+        <mxCell id="zt-group" value="Zero Trust" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF9E6;strokeColor=#d6b656;fontSize=12;fontStyle=1;verticalAlign=top;spacingTop=5;" vertex="1" parent="1">
+          <mxGeometry x="1080" y="310" width="480" height="400" as="geometry"/>
+        </mxCell>
+
+        <!-- Tunnel -->
+        <mxCell id="tunnel-label" value="Tunnel" style="text;html=1;fontSize=10;fontStyle=1;fontColor=#666;align=left;" vertex="1" parent="1">
+          <mxGeometry x="1095" y="340" width="60" height="15" as="geometry"/>
+        </mxCell>
+        <mxCell id="tunnel" value="&lt;b&gt;Tunnel: s1&lt;/b&gt; (cloudflared)&lt;hr&gt;&lt;font style=&quot;font-size:9px&quot;&gt;acrane.m1sk9.dev → http://localhost:3552&lt;br&gt;Catch-all → http_status:404&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF;strokeColor=#d6b656;fontSize=10;align=center;" vertex="1" parent="1">
+          <mxGeometry x="1095" y="360" width="270" height="80" as="geometry"/>
+        </mxCell>
+
+        <!-- Access -->
+        <mxCell id="access-label" value="Access" style="text;html=1;fontSize=10;fontStyle=1;fontColor=#666;align=left;" vertex="1" parent="1">
+          <mxGeometry x="1095" y="455" width="60" height="15" as="geometry"/>
+        </mxCell>
+        <mxCell id="access-idp" value="&lt;b&gt;Identity Provider&lt;/b&gt;&lt;br&gt;GitHub OAuth" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF;strokeColor=#d6b656;fontSize=10;align=center;" vertex="1" parent="1">
+          <mxGeometry x="1095" y="475" width="140" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="access-policy" value="&lt;b&gt;Access Policy&lt;/b&gt;&lt;br&gt;Allow: me@m1sk9.dev" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF;strokeColor=#d6b656;fontSize=10;align=center;" vertex="1" parent="1">
+          <mxGeometry x="1095" y="535" width="140" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="access-app" value="&lt;b&gt;Access Application&lt;/b&gt;&lt;br&gt;Arcane&lt;br&gt;acrane.m1sk9.dev&lt;br&gt;(self_hosted, 24h session)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF;strokeColor=#d6b656;fontSize=10;align=center;" vertex="1" parent="1">
+          <mxGeometry x="1255" y="475" width="200" height="80" as="geometry"/>
+        </mxCell>
+
+        <!-- Access internal arrows -->
+        <mxCell id="e-idp-app" style="rounded=1;strokeColor=#d6b656;" edge="1" source="access-idp" target="access-app" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e-policy-app" style="rounded=1;strokeColor=#d6b656;" edge="1" source="access-policy" target="access-app" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Arrow: Tunnel -> Access App -->
+        <mxCell id="e-tunnel-app" style="rounded=1;strokeColor=#d6b656;dashed=1;" edge="1" source="tunnel" target="access-app" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e-tunnel-app-label" value="protected by" style="edgeLabel;html=1;fontSize=8;fontColor=#999;" vertex="1" connectable="0" parent="e-tunnel-app">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- ===== Self-hosted Server ===== -->
+        <mxCell id="server-group" value="Self-hosted Server (s1)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=14;fontStyle=1;verticalAlign=top;spacingTop=5;" vertex="1" parent="1">
+          <mxGeometry x="1080" y="780" width="480" height="180" as="geometry"/>
+        </mxCell>
+        <mxCell id="arcane" value="&lt;b&gt;Arcane v1.17.3&lt;/b&gt;&lt;br&gt;Port: 3552&lt;br&gt;Container Management UI" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF;strokeColor=#82b366;fontSize=10;align=center;" vertex="1" parent="1">
+          <mxGeometry x="1095" y="820" width="170" height="60" as="geometry"/>
+        </mxCell>
+        <mxCell id="arcane-db" value="SQLite&lt;br&gt;(WAL)" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=8;fillColor=#FFF;strokeColor=#82b366;fontSize=9;" vertex="1" parent="1">
+          <mxGeometry x="1285" y="815" width="70" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="docker" value="&lt;b&gt;Docker Engine&lt;/b&gt;&lt;br&gt;docker.sock" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF;strokeColor=#82b366;fontSize=10;align=center;" vertex="1" parent="1">
+          <mxGeometry x="1095" y="895" width="170" height="45" as="geometry"/>
+        </mxCell>
+        <mxCell id="stacks" value="Stacks (/opt/stacks)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF;strokeColor=#82b366;fontSize=9;align=center;" vertex="1" parent="1">
+          <mxGeometry x="1285" y="895" width="130" height="45" as="geometry"/>
+        </mxCell>
+        <mxCell id="compose" value="compose.yaml&lt;br&gt;(acrane/)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF;strokeColor=#82b366;fontSize=9;align=center;" vertex="1" parent="1">
+          <mxGeometry x="1435" y="895" width="110" height="45" as="geometry"/>
+        </mxCell>
+
+        <!-- Server internal arrows -->
+        <mxCell id="e-arcane-db" style="rounded=1;strokeColor=#82b366;dashed=1;" edge="1" source="arcane" target="arcane-db" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
         <mxCell id="e-arcane-docker" style="rounded=1;strokeColor=#82b366;" edge="1" source="arcane" target="docker" parent="1">
           <mxGeometry relative="1" as="geometry"/>
         </mxCell>
-        <mxCell id="e-arcane-sock" style="rounded=1;strokeColor=#82b366;dashed=1;" edge="1" source="arcane" target="docker-sock" parent="1">
+        <mxCell id="e-docker-stacks" style="rounded=1;strokeColor=#82b366;" edge="1" source="docker" target="stacks" parent="1">
           <mxGeometry relative="1" as="geometry"/>
         </mxCell>
 
-        <!-- External Services -->
-        <mxCell id="ext-ghpages" value="&lt;b&gt;GitHub Pages&lt;/b&gt;&lt;br&gt;m1sk9.github.io" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=10;align=center;" vertex="1" parent="1">
-          <mxGeometry x="480" y="640" width="150" height="50" as="geometry"/>
+        <!-- Arrow: Tunnel -> Server -->
+        <mxCell id="e-tunnel-server" style="edgeStyle=orthogonalEdgeStyle;rounded=1;strokeColor=#82b366;strokeWidth=2;" edge="1" source="tunnel" target="arcane" parent="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1070" y="400"/>
+              <mxPoint x="1070" y="850"/>
+            </Array>
+          </mxGeometry>
         </mxCell>
-        <mxCell id="ext-proton" value="&lt;b&gt;Proton Mail&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=10;align=center;" vertex="1" parent="1">
-          <mxGeometry x="700" y="640" width="120" height="50" as="geometry"/>
-        </mxCell>
-        <mxCell id="ext-social" value="&lt;b&gt;Bluesky / Discord&lt;/b&gt;&lt;br&gt;(domain verification)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=10;align=center;" vertex="1" parent="1">
-          <mxGeometry x="890" y="640" width="150" height="50" as="geometry"/>
+        <mxCell id="e-tunnel-server-label" value="cloudflared" style="edgeLabel;html=1;fontSize=9;fontColor=#82b366;fontStyle=1;" vertex="1" connectable="0" parent="e-tunnel-server">
+          <mxGeometry x="0.3" relative="1" as="geometry"/>
         </mxCell>
 
-        <!-- Arrows: DNS -> External -->
+        <!-- ===== External Services ===== -->
+        <mxCell id="ext-ghpages" value="&lt;b&gt;GitHub Pages&lt;/b&gt;&lt;br&gt;m1sk9.github.io" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=10;align=center;" vertex="1" parent="1">
+          <mxGeometry x="460" y="790" width="150" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="ext-proton" value="&lt;b&gt;Proton Mail&lt;/b&gt;&lt;br&gt;me@m1sk9.dev" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=10;align=center;" vertex="1" parent="1">
+          <mxGeometry x="630" y="790" width="140" height="50" as="geometry"/>
+        </mxCell>
+        <mxCell id="ext-social" value="&lt;b&gt;Bluesky / Discord&lt;/b&gt;&lt;br&gt;Domain Verification" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=10;align=center;" vertex="1" parent="1">
+          <mxGeometry x="790" y="790" width="150" height="50" as="geometry"/>
+        </mxCell>
+
+        <!-- Arrows: DNS -> External Services -->
         <mxCell id="e-cname-ghp" style="rounded=1;strokeColor=#b85450;dashed=1;" edge="1" source="cname-portfolio" target="ext-ghpages" parent="1">
           <mxGeometry relative="1" as="geometry"/>
         </mxCell>
-        <mxCell id="e-mx-proton" style="rounded=1;strokeColor=#b85450;dashed=1;" edge="1" source="mx-group" target="ext-proton" parent="1">
+        <mxCell id="e-mx-proton" style="rounded=1;strokeColor=#b85450;dashed=1;" edge="1" source="mx1" target="ext-proton" parent="1">
           <mxGeometry relative="1" as="geometry"/>
         </mxCell>
         <mxCell id="e-txt-social" style="rounded=1;strokeColor=#b85450;dashed=1;" edge="1" source="txt-bsky" target="ext-social" parent="1">
           <mxGeometry relative="1" as="geometry"/>
         </mxCell>
 
-        <!-- Legend -->
-        <mxCell id="legend" value="&lt;b&gt;Legend&lt;/b&gt;&lt;br&gt;Blue: GitHub / CI/CD&lt;br&gt;Yellow: Cloudflare DNS&lt;br&gt;Green: Self-hosted Server&lt;br&gt;Red: External Services&lt;br&gt;Purple: HCP Terraform" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#CCCCCC;fontSize=10;align=left;spacingLeft=10;" vertex="1" parent="1">
-          <mxGeometry x="40" y="680" width="170" height="110" as="geometry"/>
-        </mxCell>
-
-        <!-- Terraform manages label -->
-        <mxCell id="tf-label" value="Terraform (Cloudflare Provider v5.17.0)" style="text;html=1;fontSize=10;fontStyle=3;align=center;fontColor=#d6b656;" vertex="1" parent="1">
-          <mxGeometry x="440" y="605" width="300" height="20" as="geometry"/>
+        <!-- ===== Legend ===== -->
+        <mxCell id="legend" value="&lt;b&gt;Legend&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#6c8ebf&quot;&gt;&#9632;&lt;/font&gt; GitHub / CI・CD&lt;br&gt;&lt;font color=&quot;#d6b656&quot;&gt;&#9632;&lt;/font&gt; Cloudflare (DNS / Workers / Zero Trust)&lt;br&gt;&lt;font color=&quot;#82b366&quot;&gt;&#9632;&lt;/font&gt; Self-hosted Server (Docker)&lt;br&gt;&lt;font color=&quot;#b85450&quot;&gt;&#9632;&lt;/font&gt; External Services&lt;br&gt;&lt;font color=&quot;#9673a6&quot;&gt;&#9632;&lt;/font&gt; HCP Terraform (State)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#CCC;fontSize=10;align=left;spacingLeft=10;" vertex="1" parent="1">
+          <mxGeometry x="40" y="790" width="300" height="110" as="geometry"/>
         </mxCell>
 
       </root>

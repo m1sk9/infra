@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile>
+  <diagram name="Network Overview" id="network-overview">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1200" pageHeight="700" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <!-- Title -->
+        <mxCell id="title" value="Network Overview — SoftBank 光 10G" style="text;html=1;fontSize=18;fontStyle=1;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="300" y="20" width="500" height="35" as="geometry"/>
+        </mxCell>
+
+        <!-- Internet -->
+        <mxCell id="internet" value="&lt;b&gt;Internet&lt;/b&gt;&lt;br&gt;SoftBank 光 10G" style="shape=cloud;whiteSpace=wrap;html=1;fillColor=#E6E6E6;strokeColor=#999;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="60" y="90" width="200" height="100" as="geometry"/>
+        </mxCell>
+
+        <!-- Fiber Outlet -->
+        <mxCell id="fiber-outlet" value="&lt;b&gt;Fiber Outlet&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666;fontSize=11;align=center;" vertex="1" parent="1">
+          <mxGeometry x="350" y="110" width="130" height="50" as="geometry"/>
+        </mxCell>
+
+        <!-- Arrow: Internet -> Fiber Outlet -->
+        <mxCell id="e-inet-fiber" style="rounded=1;strokeColor=#666;strokeWidth=2;" edge="1" source="internet" target="fiber-outlet" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e-inet-fiber-label" value="Fiber" style="edgeLabel;html=1;fontSize=9;fontColor=#666;" vertex="1" connectable="0" parent="e-inet-fiber">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- NTT HGW -->
+        <mxCell id="ntt-hgw" value="&lt;b&gt;NTT HGW&lt;/b&gt;&lt;br&gt;Built-in ONU&lt;br&gt;Fiber Termination" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;align=center;" vertex="1" parent="1">
+          <mxGeometry x="330" y="230" width="170" height="70" as="geometry"/>
+        </mxCell>
+
+        <!-- Arrow: Fiber Outlet -> NTT HGW -->
+        <mxCell id="e-fiber-hgw" style="rounded=1;strokeColor=#6c8ebf;strokeWidth=2;" edge="1" source="fiber-outlet" target="ntt-hgw" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e-fiber-hgw-label" value="Fiber" style="edgeLabel;html=1;fontSize=9;fontColor=#6c8ebf;" vertex="1" connectable="0" parent="e-fiber-hgw">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- SoftBank BB Unit -->
+        <mxCell id="bb-unit" value="&lt;b&gt;SoftBank Hikari BB Unit&lt;/b&gt;&lt;br&gt;Router Mode&lt;br&gt;DHCP: 192.168.3.0/24" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;align=center;" vertex="1" parent="1">
+          <mxGeometry x="310" y="370" width="210" height="70" as="geometry"/>
+        </mxCell>
+
+        <!-- Arrow: NTT HGW -> BB Unit -->
+        <mxCell id="e-hgw-bb" style="rounded=1;strokeColor=#d6b656;strokeWidth=2;" edge="1" source="ntt-hgw" target="bb-unit" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e-hgw-bb-label" value="Ethernet" style="edgeLabel;html=1;fontSize=9;fontColor=#d6b656;" vertex="1" connectable="0" parent="e-hgw-bb">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Aterm -->
+        <mxCell id="aterm" value="&lt;b&gt;Aterm&lt;/b&gt;&lt;br&gt;Bridge Mode&lt;br&gt;Wi-Fi Access Point" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;align=center;" vertex="1" parent="1">
+          <mxGeometry x="310" y="510" width="210" height="70" as="geometry"/>
+        </mxCell>
+
+        <!-- Arrow: BB Unit -> Aterm -->
+        <mxCell id="e-bb-aterm" style="rounded=1;strokeColor=#82b366;strokeWidth=2;" edge="1" source="bb-unit" target="aterm" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e-bb-aterm-label" value="Ethernet" style="edgeLabel;html=1;fontSize=9;fontColor=#82b366;" vertex="1" connectable="0" parent="e-bb-aterm">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Devices -->
+        <mxCell id="dev-macbook" value="&lt;b&gt;MacBook&lt;/b&gt;&lt;br&gt;192.168.3.x" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=10;align=center;" vertex="1" parent="1">
+          <mxGeometry x="200" y="640" width="120" height="45" as="geometry"/>
+        </mxCell>
+        <mxCell id="dev-other" value="&lt;b&gt;Other Devices&lt;/b&gt;&lt;br&gt;192.168.3.x" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=10;align=center;" vertex="1" parent="1">
+          <mxGeometry x="350" y="640" width="120" height="45" as="geometry"/>
+        </mxCell>
+        <mxCell id="dev-server" value="&lt;b&gt;Server (s1)&lt;/b&gt;&lt;br&gt;192.168.3.x" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=10;align=center;" vertex="1" parent="1">
+          <mxGeometry x="500" y="640" width="120" height="45" as="geometry"/>
+        </mxCell>
+
+        <!-- Arrows: Aterm -> Devices -->
+        <mxCell id="e-aterm-mac" style="rounded=1;strokeColor=#b85450;dashed=1;" edge="1" source="aterm" target="dev-macbook" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e-aterm-other" style="rounded=1;strokeColor=#b85450;dashed=1;" edge="1" source="aterm" target="dev-other" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e-aterm-server" style="rounded=1;strokeColor=#b85450;dashed=1;" edge="1" source="aterm" target="dev-server" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e-aterm-dev-label" value="Wi-Fi" style="edgeLabel;html=1;fontSize=9;fontColor=#b85450;" vertex="1" connectable="0" parent="e-aterm-other">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Tailscale overlay -->
+        <mxCell id="tailscale-group" value="&lt;b&gt;Tailscale Tailnet&lt;/b&gt;&lt;br&gt;All devices connected via Tailscale. External access is denied." style="rounded=1;whiteSpace=wrap;html=1;fillColor=none;strokeColor=#7C3AED;fontSize=10;fontColor=#7C3AED;strokeWidth=2;dashed=1;verticalAlign=top;spacingTop=5;align=center;" vertex="1" parent="1">
+          <mxGeometry x="170" y="615" width="480" height="85" as="geometry"/>
+        </mxCell>
+
+        <!-- Cloudflare Tunnel (side note) -->
+        <mxCell id="cf-tunnel" value="&lt;b&gt;Cloudflare Zero Trust Tunnel&lt;/b&gt;&lt;br&gt;External services exposed&lt;br&gt;via Tunnel (no port forwarding)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=9;align=center;" vertex="1" parent="1">
+          <mxGeometry x="720" y="630" width="210" height="60" as="geometry"/>
+        </mxCell>
+
+        <!-- Arrow: Server -> CF Tunnel -->
+        <mxCell id="e-server-cftunnel" style="rounded=1;strokeColor=#d6b656;strokeWidth=1;" edge="1" source="dev-server" target="cf-tunnel" parent="1">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+        <mxCell id="e-server-cftunnel-label" value="cloudflared" style="edgeLabel;html=1;fontSize=8;fontColor=#d6b656;" vertex="1" connectable="0" parent="e-server-cftunnel">
+          <mxGeometry relative="1" as="geometry"/>
+        </mxCell>
+
+        <!-- Legend -->
+        <mxCell id="legend" value="&lt;b&gt;Legend&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#6c8ebf&quot;&gt;&#9632;&lt;/font&gt; ONU / Gateway&lt;br&gt;&lt;font color=&quot;#d6b656&quot;&gt;&#9632;&lt;/font&gt; Router (DHCP)&lt;br&gt;&lt;font color=&quot;#82b366&quot;&gt;&#9632;&lt;/font&gt; Wi-Fi Access Point&lt;br&gt;&lt;font color=&quot;#b85450&quot;&gt;&#9632;&lt;/font&gt; End Devices&lt;br&gt;&lt;font color=&quot;#7C3AED&quot;&gt;&#9632;&lt;/font&gt; Tailscale Overlay" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#CCC;fontSize=10;align=left;spacingLeft=10;" vertex="1" parent="1">
+          <mxGeometry x="800" y="90" width="180" height="110" as="geometry"/>
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

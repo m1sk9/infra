@@ -24,6 +24,12 @@ This server configuration must meet the following requirements:
 - Users can only access the system if they are specifically invited, and only via Tailscale. Devices not connected to the Tailnet cannot access the servers.
 - If Tailscale Funnel is unavailable, Cloudflare Zero Trust is used for authentication. In this case, only users with administrator-level, enhanced email addresses can connect; all others are denied access.
 
+## Network
+
+> For details on the network topology, see [`network/README.md`](./network/README.md).
+
+The home network runs on a SoftBank 光 10G fiber connection. All devices are connected via Tailscale, and external access to internal resources is denied. Services that need to be publicly accessible are exposed through Cloudflare Zero Trust Tunnels without any port forwarding.
+
 ## Terraform
 
 Terraform configuration files are located under the [`/terraform`](./terraform) directory to manage Cloudflare DNS records for `m1sk9.dev` as Infrastructure as Code (IaC). State is managed by [HCP Terraform](https://app.terraform.io/) (organization: `m1sk9-terraform-org`, workspace: `infra`).
@@ -35,8 +41,10 @@ These configurations are applied automatically via GitHub Actions:
 
 ### Configuration Files
 
+- [`cloudflare_access.tf`](./terraform/cloudflare_access.tf): Manages Cloudflare Zero Trust Access (GitHub OAuth IdP, access policies, and applications)
 - [`cloudflare_dns_record.tf`](./terraform/cloudflare_dns_record.tf): Manages DNS records
 - [`cloudflare_tunnel.tf`](./terraform/cloudflare_tunnel.tf): Manages Cloudflare Tunnels for secure server access
+- [`cloudflare_worker.tf`](./terraform/cloudflare_worker.tf): Manages Cloudflare Workers and custom domains
 - [`main.tf`](./terraform/main.tf): Main Terraform configuration file
 - [`outputs.tf`](./terraform/outputs.tf): Defines Terraform outputs (tunnel IDs, CNAMEs, etc.)
 - [`provider.tf`](./terraform/provider.tf): Configures the Cloudflare provider
@@ -44,49 +52,4 @@ These configurations are applied automatically via GitHub Actions:
 
 ### Cloudflare Tunnel
 
-Cloudflare Tunnel is used to securely expose services running on self-hosted servers without opening firewall ports. Each server has its own tunnel resource (e.g., `s1` for server #1).
-
-**Current tunnels:**
-- `s1`: Server #1 tunnel, exposing services like `status.m1sk9.dev`
-
-**Adding a new service to an existing tunnel:**
-
-Add an ingress rule to the tunnel configuration in [`cloudflare_tunnel.tf`](./terraform/cloudflare_tunnel.tf):
-
-```hcl
-# Cloudflare Tunnel for server s1
-resource "cloudflare_zero_trust_tunnel_cloudflared_config" "s1" {
-  account_id = local.cloudflare_account_id
-  tunnel_id  = cloudflare_zero_trust_tunnel_cloudflared.s1.id
-  config = {
-    ingress = [
-      {
-        hostname = "status.m1sk9.dev"
-        service  = "http://localhost:3001"
-      },
-      {
-        hostname = "newservice.m1sk9.dev"  # Add your new service here
-        service  = "http://localhost:PORT"
-      },
-      {
-        service = "http_status:404"
-      }
-    ]
-  }
-}
-
-# DNS Record for the new service
-resource "cloudflare_dns_record" "newservice" {
-  zone_id = local.cloudflare_zone_id
-  name    = "newservice"
-  content = "${cloudflare_zero_trust_tunnel_cloudflared.s1.id}.cfargotunnel.com"
-  type    = "CNAME"
-  ttl     = 1
-  proxied = true
-  comment = "Cloudflare Tunnel - Service Description"
-}
-```
-
-After updating the configuration, apply it with `terraform apply`. For server-side setup and cloudflared configuration, please contact [@m1sk9](https://github.com/m1sk9).
-
-**Note:** Use single-level subdomains (e.g., `service.m1sk9.dev`) instead of multi-level subdomains (e.g., `service.s1.m1sk9.dev`) to ensure compatibility with Universal SSL certificates (`*.m1sk9.dev`).
+Cloudflare Tunnel is used to securely expose services running on self-hosted servers without opening firewall ports. Tunnel definitions are managed in [`cloudflare_tunnel.tf`](./terraform/cloudflare_tunnel.tf).
