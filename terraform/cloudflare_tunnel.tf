@@ -15,6 +15,10 @@ resource "cloudflare_zero_trust_tunnel_cloudflared_config" "s1" {
         service  = "http://localhost:3552"
       },
       {
+        hostname = "wallos.m1sk9.dev"
+        service  = "http://localhost:8282"
+      },
+      {
         service = "http_status:404"
       }
     ]
@@ -30,4 +34,15 @@ resource "cloudflare_dns_record" "acrane" {
   ttl     = 1
   proxied = true
   comment = "Cloudflare Tunnel - Arcane (s1)"
+}
+
+# DNS Record for Wallos (Subscription tracker)
+resource "cloudflare_dns_record" "wallos" {
+  zone_id = local.cloudflare_zone_id
+  name    = "wallos"
+  content = "${cloudflare_zero_trust_tunnel_cloudflared.s1.id}.cfargotunnel.com"
+  type    = "CNAME"
+  ttl     = 1
+  proxied = true
+  comment = "Cloudflare Tunnel - Wallos (s1)"
 }
