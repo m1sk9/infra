@@ -7,26 +7,12 @@ const HTML = `<!DOCTYPE html>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>稼働時間計算</title>
-<style>
-  body { font-family: system-ui, sans-serif; max-width: 640px; margin: 2rem auto; padding: 0 1rem; line-height: 1.6; }
-  textarea { width: 100%; min-height: 160px; font-family: monospace; font-size: 1rem; padding: 0.5rem; box-sizing: border-box; }
-  #total { font-size: 1.8rem; font-weight: bold; margin: 1rem 0 0.25rem; }
-  #min { color: #666; font-family: monospace; }
-  table { width: 100%; border-collapse: collapse; margin-top: 1rem; font-family: monospace; font-size: 0.9rem; }
-  td { padding: 0.2rem 0; }
-  td.dur { text-align: right; color: #666; }
-  tr.bad td { color: #c00; }
-  p.hint { color: #666; font-size: 0.85rem; }
-</style>
 </head>
 <body>
   <h1>稼働時間計算</h1>
-  <p class="hint">1 行 1 区間，HH:MM-HH:MM で入力。日またぎ・全角対応。</p>
-  <textarea id="input" spellcheck="false">11:57-13:00
-13:28-15:05
-15:30-18:30
-20:26-21:37</textarea>
-  <div id="total">—</div>
+  <p>1 行 1 区間 / HH:MM-HH:MM で入力すること．日またぎ・全角にも対応</p>
+  <textarea id="input" spellcheck="false" rows="12" cols="40" placeholder="13:00-15:00"></textarea>
+  <div id="total"></div>
   <div id="min"></div>
   <table id="rows"></table>
 
@@ -63,9 +49,9 @@ const HTML = `<!DOCTYPE html>
     for (const line of input.value.split('\\n')) {
       const r = parseLine(line);
       if (r.skip) continue;
-      if (r.error) { rows += '<tr class="bad"><td>'+esc(r.raw.trim())+'</td><td class="dur">解析不可</td></tr>'; continue; }
+      if (r.error) { rows += '<tr><td>'+esc(r.raw.trim())+'</td><td>解析不可</td></tr>'; continue; }
       total += r.minutes; valid++;
-      rows += '<tr><td>'+esc(r.range)+'</td><td class="dur">'+fmt(r.minutes)+'</td></tr>';
+      rows += '<tr><td>'+esc(r.range)+'</td><td>'+fmt(r.minutes)+'</td></tr>';
     }
     if (valid===0) { totalEl.textContent='—'; minEl.textContent=''; }
     else { totalEl.textContent=fmt(total); minEl.textContent='= '+total+' 分（'+valid+' 区間）'; }
@@ -79,6 +65,8 @@ const HTML = `<!DOCTYPE html>
 
 export default {
   async fetch() {
-    return new Response(HTML, { headers: { "content-type": "text/html; charset=utf-8" } });
+    return new Response(HTML, {
+      headers: { "content-type": "text/html; charset=utf-8" },
+    });
   },
 };
