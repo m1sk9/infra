@@ -33,3 +33,20 @@ resource "cloudflare_workers_custom_domain" "ua" {
   hostname   = "ua.m1sk9.dev"
   service    = cloudflare_workers_script.ua.script_name
 }
+
+# working.m1sk9.dev - Work hours calculator
+resource "cloudflare_workers_script" "working" {
+  account_id         = local.cloudflare_account_id
+  script_name        = "work-hours"
+  content_file       = "${path.module}/workers/working.js"
+  content_sha256     = filesha256("${path.module}/workers/working.js")
+  main_module        = "working.js"
+  compatibility_date = "2025-05-01"
+}
+
+resource "cloudflare_workers_custom_domain" "working" {
+  account_id = local.cloudflare_account_id
+  zone_id    = local.cloudflare_zone_id
+  hostname   = "working.m1sk9.dev"
+  service    = cloudflare_workers_script.working.script_name
+}
