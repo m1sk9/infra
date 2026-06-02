@@ -17,6 +17,14 @@ resource "cloudflare_workers_custom_domain" "blog" {
   service    = cloudflare_workers_script.blog.script_name
 }
 
+# Custom domain only — disable the workers.dev subdomain exposure.
+resource "cloudflare_workers_script_subdomain" "blog" {
+  account_id       = local.cloudflare_account_id
+  script_name      = cloudflare_workers_script.blog.script_name
+  enabled          = false
+  previews_enabled = false
+}
+
 # ua.m1sk9.dev - User-Agent echo service
 resource "cloudflare_workers_script" "ua" {
   account_id         = local.cloudflare_account_id
@@ -34,6 +42,14 @@ resource "cloudflare_workers_custom_domain" "ua" {
   service    = cloudflare_workers_script.ua.script_name
 }
 
+# Custom domain only — disable the workers.dev subdomain exposure.
+resource "cloudflare_workers_script_subdomain" "ua" {
+  account_id       = local.cloudflare_account_id
+  script_name      = cloudflare_workers_script.ua.script_name
+  enabled          = false
+  previews_enabled = false
+}
+
 # working.m1sk9.dev - Work hours calculator
 resource "cloudflare_workers_script" "working" {
   account_id         = local.cloudflare_account_id
@@ -49,4 +65,12 @@ resource "cloudflare_workers_custom_domain" "working" {
   zone_id    = local.cloudflare_zone_id
   hostname   = "working.m1sk9.dev"
   service    = cloudflare_workers_script.working.script_name
+}
+
+# Custom domain only — disable the workers.dev subdomain exposure.
+resource "cloudflare_workers_script_subdomain" "working" {
+  account_id       = local.cloudflare_account_id
+  script_name      = cloudflare_workers_script.working.script_name
+  enabled          = false
+  previews_enabled = false
 }
