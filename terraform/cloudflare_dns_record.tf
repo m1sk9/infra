@@ -31,7 +31,7 @@ resource "cloudflare_dns_record" "lc_api_docs" {
   content = "m1sk9.github.io"
   type    = "CNAME"
   ttl     = 1
-  proxied = true
+  proxied = false
   comment = "LunaticChat API Docs"
 }
 
