@@ -9,7 +9,7 @@ resource "cloudflare_dns_record" "portfolio" {
   content = "m1sk9.github.io"
   type    = "CNAME"
   ttl     = 1
-  proxied = false
+  proxied = true
   comment = "portfolio"
 }
 
@@ -31,7 +31,7 @@ resource "cloudflare_dns_record" "lc_api_docs" {
   content = "m1sk9.github.io"
   type    = "CNAME"
   ttl     = 1
-  proxied = false
+  proxied = true
   comment = "LunaticChat API Docs"
 }
 
