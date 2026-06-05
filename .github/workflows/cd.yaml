@@ -10,27 +10,7 @@ permissions:
   pull-requests: write
 
 jobs:
-  changes:
-    runs-on: ubuntu-24.04
-    outputs:
-      terraform: ${{ steps.filter.outputs.terraform }}
-      ansible: ${{ steps.filter.outputs.ansible }}
-    steps:
-      - uses: actions/checkout@v6
-      - uses: dorny/paths-filter@v3
-        id: filter
-        with:
-          filters: |
-            terraform:
-              - 'terraform/**'
-              - '.github/workflows/cd.yaml'
-            ansible:
-              - 'ansible/**'
-              - '.github/workflows/cd.yaml'
-
   terraform-apply:
-    needs: changes
-    if: needs.changes.outputs.terraform == 'true' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-24.04
     defaults:
       run:
@@ -53,8 +33,6 @@ jobs:
         run: terraform apply -input=false -no-color -auto-approve -lock-timeout=10m
 
   ansible-deploy:
-    needs: changes
-    if: needs.changes.outputs.ansible == 'true' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-24.04
     defaults:
       run:
