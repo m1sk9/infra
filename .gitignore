@@ -1,5 +1,6 @@
 .terraform
 .env
+ansible/.vault_pass
 
 docker/monitor/prometheus.yml
 docker/loki/promtail-config.yml

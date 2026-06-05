@@ -1,0 +1,5 @@
+---
+# Non-sensitive shared variables.
+# Reference secrets stored in vault.yml via the `vault_` prefix so that
+# task files never expose raw secret values.
+ansible_become_password: "{{ vault_become_password }}"

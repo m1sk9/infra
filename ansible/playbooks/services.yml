@@ -1,0 +1,35 @@
+---
+- name: Deploy Docker Compose services on s1
+  hosts: s1
+  tasks:
+    - name: Deploy val-random-discord
+      ansible.builtin.include_role:
+        name: docker_compose_app
+      vars:
+        app_name: val-random-discord
+        app_files:
+          - src: val-random-discord/env
+            dest: "{{ ansible_facts['env']['HOME'] }}/services/val-random-discord/.env"
+
+    - name: Deploy babyrite
+      ansible.builtin.include_role:
+        name: docker_compose_app
+      vars:
+        app_name: babyrite
+        app_dirs:
+          - "{{ ansible_facts['env']['HOME'] }}/babyrite-data"
+        app_files:
+          - src: babyrite/env
+            dest: "{{ ansible_facts['env']['HOME'] }}/services/babyrite/.env"
+          - src: babyrite/config.toml
+            dest: "{{ ansible_facts['env']['HOME'] }}/babyrite-data/config.toml"
+            mode: "0644"
+
+    - name: Deploy wallos
+      ansible.builtin.include_role:
+        name: docker_compose_app
+      vars:
+        app_name: wallos
+        app_dirs:
+          - "{{ ansible_facts['env']['HOME'] }}/wallos-data/db"
+          - "{{ ansible_facts['env']['HOME'] }}/wallos-data/logos"
