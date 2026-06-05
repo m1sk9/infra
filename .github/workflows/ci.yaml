@@ -75,6 +75,9 @@ jobs:
       - name: Install Ansible collections
         run: ansible-galaxy collection install -r requirements.yml
 
+      - name: Write vault password
+        run: echo "${{ secrets.ANSIBLE_VAULT_PASSWORD }}" > .vault_pass
+
       - name: Syntax check
         run: |
           ansible-playbook playbooks/site.yml --syntax-check
@@ -88,9 +91,6 @@ jobs:
           oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
           tags: tag:ci
           use-cache: "true"
-
-      - name: Write vault password
-        run: echo "${{ secrets.ANSIBLE_VAULT_PASSWORD }}" > .vault_pass
 
       - name: Plan (check + diff)
         run: ansible-playbook playbooks/services.yml --check --diff
