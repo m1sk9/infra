@@ -53,3 +53,9 @@ These configurations are applied automatically via GitHub Actions:
 ### Cloudflare Tunnel
 
 Cloudflare Tunnel is used to securely expose services running on self-hosted servers without opening firewall ports. Tunnel definitions are managed in [`cloudflare_tunnel.tf`](./terraform/cloudflare_tunnel.tf).
+
+## Ansible
+
+Server configuration management lives under the [`/ansible`](./ansible) directory. Hosts are reached over the Tailscale tailnet via their MagicDNS names, and secrets are protected with `ansible-vault`.
+
+See [`ansible/README.md`](./ansible/README.md) for setup, secret handling, and usage.

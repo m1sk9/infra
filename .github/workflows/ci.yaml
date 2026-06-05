@@ -8,13 +8,32 @@ on:
 permissions:
   pull-requests: write
 
-defaults:
-  run:
-    working-directory: ./terraform
-
 jobs:
-  plan:
+  changes:
     runs-on: ubuntu-24.04
+    outputs:
+      terraform: ${{ steps.filter.outputs.terraform }}
+      ansible: ${{ steps.filter.outputs.ansible }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            terraform:
+              - 'terraform/**'
+              - '.github/workflows/ci.yaml'
+            ansible:
+              - 'ansible/**'
+              - '.github/workflows/ci.yaml'
+
+  terraform-plan:
+    needs: changes
+    if: needs.changes.outputs.terraform == 'true'
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: ./terraform
     env:
       TF_TOKEN_app_terraform_io: ${{ secrets.TF_TOKEN_APP_TERRAFORM_IO }}
     steps:
@@ -38,3 +57,44 @@ jobs:
       - name: Terraform Plan
         run: terraform plan -input=false -lock-timeout=10m
 
+  ansible-plan:
+    needs: changes
+    if: needs.changes.outputs.ansible == 'true'
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: ./ansible
+    env:
+      ANSIBLE_HOST_KEY_CHECKING: "False"
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup Development Environment
+        uses: jdx/mise-action@v3
+
+      - name: Install Ansible collections
+        run: ansible-galaxy collection install -r requirements.yml
+
+      - name: Write vault password
+        run: echo "${{ secrets.ANSIBLE_VAULT_PASSWORD }}" > .vault_pass
+
+      - name: Syntax check
+        run: |
+          ansible-playbook playbooks/site.yml --syntax-check
+          ansible-playbook playbooks/services.yml --syntax-check
+          ansible-playbook playbooks/migrate-from-arcane.yml --syntax-check
+
+      - name: Connect to Tailscale
+        uses: tailscale/github-action@v3
+        with:
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
+          tags: tag:ci
+          use-cache: "true"
+
+      - name: Plan (check + diff)
+        run: ansible-playbook playbooks/services.yml --check --diff
+
+      - name: Cleanup
+        if: always()
+        run: rm -f .vault_pass

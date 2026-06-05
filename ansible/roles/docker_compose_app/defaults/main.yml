@@ -1,0 +1,11 @@
+---
+# Base directory under which each service's compose project is deployed.
+deploy_base: "{{ ansible_facts['env']['HOME'] }}/services"
+app_dir: "{{ deploy_base }}/{{ app_name }}"
+
+# Extra directories to create on the host before starting the stack.
+app_dirs: []
+
+# Files to render onto the host. vault-encrypted sources are decrypted on copy.
+# Each item: { src: <role files path>, dest: <absolute path>, mode: <optional> }
+app_files: []

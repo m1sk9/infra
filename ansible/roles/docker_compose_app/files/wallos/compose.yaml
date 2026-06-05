@@ -1,0 +1,14 @@
+name: wallos
+services:
+  wallos:
+    image: ghcr.io/ellite/wallos:4.8.4
+    ports:
+      - "8282:80/tcp"
+    environment:
+      TZ: "Asia/Tokyo"
+    volumes:
+      - /home/m1sk9/wallos-data/db:/var/www/html/db
+      - /home/m1sk9/wallos-data/logos:/var/www/html/images/uploads/logos
+    restart: unless-stopped
+    healthcheck:
+      test: ["NONE"]

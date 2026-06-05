@@ -1,0 +1,7 @@
+---
+- name: Bootstrap s1
+  hosts: s1
+  become: true
+  tasks:
+    - name: Verify connectivity
+      ansible.builtin.ping:
