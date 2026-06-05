@@ -5,8 +5,6 @@
 
 Managed infrastructure for my open source projects.
 
-![](./docs/infra-overview.png)
-
 ## Background
 
 This server configuration must meet the following requirements:
