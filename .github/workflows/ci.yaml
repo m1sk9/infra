@@ -9,27 +9,7 @@ permissions:
   pull-requests: write
 
 jobs:
-  changes:
-    runs-on: ubuntu-24.04
-    outputs:
-      terraform: ${{ steps.filter.outputs.terraform }}
-      ansible: ${{ steps.filter.outputs.ansible }}
-    steps:
-      - uses: actions/checkout@v6
-      - uses: dorny/paths-filter@v3
-        id: filter
-        with:
-          filters: |
-            terraform:
-              - 'terraform/**'
-              - '.github/workflows/ci.yaml'
-            ansible:
-              - 'ansible/**'
-              - '.github/workflows/ci.yaml'
-
   terraform-plan:
-    needs: changes
-    if: needs.changes.outputs.terraform == 'true'
     runs-on: ubuntu-24.04
     defaults:
       run:
@@ -58,8 +38,6 @@ jobs:
         run: terraform plan -input=false -lock-timeout=10m
 
   ansible-plan:
-    needs: changes
-    if: needs.changes.outputs.ansible == 'true'
     runs-on: ubuntu-24.04
     defaults:
       run:
