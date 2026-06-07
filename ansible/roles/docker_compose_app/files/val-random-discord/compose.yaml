@@ -1,7 +1,0 @@
-name: val-random-discord
-services:
-  app:
-    image: ghcr.io/lyralis/val-random-discord:v0.3.0
-    env_file:
-      - .env
-    restart: always
