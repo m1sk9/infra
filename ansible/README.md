@@ -29,8 +29,7 @@ ansible/
 │       └── files/<service>/         # compose.yaml + vault-encrypted env/config
 └── playbooks/
     ├── site.yml                     # connectivity check
-    ├── services.yml                 # deploy all Docker Compose services
-    └── migrate-from-arcane.yml      # one-off Arcane -> Ansible migration
+    └── services.yml                 # deploy all Docker Compose services
 ```
 
 ## Hosts
@@ -84,7 +83,6 @@ Docker Compose services managed on s1. Each is deployed to `~/services/<name>/` 
 
 | Service | Image | Notes |
 |---|---|---|
-| val-random-discord | `ghcr.io/lyralis/val-random-discord` | Discord bot; `.env` only |
 | babyrite | `ghcr.io/m1sk9/babyrite` | mounts `~/babyrite-data/config.toml`; `.env` |
 | wallos | `ghcr.io/ellite/wallos` | published on `:8282`; data in `~/wallos-data` |
 
@@ -100,13 +98,6 @@ ansible-playbook playbooks/services.yml
 2. Encrypt any secrets: `ansible-vault encrypt roles/docker_compose_app/files/<name>/env`
 3. Add a block to `playbooks/services.yml` setting `app_name`, and as needed `app_files`
    (env/config to copy) and `app_dirs` (host directories to create).
-
-### Migration from Arcane (one-off)
-
-These stacks were previously managed by the Arcane UI under `~/arcane-data/projects/`.
-`playbooks/migrate-from-arcane.yml` stops the old stacks, copies wallos data from
-`/root/wallos-data` to the home directory, and stops the Arcane UI. It was run once
-before the first `services.yml`; re-running it is safe (idempotent).
 
 ## CI / CD
 
@@ -127,8 +118,6 @@ the [Tailscale GitHub Action](https://tailscale.com/kb/1276/tailscale-github-act
 connects to s1 over **Tailscale SSH** — no long-lived CI key is stored in GitHub.
 Authentication is handled by Tailscale (the runner's `tag:ci` identity must be allowed
 to SSH to s1 by the ACL, and s1 must have `tailscale up --ssh` enabled).
-`migrate-from-arcane.yml` is intentionally **not** run by CD — it is a one-off, run
-manually.
 
 ### Required GitHub secrets
 
