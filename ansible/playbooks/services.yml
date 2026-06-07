@@ -33,3 +33,39 @@
         app_dirs:
           - "{{ ansible_facts['env']['HOME'] }}/wallos-data/db"
           - "{{ ansible_facts['env']['HOME'] }}/wallos-data/logos"
+
+    - name: Deploy chime
+      ansible.builtin.include_role:
+        name: docker_compose_app
+      vars:
+        app_name: chime
+        app_dirs:
+          - "{{ ansible_facts['env']['HOME'] }}/chime-data"
+        app_files:
+          - src: chime/env
+            dest: "{{ ansible_facts['env']['HOME'] }}/services/chime/.env"
+          - src: chime/config.toml
+            dest: "{{ ansible_facts['env']['HOME'] }}/chime-data/config.toml"
+            mode: "0644"
+
+    - name: Verify chime container reached running state
+      community.docker.docker_container_info:
+        name: chime-app-1
+      register: chime_info
+      until: chime_info.container.State.Status == "running"
+      retries: 6
+      delay: 5
+
+    - name: Settle window for chime
+      ansible.builtin.pause:
+        seconds: 10
+
+    - name: Re-check chime stability
+      community.docker.docker_container_info:
+        name: chime-app-1
+      register: chime_info_after
+
+    - name: Fail if chime restarted during settle window
+      ansible.builtin.fail:
+        msg: "chime container restarted during settle window (restart_count={{ chime_info_after.container.RestartCount }})"
+      when: chime_info_after.container.RestartCount | int > 0

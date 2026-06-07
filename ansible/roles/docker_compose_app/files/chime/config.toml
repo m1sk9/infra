@@ -1,0 +1,67 @@
+[system]
+log_level = "info"
+tick_interval_sec = 30
+timezone = "Asia/Tokyo"
+
+[[reminders]]
+  name = "daily-reset-00"
+  time = "00:00"
+  days = ["every"]
+  webhook = "ffxiv"
+  message = """<@&1501329297405771938> **デイリーリセット (00:00)**
+次のコンテンツがリセットされました:
+- コンテンツルーレット
+- 友好部族クエスト
+- デイリーモブハント
+- ミニくじテンダー"""
+
+[[reminders]]
+  name = "daily-reset-05"
+  time = "05:00"
+  days = ["every"]
+  webhook = "ffxiv"
+  message = """<@&1501329297405771938> **デイリーリセット (05:00)**
+次のコンテンツがリセットされました:
+- グランドカンパニー調達任務
+- 冒険者小隊訓練"""
+
+[[reminders]]
+  name = "daily-reset-cosmic"
+  time = "18:00"
+  days = ["every"]
+  webhook = "ffxiv"
+  message = "<@&1501329297405771938> **コスモエクスプローラーのデイリー課題** がリセットされました (18:00)"
+
+[[reminders]]
+  name = "weekly-reset"
+  time = "17:00"
+  days = ["tue"]
+  webhook = "ffxiv"
+  message = """<@&1501329297405771938> **週課リセット (火 17:00)**
+次のコンテンツがリセットされました:
+- レイド・アライアンスレイドの装備取得制限
+- アラガントームストーン: 数理取得制限
+- リスキーモブ手配書
+- お得意様取引
+- クロの空想帳
+- ソーチョーの幻想盤
+- 攻略手帳
+- マスクカーニバル
+- 青魔道士ログ
+- 冒険者小隊の小隊任務"""
+
+[[reminders]]
+  name = "fashioncheck-start"
+  time = "17:00"
+  days = ["tue"]
+  webhook = "ffxiv"
+  message = """<@&1501329297405771938> **ファッションチェックのお題** が発表されました
+[お題を確認する](<https://game8.jp/ff14/360622>)"""
+
+[[reminders]]
+  name = "gs-jumbo-cactpot"
+  time = "21:00"
+  days = ["sat"]
+  webhook = "ffxiv"
+  message = """<@&1501329297405771938> **ジャンボくじテンダー** の結果発表が行われました
+-# 22:00 までに確認すると獲得 MGP にボーナスが加算されます！"""
