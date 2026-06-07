@@ -1,0 +1,11 @@
+name: chime
+services:
+  app:
+    image: ghcr.io/m1sk9/chime:v0.1.0
+    environment:
+      CHIME_CONFIG: /etc/chime/config.toml
+    volumes:
+      - /home/m1sk9/chime-data/config.toml:/etc/chime/config.toml:ro
+    env_file:
+      - .env
+    restart: always

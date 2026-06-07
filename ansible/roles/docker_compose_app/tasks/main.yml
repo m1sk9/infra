@@ -4,6 +4,7 @@
     path: "{{ app_dir }}"
     state: directory
     mode: "0755"
+  check_mode: false
 
 - name: "{{ app_name }} | Create data directories"
   ansible.builtin.file:
@@ -11,12 +12,14 @@
     state: directory
     mode: "0755"
   loop: "{{ app_dirs }}"
+  check_mode: false
 
 - name: "{{ app_name }} | Deploy compose file"
   ansible.builtin.copy:
     src: "{{ app_name }}/compose.yaml"
     dest: "{{ app_dir }}/compose.yaml"
     mode: "0644"
+  check_mode: false
 
 - name: "{{ app_name }} | Deploy service files (env, config)"
   ansible.builtin.copy:
@@ -32,3 +35,4 @@
     state: present
     remove_orphans: true
   register: compose_up
+  when: not ansible_check_mode
