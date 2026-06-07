@@ -52,8 +52,11 @@
       community.docker.docker_container_info:
         name: chime-app-1
       register: chime_info
-      until: chime_info.container.State.Status == "running"
-      retries: 6
+      until:
+        - chime_info.container is defined
+        - chime_info.container is not none
+        - chime_info.container.State.Status | default('') == "running"
+      retries: 12
       delay: 5
       when: not ansible_check_mode
 
@@ -73,4 +76,6 @@
         msg: "chime container restarted during settle window (restart_count={{ chime_info_after.container.RestartCount }})"
       when:
         - not ansible_check_mode
-        - chime_info_after.container.RestartCount | int > 0
+        - chime_info_after.container is defined
+        - chime_info_after.container is not none
+        - chime_info_after.container.RestartCount | default(0) | int > 0
