@@ -48,34 +48,26 @@
             dest: "{{ ansible_facts['env']['HOME'] }}/chime-data/config.toml"
             mode: "0644"
 
-    - name: Verify chime container reached running state
-      community.docker.docker_container_info:
-        name: chime-app-1
-      register: chime_info
-      until:
-        - chime_info.container is defined
-        - chime_info.container is not none
-        - chime_info.container.State.Status | default('') == "running"
-      retries: 12
-      delay: 5
-      when: not ansible_check_mode
-
     - name: Settle window for chime
       ansible.builtin.pause:
         seconds: 10
       when: not ansible_check_mode
 
-    - name: Re-check chime stability
-      community.docker.docker_container_info:
-        name: chime-app-1
-      register: chime_info_after
+    - name: Check chime restart count after settle
+      ansible.builtin.command:
+        argv:
+          - docker
+          - inspect
+          - -f
+          - "{% raw %}{{.RestartCount}}{% endraw %}"
+          - chime-app-1
+      register: chime_restart
+      changed_when: false
       when: not ansible_check_mode
 
     - name: Fail if chime restarted during settle window
       ansible.builtin.fail:
-        msg: "chime container restarted during settle window (restart_count={{ chime_info_after.container.RestartCount }})"
+        msg: "chime container restarted during settle window (restart_count={{ chime_restart.stdout }})"
       when:
         - not ansible_check_mode
-        - chime_info_after.container is defined
-        - chime_info_after.container is not none
-        - chime_info_after.container.RestartCount | default(0) | int > 0
+        - (chime_restart.stdout | int) > 0
