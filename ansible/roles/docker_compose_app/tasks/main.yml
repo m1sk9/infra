@@ -35,3 +35,4 @@
     state: present
     remove_orphans: true
   register: compose_up
+  when: not ansible_check_mode
