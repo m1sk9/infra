@@ -1,7 +1,7 @@
 name: babyrite
 services:
   app:
-    image: ghcr.io/m1sk9/babyrite:v1.2.4
+    image: ghcr.io/m1sk9/babyrite:v1.2.5
     volumes:
       - /home/m1sk9/babyrite-data/config.toml:/config/config.toml:ro
     env_file:
