@@ -1,7 +1,7 @@
 name: chime
 services:
   app:
-    image: ghcr.io/m1sk9/chime:v0.1.0
+    image: ghcr.io/m1sk9/chime:v0.2.0
     environment:
       CHIME_CONFIG: /etc/chime/config.toml
     volumes:
@@ -9,3 +9,9 @@ services:
     env_file:
       - .env
     restart: always
+    healthcheck:
+      test: ["CMD", "/usr/local/bin/chime", "health"]
+      interval: 30s
+      timeout: 5s
+      start_period: 10s
+      retries: 3
