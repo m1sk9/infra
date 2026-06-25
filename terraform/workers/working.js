@@ -14,12 +14,14 @@ const HTML = `<!DOCTYPE html>
   <textarea id="input" spellcheck="false" rows="12" cols="40" placeholder="13:00-15:00"></textarea>
   <div id="total"></div>
   <div id="min"></div>
+  <div id="from13"></div>
   <table id="rows"></table>
 
 <script>
   const input = document.getElementById('input');
   const totalEl = document.getElementById('total');
   const minEl = document.getElementById('min');
+  const from13El = document.getElementById('from13');
   const rowsEl = document.getElementById('rows');
 
   function normalize(s) {
@@ -43,6 +45,14 @@ const HTML = `<!DOCTYPE html>
     if (m===0) return h+'時間';
     return h+'時間'+m+'分';
   }
+  function clock(mins) {
+    const base = 13*60 + mins;
+    const days = Math.floor(base / (24*60));
+    const t = base % (24*60);
+    const h = Math.floor(t/60), m = t%60;
+    const hhmm = String(h).padStart(2,'0')+':'+String(m).padStart(2,'0');
+    return days>0 ? hhmm+'（+'+days+'日）' : hhmm;
+  }
   function esc(s){return s.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));}
   function render() {
     let total=0, valid=0, rows='';
@@ -53,8 +63,12 @@ const HTML = `<!DOCTYPE html>
       total += r.minutes; valid++;
       rows += '<tr><td>'+esc(r.range)+'</td><td>'+fmt(r.minutes)+'</td></tr>';
     }
-    if (valid===0) { totalEl.textContent='—'; minEl.textContent=''; }
-    else { totalEl.textContent=fmt(total); minEl.textContent='= '+total+' 分（'+valid+' 区間）'; }
+    if (valid===0) { totalEl.textContent='—'; minEl.textContent=''; from13El.textContent=''; }
+    else {
+      totalEl.textContent=fmt(total);
+      minEl.textContent='= '+total+' 分（'+valid+' 区間）';
+      from13El.textContent='13:00 + '+fmt(total)+' = '+clock(total);
+    }
     rowsEl.innerHTML = rows;
   }
   input.addEventListener('input', render);
