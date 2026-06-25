@@ -15,6 +15,10 @@ resource "cloudflare_zero_trust_tunnel_cloudflared_config" "s1" {
         service  = "http://localhost:8282"
       },
       {
+        hostname = "dozzle-s1.m1sk9.dev"
+        service  = "http://localhost:8181"
+      },
+      {
         service = "http_status:404"
       }
     ]
@@ -30,4 +34,15 @@ resource "cloudflare_dns_record" "wallos" {
   ttl     = 1
   proxied = true
   comment = "Cloudflare Tunnel - Wallos (s1)"
+}
+
+# DNS Record for Dozzle (Docker log viewer)
+resource "cloudflare_dns_record" "dozzle_s1" {
+  zone_id = local.cloudflare_zone_id
+  name    = "dozzle-s1"
+  content = "${cloudflare_zero_trust_tunnel_cloudflared.s1.id}.cfargotunnel.com"
+  type    = "CNAME"
+  ttl     = 1
+  proxied = true
+  comment = "Cloudflare Tunnel - Dozzle (s1)"
 }

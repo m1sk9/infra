@@ -38,3 +38,32 @@ resource "cloudflare_zero_trust_access_application" "wallos" {
     precedence = 1
   }]
 }
+
+# Cloudflare Zero Trust Access for Dozzle
+
+resource "cloudflare_zero_trust_access_policy" "dozzle" {
+  account_id = local.cloudflare_account_id
+  name       = "Allow me@m1sk9.dev"
+  decision   = "allow"
+
+  include = [{
+    email = {
+      email = "me@m1sk9.dev"
+    }
+  }]
+}
+
+resource "cloudflare_zero_trust_access_application" "dozzle" {
+  account_id       = local.cloudflare_account_id
+  name             = "Dozzle"
+  domain           = "dozzle-s1.m1sk9.dev"
+  type             = "self_hosted"
+  session_duration = "24h"
+
+  allowed_idps = [cloudflare_zero_trust_access_identity_provider.github.id]
+
+  policies = [{
+    id         = cloudflare_zero_trust_access_policy.dozzle.id
+    precedence = 1
+  }]
+}
