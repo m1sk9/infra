@@ -25,6 +25,12 @@
           - "{{ ansible_facts['env']['HOME'] }}/wallos-data/db"
           - "{{ ansible_facts['env']['HOME'] }}/wallos-data/logos"
 
+    - name: Deploy dozzle
+      ansible.builtin.include_role:
+        name: docker_compose_app
+      vars:
+        app_name: dozzle
+
     - name: Deploy chime
       ansible.builtin.include_role:
         name: docker_compose_app

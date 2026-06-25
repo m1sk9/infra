@@ -1,0 +1,13 @@
+name: dozzle
+services:
+  dozzle:
+    image: amir20/dozzle:v10.6.6
+    ports:
+      - "8181:8080/tcp"
+    environment:
+      TZ: "Asia/Tokyo"
+      DOZZLE_ENABLE_ACTIONS: true
+      DOZZLE_ENABLE_SHELL: true
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    restart: unless-stopped
