@@ -19,6 +19,7 @@
     src: "{{ app_name }}/compose.yaml"
     dest: "{{ app_dir }}/compose.yaml"
     mode: "0644"
+  register: compose_file
   check_mode: false
 
 - name: "{{ app_name }} | Deploy service files (env, config)"
@@ -27,12 +28,18 @@
     dest: "{{ item.dest }}"
     mode: "{{ item.mode | default('0600') }}"
   loop: "{{ app_files }}"
+  register: service_files
   no_log: true
 
+# Bind-mounted config files (e.g. config.toml) are read once at container
+# startup. `docker_compose_v2` only recreates on service-definition changes,
+# so a content-only change would otherwise never take effect. Force a
+# recreate whenever a deployed file changed; otherwise leave it to `auto`.
 - name: "{{ app_name }} | Start stack"
   community.docker.docker_compose_v2:
     project_src: "{{ app_dir }}"
     state: present
     remove_orphans: true
+    recreate: "{{ 'always' if ((compose_file.changed | default(false)) or (service_files.changed | default(false))) else 'auto' }}"
   register: compose_up
   when: not ansible_check_mode
