@@ -33,6 +33,20 @@ timezone = "Asia/Tokyo"
   message = "<@&1516381876972032020> **コスモエクスプローラーのデイリー課題** がリセットされました (18:00)"
 
 [[reminders]]
+  name = "daily-leves-reset-09"
+  time = "09:00"
+  days = ["every"]
+  webhook = "ffxiv"
+  message = "<@&1516381876972032020> **リーフ権** が回復されました"
+
+[[reminders]]
+  name = "daily-leves-reset-21"
+  time = "21:00"
+  days = ["every"]
+  webhook = "ffxiv"
+  message = "<@&1516381876972032020> **リーフ権** が回復されました"
+
+[[reminders]]
   name = "weekly-reset"
   time = "17:00"
   days = ["tue"]
