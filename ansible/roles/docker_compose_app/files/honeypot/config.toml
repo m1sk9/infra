@@ -1,0 +1,8 @@
+# https://github.com/m1sk9/HoneyPot/blob/main/config/config.example.toml
+
+## SpaceServerUniverse
+[[guilds]]
+guild_id             = 366613089694777355
+honeypot_role_ids    = [1522296835140489407]
+honeypot_channel_ids = [1522291521557364816]
+log_channel_id       = 1522288711776211135
