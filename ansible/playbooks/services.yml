@@ -45,6 +45,20 @@
             dest: "{{ ansible_facts['env']['HOME'] }}/chime-data/config.toml"
             mode: "0644"
 
+    - name: Deploy honeypot
+      ansible.builtin.include_role:
+        name: docker_compose_app
+      vars:
+        app_name: honeypot
+        app_dirs:
+          - "{{ ansible_facts['env']['HOME'] }}/honeypot-data"
+        app_files:
+          - src: honeypot/env
+            dest: "{{ ansible_facts['env']['HOME'] }}/services/honeypot/.env"
+          - src: honeypot/config.toml
+            dest: "{{ ansible_facts['env']['HOME'] }}/honeypot-data/config.toml"
+            mode: "0644"
+
     - name: Settle window for chime
       ansible.builtin.pause:
         seconds: 10
