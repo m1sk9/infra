@@ -35,6 +35,17 @@ resource "cloudflare_dns_record" "lc_api_docs" {
   comment = "LunaticChat API Docs"
 }
 
+# HoneyPot (GitHub Pages)
+resource "cloudflare_dns_record" "honeypot_api" {
+  zone_id = local.cloudflare_zone_id
+  name    = "honeypot.api"
+  content = "m1sk9.github.io"
+  type    = "CNAME"
+  ttl     = 1
+  proxied = false
+  comment = "HoneyPot"
+}
+
 # Proton Mail DKIM
 resource "cloudflare_dns_record" "protonmail_dkim1" {
   zone_id = local.cloudflare_zone_id
