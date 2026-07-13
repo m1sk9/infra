@@ -79,3 +79,17 @@ timezone = "Asia/Tokyo"
   webhook = "ffxiv"
   message = """<@&1521204034747367456> **ジャンボくじテンダー** の結果発表が行われました
 -# 22:00 までに確認すると獲得 MGP にボーナスが加算されます！"""
+
+[[reminders]]
+  name = "monthly-salary-statement"
+  time = "00:00"
+  day_of_month = [30]
+  webhook = "m1sk9"
+  message = "<@586824421470109716> **給与明細をスプレッドシートに登録してください**"
+
+[[reminders]]
+  name = "monthly-netflix-collection"
+  time = "00:00"
+  day_of_month = [26]
+  webhook = "m1sk9"
+  message = "<@586824421470109716> **Netflix の徴収を行ってください**"
