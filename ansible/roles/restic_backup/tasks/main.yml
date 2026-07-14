@@ -21,20 +21,17 @@
         checksum: "sha256:https://github.com/restic/restic/releases/download/v{{ restic_version }}/SHA256SUMS"
         mode: "0644"
 
+    # Decompress and chmod in one step: the separate file task would run even
+    # in check mode (where this shell is skipped) and fail because the binary
+    # is absent. Keeping it here means check mode skips the whole thing.
     - name: "restic | Decompress into place"
       ansible.builtin.shell: >-
         set -o pipefail &&
-        bunzip2 -c /tmp/restic_{{ restic_version }}_linux_{{ restic_arch }}.bz2 > {{ restic_install_path }}
+        bunzip2 -c /tmp/restic_{{ restic_version }}_linux_{{ restic_arch }}.bz2 > {{ restic_install_path }} &&
+        chmod 0755 {{ restic_install_path }}
       args:
         executable: /usr/bin/bash
       changed_when: true
-
-    - name: "restic | Set binary permissions"
-      ansible.builtin.file:
-        path: "{{ restic_install_path }}"
-        mode: "0755"
-        owner: root
-        group: root
 
 # The backup script snapshots SQLite databases with `sqlite3 .backup`; only
 # pull in the CLI when a target actually declares one.
