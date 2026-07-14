@@ -67,3 +67,32 @@ resource "cloudflare_zero_trust_access_application" "dozzle" {
     precedence = 1
   }]
 }
+
+# Cloudflare Zero Trust Access for Kimai
+
+resource "cloudflare_zero_trust_access_policy" "kimai" {
+  account_id = local.cloudflare_account_id
+  name       = "Allow me@m1sk9.dev"
+  decision   = "allow"
+
+  include = [{
+    email = {
+      email = "me@m1sk9.dev"
+    }
+  }]
+}
+
+resource "cloudflare_zero_trust_access_application" "kimai" {
+  account_id       = local.cloudflare_account_id
+  name             = "Kimai"
+  domain           = "kimai.m1sk9.dev"
+  type             = "self_hosted"
+  session_duration = "24h"
+
+  allowed_idps = [cloudflare_zero_trust_access_identity_provider.github.id]
+
+  policies = [{
+    id         = cloudflare_zero_trust_access_policy.kimai.id
+    precedence = 1
+  }]
+}
