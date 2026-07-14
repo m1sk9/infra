@@ -59,19 +59,6 @@
             dest: "{{ ansible_facts['env']['HOME'] }}/honeypot-data/config.toml"
             mode: "0644"
 
-    - name: Deploy kimai
-      ansible.builtin.include_role:
-        name: docker_compose_app
-      vars:
-        app_name: kimai
-        app_dirs:
-          - "{{ ansible_facts['env']['HOME'] }}/kimai-data"
-          - "{{ ansible_facts['env']['HOME'] }}/kimai-data/db"
-          - "{{ ansible_facts['env']['HOME'] }}/kimai-data/var"
-        app_files:
-          - src: kimai/env
-            dest: "{{ ansible_facts['env']['HOME'] }}/services/kimai/.env"
-
     - name: Settle window for chime
       ansible.builtin.pause:
         seconds: 10
