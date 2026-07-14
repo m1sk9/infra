@@ -1,0 +1,42 @@
+name: kimai
+services:
+  db:
+    image: mariadb:11.4
+    command:
+      - "--default-storage-engine=innodb"
+      - "--character-set-server=utf8mb4"
+      - "--collation-server=utf8mb4_unicode_ci"
+    environment:
+      MARIADB_ROOT_PASSWORD: "${KIMAI_DB_ROOT_PASSWORD}"
+      MARIADB_DATABASE: kimai
+      MARIADB_USER: kimai
+      MARIADB_PASSWORD: "${KIMAI_DB_PASSWORD}"
+      TZ: "Asia/Tokyo"
+    volumes:
+      - /home/m1sk9/kimai-data/db:/var/lib/mysql
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 20s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  kimai:
+    image: kimai/kimai2:2.62.0
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8001:8001/tcp"
+    environment:
+      DATABASE_URL: "mysql://kimai:${KIMAI_DB_PASSWORD}@db:3306/kimai?charset=utf8mb4&serverVersion=11.4.0-MariaDB"
+      APP_SECRET: "${KIMAI_APP_SECRET}"
+      TRUSTED_HOSTS: "kimai.m1sk9.dev|localhost|127.0.0.1"
+      TRUSTED_PROXIES: "172.16.0.0/12"
+      ADMINMAIL: "${KIMAI_ADMINMAIL}"
+      ADMINPASS: "${KIMAI_ADMINPASS}"
+      TZ: "Asia/Tokyo"
+    volumes:
+      - /home/m1sk9/kimai-data/var:/opt/kimai/var/data
+    restart: unless-stopped
