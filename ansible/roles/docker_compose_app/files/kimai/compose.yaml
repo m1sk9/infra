@@ -1,7 +1,7 @@
 name: kimai
 services:
   db:
-    image: mariadb:11.4
+    image: mariadb:11.8
     command:
       - "--default-storage-engine=innodb"
       - "--character-set-server=utf8mb4"
