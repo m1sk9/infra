@@ -1,0 +1,28 @@
+---
+# restic release to install. Pinned so upgrades are reviewed; the version is
+# tracked by a Renovate customManager (see .github/renovate.json).
+restic_version: "0.19.1"
+restic_arch: "amd64"
+restic_install_path: /usr/local/bin/restic
+
+# Files rendered onto the host.
+restic_env_file: /etc/restic/s1-backup.env
+restic_script_path: /usr/local/bin/s1-backup.sh
+
+# Scratch space for SQLite snapshots taken before handing them to restic.
+restic_work_dir: /var/lib/s1-backup
+
+# restic repository (Cloudflare R2, S3-compatible). Credentials come from the
+# vault via the env file; only the non-secret repository URL lives here.
+restic_repository: "s3:https://c583c7c70623bd9136c2c7237b80ff54.r2.cloudflarestorage.com/s1-backup"
+
+# Retention. Backups run weekly, so keep weeks and months rather than days.
+restic_keep_weekly: 5
+restic_keep_monthly: 6
+
+# systemd timer schedule (weekly, Friday 03:00).
+restic_oncalendar: "Fri *-*-* 03:00:00"
+
+# Backup targets are declared per host in group_vars; the role itself is
+# data-agnostic. See inventory/group_vars/all/vars.yml for the schema.
+backup_targets: []

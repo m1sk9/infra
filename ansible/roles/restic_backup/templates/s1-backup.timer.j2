@@ -1,0 +1,11 @@
+# {{ ansible_managed }}
+[Unit]
+Description=Schedule the weekly restic backup of s1
+
+[Timer]
+OnCalendar={{ restic_oncalendar }}
+# Run on next boot if s1 was powered off at the scheduled time.
+Persistent=true
+
+[Install]
+WantedBy=timers.target

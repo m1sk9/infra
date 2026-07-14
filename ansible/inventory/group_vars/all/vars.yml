@@ -3,3 +3,20 @@
 # Reference secrets stored in vault.yml via the `vault_` prefix so that
 # task files never expose raw secret values.
 ansible_become_password: "{{ vault_become_password }}"
+
+# --- s1 backups (restic → Cloudflare R2) ---
+# Secret values live in vault.yml under vault_ names.
+restic_password: "{{ vault_restic_password }}"
+r2_access_key_id: "{{ vault_r2_access_key_id }}"
+r2_secret_access_key: "{{ vault_r2_secret_access_key }}"
+
+# Targets consumed by the restic_backup role. Back up more data by adding an
+# entry here — the role itself needs no changes. Per target: `name` (used as
+# the restic --tag), optional `sqlite_dbs` (online-snapshotted via .backup),
+# and optional `paths` (files/dirs handed to restic as-is).
+backup_targets:
+  - name: wallos
+    sqlite_dbs:
+      - /home/m1sk9/wallos-data/db/wallos.db
+    paths:
+      - /home/m1sk9/wallos-data/logos

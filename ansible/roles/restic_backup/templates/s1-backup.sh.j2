@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+# {{ ansible_managed }}
+#
+# Weekly restic backup for s1. Targets are rendered from `backup_targets`
+# (see inventory/group_vars/all/vars.yml) — this script is generated, edit the
+# variables, not this file.
+set -euo pipefail
+
+set -a
+# shellcheck disable=SC1090
+. "{{ restic_env_file }}"
+set +a
+
+# SQLite snapshots go to a stable path (not mktemp) so restic sees the same
+# absolute paths every week: parent-snapshot detection and restore paths stay
+# predictable. Recreate the scratch tree each run to drop data from targets
+# that were removed from the config.
+snap_base="{{ restic_work_dir }}/snapshots"
+rm -rf "${snap_base}"
+mkdir -p "${snap_base}"
+
+{% for t in backup_targets %}
+# --- {{ t.name }} ---
+{% set has_sqlite = (t.sqlite_dbs | default([])) | length > 0 %}
+{% if has_sqlite %}
+mkdir -p "${snap_base}/{{ t.name }}"
+{% for db in t.sqlite_dbs %}
+# Online .backup yields a consistent snapshot even while the service writes.
+sqlite3 "{{ db }}" ".backup '${snap_base}/{{ t.name }}/{{ db | basename }}'"
+{% endfor %}
+{% endif %}
+restic backup --tag {{ t.name }} \
+{% if has_sqlite %}
+  "${snap_base}/{{ t.name }}" \
+{% endif %}
+{% for p in t.paths | default([]) %}
+  "{{ p }}" \
+{% endfor %}
+  --host s1
+
+{% endfor %}
+# Retention: weekly cadence, keep weeks then months (~half a year).
+restic forget \
+  --keep-weekly {{ restic_keep_weekly }} \
+  --keep-monthly {{ restic_keep_monthly }} \
+  --prune
