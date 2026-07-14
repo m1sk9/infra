@@ -85,6 +85,7 @@ Docker Compose services managed on s1. Each is deployed to `~/services/<name>/` 
 |---|---|---|
 | babyrite | `ghcr.io/m1sk9/babyrite` | mounts `~/babyrite-data/config.toml`; `.env` |
 | wallos | `ghcr.io/ellite/wallos` | published on `:8282`; data in `~/wallos-data` |
+| kimai | `kimai/kimai2` | published on `:8001`; MariaDB backend; data in `~/kimai-data` |
 
 Deploy or update all services (idempotent — unchanged stacks are not recreated):
 
@@ -98,6 +99,27 @@ ansible-playbook playbooks/services.yml
 2. Encrypt any secrets: `ansible-vault encrypt roles/docker_compose_app/files/<name>/env`
 3. Add a block to `playbooks/services.yml` setting `app_name`, and as needed `app_files`
    (env/config to copy) and `app_dirs` (host directories to create).
+
+### Kimai backup / restore
+
+Kimai stores everything in its MariaDB database (`kimai-db-1`), whose data directory is
+bind-mounted at `~/kimai-data/db`. Take logical backups with `mariadb-dump` run inside the
+container — safe while the stack is running, and the resulting SQL file is easy to copy off
+the host. Run on s1:
+
+```fish
+# Dump (writes a single SQL file to the host)
+docker exec kimai-db-1 sh -c 'mariadb-dump -u root -p"$MARIADB_ROOT_PASSWORD" --single-transaction kimai' > ~/kimai-backup-(date +%Y%m%d).sql
+
+# Restore into a running stack
+docker exec -i kimai-db-1 sh -c 'mariadb -u root -p"$MARIADB_ROOT_PASSWORD" kimai' < ~/kimai-backup-YYYYMMDD.sql
+```
+
+`--single-transaction` gives a consistent snapshot without locking (InnoDB), so no downtime
+is needed. Copying the raw `~/kimai-data/db` directory is a physical backup — only do that
+with the stack stopped (`docker compose -f ~/services/kimai/compose.yaml down`), otherwise
+the copy may be inconsistent. Uploaded files and generated invoices live in `~/kimai-data/var`
+and can be copied directly.
 
 ## CI / CD
 
