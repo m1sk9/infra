@@ -66,6 +66,9 @@ jobs:
       - name: Deploy services
         run: ansible-playbook playbooks/services.yml
 
+      - name: Deploy backup
+        run: ansible-playbook playbooks/backup.yml
+
       - name: Cleanup
         if: always()
         run: rm -f .vault_pass

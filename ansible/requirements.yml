@@ -2,3 +2,7 @@
 collections:
   - name: community.docker
     version: ">=4.0.0"
+  # Provides the pacman module that ansible.builtin.package delegates to on
+  # Arch (used by restic_backup to install sqlite).
+  - name: community.general
+    version: ">=8.0.0"

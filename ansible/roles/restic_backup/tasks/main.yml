@@ -1,0 +1,115 @@
+---
+- name: "restic | Check installed version"
+  ansible.builtin.command: "{{ restic_install_path }} version"
+  register: restic_installed
+  changed_when: false
+  failed_when: false
+  check_mode: false
+
+# restic ships each release as a bare bzip2-compressed binary (not a tarball),
+# so get_url downloads it and a separate step decompresses — unarchive cannot
+# handle a lone .bz2. Download only when the pinned version is missing.
+- name: "restic | Install binary"
+  when: >-
+    restic_installed.rc != 0
+    or restic_version not in (restic_installed.stdout | default(''))
+  block:
+    - name: "restic | Download release ({{ restic_version }})"
+      ansible.builtin.get_url:
+        url: "https://github.com/restic/restic/releases/download/v{{ restic_version }}/restic_{{ restic_version }}_linux_{{ restic_arch }}.bz2"
+        dest: "/tmp/restic_{{ restic_version }}_linux_{{ restic_arch }}.bz2"
+        checksum: "sha256:https://github.com/restic/restic/releases/download/v{{ restic_version }}/SHA256SUMS"
+        mode: "0644"
+
+    # Decompress and chmod in one step: the separate file task would run even
+    # in check mode (where this shell is skipped) and fail because the binary
+    # is absent. Keeping it here means check mode skips the whole thing.
+    - name: "restic | Decompress into place"
+      ansible.builtin.shell: >-
+        set -o pipefail &&
+        bunzip2 -c /tmp/restic_{{ restic_version }}_linux_{{ restic_arch }}.bz2 > {{ restic_install_path }} &&
+        chmod 0755 {{ restic_install_path }}
+      args:
+        executable: /usr/bin/bash
+      changed_when: true
+
+# The backup script snapshots SQLite databases with `sqlite3 .backup`; only
+# pull in the CLI when a target actually declares one.
+- name: "restic | Ensure sqlite CLI for online snapshots"
+  ansible.builtin.package:
+    name: sqlite
+  when: backup_targets | selectattr('sqlite_dbs', 'defined') | list | length > 0
+
+- name: "restic | Create env directory"
+  ansible.builtin.file:
+    path: "{{ restic_env_file | dirname }}"
+    state: directory
+    mode: "0755"
+    owner: root
+    group: root
+
+- name: "restic | Deploy env file (repository + credentials)"
+  ansible.builtin.template:
+    src: s1-backup.env.j2
+    dest: "{{ restic_env_file }}"
+    mode: "0600"
+    owner: root
+    group: root
+  no_log: true
+
+- name: "restic | Create work directory"
+  ansible.builtin.file:
+    path: "{{ restic_work_dir }}"
+    state: directory
+    mode: "0700"
+    owner: root
+    group: root
+
+- name: "restic | Deploy backup script"
+  ansible.builtin.template:
+    src: s1-backup.sh.j2
+    dest: "{{ restic_script_path }}"
+    mode: "0755"
+    owner: root
+    group: root
+
+# `restic init` is not idempotent and touches the remote, so skip it in check
+# mode (mirrors docker_compose_app's "Start stack" guard). `cat config`
+# succeeds only when the repository is already initialised.
+- name: "restic | Initialise repository (once)"
+  ansible.builtin.shell: >-
+    set -o pipefail &&
+    set -a && . {{ restic_env_file }} && set +a &&
+    {{ restic_install_path }} cat config >/dev/null 2>&1 || {{ restic_install_path }} init
+  args:
+    executable: /usr/bin/bash
+  register: restic_init
+  changed_when: "'created restic repository' in restic_init.stdout"
+  when: not ansible_check_mode
+
+- name: "restic | Deploy systemd service"
+  ansible.builtin.template:
+    src: s1-backup.service.j2
+    dest: /etc/systemd/system/s1-backup.service
+    mode: "0644"
+    owner: root
+    group: root
+
+- name: "restic | Deploy systemd timer"
+  ansible.builtin.template:
+    src: s1-backup.timer.j2
+    dest: /etc/systemd/system/s1-backup.timer
+    mode: "0644"
+    owner: root
+    group: root
+
+# The unit files are only rendered for real outside check mode, so activating
+# the timer would fail on the absent unit during a plan. Skip in check mode
+# (same guard as the repository init).
+- name: "restic | Enable and start timer"
+  ansible.builtin.systemd_service:
+    name: s1-backup.timer
+    enabled: true
+    state: started
+    daemon_reload: true
+  when: not ansible_check_mode

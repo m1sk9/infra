@@ -1,0 +1,13 @@
+# {{ ansible_managed }}
+[Unit]
+Description=Weekly restic backup of s1 data to Cloudflare R2
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+# systemd starts the unit with no HOME, so restic cannot locate its cache
+# ($XDG_CACHE_HOME / $HOME unset). Give it one.
+Environment=HOME=/root
+EnvironmentFile={{ restic_env_file }}
+ExecStart={{ restic_script_path }}

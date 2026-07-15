@@ -2,5 +2,19 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
     "github>m1sk9/renovate-config"
+  ],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "managerFilePatterns": [
+        "/^ansible/roles/restic_backup/defaults/main\\.yml$/"
+      ],
+      "matchStrings": [
+        "restic_version:\\s*\"(?<currentValue>.*?)\""
+      ],
+      "datasourceTemplate": "github-releases",
+      "depNameTemplate": "restic/restic",
+      "extractVersionTemplate": "^v(?<version>.*)$"
+    }
   ]
 }

@@ -99,6 +99,66 @@ ansible-playbook playbooks/services.yml
 3. Add a block to `playbooks/services.yml` setting `app_name`, and as needed `app_files`
    (env/config to copy) and `app_dirs` (host directories to create).
 
+## Backups
+
+s1's non-regenerable data is backed up weekly to a Cloudflare R2 bucket
+(`s1-backup`) with [restic](https://restic.net/) — encrypted, deduplicated, and
+versioned. The `restic_backup` role installs a pinned restic, renders a backup
+script, and schedules it with a systemd timer (Friday 03:00). Deploy it with:
+
+```fish
+ansible-playbook playbooks/backup.yml
+```
+
+### What is backed up
+
+Targets are declared in [`inventory/group_vars/all/vars.yml`](./inventory/group_vars/all/vars.yml)
+as `backup_targets`; the role itself is data-agnostic. **To back up more data,
+add an entry — no role changes needed:**
+
+```yaml
+backup_targets:
+  - name: <tag>            # restic --tag identifying this target
+    sqlite_dbs:            # optional: online-snapshotted with `sqlite3 .backup`
+      - /path/to/foo.db
+    paths:                 # optional: files/dirs handed to restic as-is
+      - /path/to/assets
+```
+
+SQLite databases are snapshotted with `.backup` (consistent even while the
+service writes) before restic reads them, so services need not be stopped.
+
+### Required vault secrets
+
+The R2 S3 API token (Object Read & Write, scoped to `s1-backup`) and the restic
+repository password are **manually provisioned** — Terraform cannot issue R2 S3
+tokens. Store them in the vault (`ansible-vault edit`):
+
+| Vault key | Value |
+|---|---|
+| `vault_restic_password` | restic repository password (`openssl rand -base64 32`) |
+| `vault_r2_access_key_id` | R2 S3 API token — Access Key ID |
+| `vault_r2_secret_access_key` | R2 S3 API token — Secret Access Key |
+
+Back these up in a password manager too — losing `vault_restic_password` makes
+every backup unrecoverable.
+
+### Restore
+
+On s1, run restic with the deployed env file loaded (it holds the repository URL
+and credentials). Wrap commands in a subshell that sources it:
+
+```fish
+# List snapshots for a target
+sudo bash -c 'set -a; . /etc/restic/s1-backup.env; restic snapshots --tag wallos'
+
+# Restore the latest wallos snapshot
+sudo bash -c 'set -a; . /etc/restic/s1-backup.env; restic restore latest --tag wallos --target /tmp/restore'
+
+# Verify the restored SQLite DB, then place it back and restart the service
+sqlite3 /tmp/restore/.../wallos.db 'PRAGMA integrity_check;'
+```
+
 ## CI / CD
 
 GitHub Actions deploys this configuration automatically, mirroring the Terraform setup.
