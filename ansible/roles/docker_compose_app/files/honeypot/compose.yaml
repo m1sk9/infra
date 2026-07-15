@@ -1,7 +1,7 @@
 name: honeypot
 services:
   app:
-    image: ghcr.io/m1sk9/honeypot:v0.3.0
+    image: ghcr.io/m1sk9/honeypot:v0.4.0
     volumes:
       - /home/m1sk9/honeypot-data/config.toml:/config/config.toml:ro
     env_file:
