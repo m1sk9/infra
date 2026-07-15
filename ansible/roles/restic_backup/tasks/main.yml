@@ -103,9 +103,13 @@
     owner: root
     group: root
 
+# The unit files are only rendered for real outside check mode, so activating
+# the timer would fail on the absent unit during a plan. Skip in check mode
+# (same guard as the repository init).
 - name: "restic | Enable and start timer"
   ansible.builtin.systemd_service:
     name: s1-backup.timer
     enabled: true
     state: started
     daemon_reload: true
+  when: not ansible_check_mode
