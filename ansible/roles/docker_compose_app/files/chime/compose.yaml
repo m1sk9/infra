@@ -1,7 +1,7 @@
 name: chime
 services:
   app:
-    image: ghcr.io/m1sk9/chime:v0.3.0
+    image: ghcr.io/m1sk9/chime:v0.3.1
     environment:
       CHIME_CONFIG: /etc/chime/config.toml
     volumes:
