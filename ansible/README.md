@@ -194,24 +194,7 @@ to SSH to s1 by the ACL, and s1 must have `tailscale up --ssh` enabled).
 2. Register its id / secret as the `TS_OAUTH_*` secrets above.
 3. On s1, enable Tailscale SSH: `sudo tailscale up --ssh` (or set `--ssh` on the existing
    `tailscale up` invocation).
-4. In the ACL policy, define `tag:ci`, allow it to reach s1 over SSH, and grant it SSH
-   access to the `m1sk9` user via `ssh` rules:
-
-   ```jsonc
-   {
-     "tagOwners": {
-       "tag:ci": ["autogroup:admin"],
-     },
-     "acls": [
-       { "action": "accept", "src": ["tag:ci"], "dst": ["tag:server:22"] },
-     ],
-     "ssh": [
-       {
-         "action": "accept",
-         "src": ["tag:ci"],
-         "dst": ["tag:server"],
-         "users": ["m1sk9"],
-       },
-     ],
-   }
-   ```
+4. In the ACL policy, define `tag:ci`, allow it to reach s1, and grant it SSH access to
+   the `m1sk9` user via `ssh` rules. The policy is managed as IaC in
+   [`tailscale/policy.hujson`](../tailscale/policy.hujson) — see the root
+   [README](../README.md#tailscale) for how changes are tested and applied.

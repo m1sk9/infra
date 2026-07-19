@@ -1,3 +1,4 @@
 .terraform
 .env
 ansible/.vault_pass
+tailscale/policy.rendered.hujson

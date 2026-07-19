@@ -57,3 +57,40 @@ Cloudflare Tunnel is used to securely expose services running on self-hosted ser
 Server configuration management lives under the [`/ansible`](./ansible) directory. Hosts are reached over the Tailscale tailnet via their MagicDNS names, and secrets are protected with `ansible-vault`.
 
 See [`ansible/README.md`](./ansible/README.md) for setup, secret handling, and usage.
+
+## Tailscale
+
+The tailnet policy file (ACL) is managed as IaC in [`tailscale/policy.hujson`](./tailscale/policy.hujson), synced via [`tailscale/gitops-acl-action`](https://tailscale.com/docs/integrations/github/gitops):
+
+- **CI** (on pull request): Runs `action: test` — validates the policy without touching the tailnet.
+- **CD** (on push to main): Runs `action: apply` — validates and, if successful, updates the live ACL.
+
+The NextDNS profile ID embedded in the policy is not committed in plaintext; it is substituted from the `NEXTDNS_PROFILE_ID` secret via `envsubst` before the action reads the file.
+
+### Required GitHub secrets
+
+| Secret | Purpose |
+|---|---|
+| `TS_OAUTH_CLIENT_ID_ACL` | OAuth client id, scoped to `Policy File` (Read+Write) |
+| `TS_OAUTH_SECRET_ACL` | OAuth client secret for the same client |
+| `TS_TAILNET` | Tailnet identifier (find via `tailscale status --json` → `CurrentTailnet.Name`) |
+| `NEXTDNS_PROFILE_ID` | NextDNS profile id referenced by `nodeAttrs` in the policy |
+
+These are separate from the `TS_OAUTH_CLIENT_ID` / `TS_OAUTH_SECRET` used by `ansible`'s CI/CD (see [`ansible/README.md`](./ansible/README.md#tailscale-setup-one-time)) — that client only has the `auth_keys` scope and cannot read or write the policy file.
+
+### One-time setup
+
+1. In the Tailscale admin console, go to **Settings → OAuth clients** and generate a new
+   client with the **Policy File** scope, enabling both **Read** and **Write** (apply
+   needs write access).
+2. Register the id/secret and the other two values as GitHub secrets. Prefer the
+   interactive prompt for the OAuth secret so it never touches shell history:
+
+   ```
+   gh secret set TS_OAUTH_CLIENT_ID_ACL --repo m1sk9/infra
+   gh secret set TS_OAUTH_SECRET_ACL --repo m1sk9/infra
+   gh secret set TS_TAILNET --repo m1sk9/infra --body "m1sk9.github"
+   gh secret set NEXTDNS_PROFILE_ID --repo m1sk9/infra --body "5a9f5d"
+   ```
+3. Open a PR touching `tailscale/policy.hujson` and confirm the `tailscale-acl-test` job
+   passes before merging.
