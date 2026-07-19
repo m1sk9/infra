@@ -57,3 +57,12 @@ Cloudflare Tunnel is used to securely expose services running on self-hosted ser
 Server configuration management lives under the [`/ansible`](./ansible) directory. Hosts are reached over the Tailscale tailnet via their MagicDNS names, and secrets are protected with `ansible-vault`.
 
 See [`ansible/README.md`](./ansible/README.md) for setup, secret handling, and usage.
+
+## Tailscale
+
+The tailnet policy file (ACL) is managed as IaC in [`tailscale/policy.hujson`](./tailscale/policy.hujson), synced via [`tailscale/gitops-acl-action`](https://tailscale.com/docs/integrations/github/gitops):
+
+- **CI** (on pull request): Runs `action: test` — validates the policy without touching the tailnet.
+- **CD** (on push to main): Runs `action: apply` — validates and, if successful, updates the live ACL.
+
+The NextDNS profile ID embedded in the policy is not committed in plaintext; it is substituted from the `NEXTDNS_PROFILE_ID` secret via `envsubst` before the action reads the file.
