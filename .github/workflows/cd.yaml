@@ -72,3 +72,22 @@ jobs:
       - name: Cleanup
         if: always()
         run: rm -f .vault_pass
+
+  tailscale-acl-apply:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Render policy file
+        run: envsubst '${NEXTDNS_PROFILE_ID}' < tailscale/policy.hujson > tailscale/policy.rendered.hujson
+        env:
+          NEXTDNS_PROFILE_ID: ${{ secrets.NEXTDNS_PROFILE_ID }}
+
+      - name: Apply ACL
+        uses: tailscale/gitops-acl-action@v1
+        with:
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID_ACL }}
+          oauth-secret: ${{ secrets.TS_OAUTH_SECRET_ACL }}
+          tailnet: ${{ secrets.TS_TAILNET }}
+          action: apply
+          policy-file: ./tailscale/policy.rendered.hujson

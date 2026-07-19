@@ -1,0 +1,64 @@
+{
+    // ===== Tag Declaration =====
+    "tagOwners": {
+        "tag:server-s1": ["autogroup:owner"],
+        "tag:ci":        [],
+    },
+
+    // ===== Grants Declaration =====
+    "grants": [
+        // server-s1 へのフルアクセス - owner / CI / nanai10a
+        {
+            "src": ["autogroup:owner", "tag:ci", "nanai10a@github"],
+            "dst": ["tag:server-s1"],
+            "ip":  ["*"],
+        },
+        // member - 任意の Exit Node 経由でインターネット
+        {
+            "src": ["autogroup:member"],
+            "dst": ["autogroup:internet"],
+            "ip":  ["*"],
+        },
+        // kimchi5005 (shared user) - Exit Node 利用のみ
+        // 前提: server-s1 を machine share し "Allow use as an exit node" を有効化
+        // 共有しているのは server-s1 だけなので，経由できる Exit Node は実質 server-s1 のみ
+        {
+            "src": ["kimchi5005@github"],
+            "dst": ["autogroup:internet"],
+            "ip":  ["*"],
+        },
+    ],
+
+    // ===== Tailscale SSH Declaration =====
+    // kimchi5005 は意図的に含めない（足さなければ SSH は塞がれたまま）
+    "ssh": [
+        {
+            "action": "accept",
+            "src":    ["autogroup:owner", "tag:ci"],
+            "dst":    ["tag:server-s1"],
+            "users":  ["m1sk9"],
+        },
+        {
+            "action": "accept",
+            "src":    ["nanai10a@github"],
+            "dst":    ["tag:server-s1"],
+            "users":  ["nanai"],
+        },
+    ],
+
+    // ===== Node Attributes (Funnel / NextDNS / Taildrive) =====
+    "nodeAttrs": [
+        {
+            "target": ["user:m1sk9@github", "tag:server-s1"],
+            "attr":   ["nextdns:${NEXTDNS_PROFILE_ID}"],
+        },
+        {
+            "target": ["user:m1sk9@github", "tag:server-s1"],
+            "attr":   ["drive:share"],
+        },
+        {
+            "target": ["*"],
+            "attr":   ["nextdns:no-device-info"],
+        },
+    ],
+}
