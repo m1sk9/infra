@@ -17,7 +17,7 @@ jobs:
     env:
       TF_TOKEN_app_terraform_io: ${{ secrets.TF_TOKEN_APP_TERRAFORM_IO }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Setup Development Environment
         uses: jdx/mise-action@v4
@@ -45,7 +45,7 @@ jobs:
     env:
       ANSIBLE_HOST_KEY_CHECKING: "False"
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Setup Development Environment
         uses: jdx/mise-action@v4
@@ -82,7 +82,7 @@ jobs:
   tailscale-acl-test:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Render policy file
         run: envsubst '${NEXTDNS_PROFILE_ID}' < tailscale/policy.hujson > tailscale/policy.rendered.hujson
