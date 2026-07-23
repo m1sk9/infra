@@ -85,6 +85,7 @@ Docker Compose services managed on s1. Each is deployed to `~/services/<name>/` 
 |---|---|---|
 | babyrite | `ghcr.io/m1sk9/babyrite` | mounts `~/babyrite-data/config.toml`; `.env` |
 | wallos | `ghcr.io/ellite/wallos` | published on `:8282`; data in `~/wallos-data` |
+| pdfding | `mrmn/pdfding` | published on `:8384`; data in `~/pdfding-data/{db,media,consume}`; `.env` |
 
 Deploy or update all services (idempotent — unchanged stacks are not recreated):
 
@@ -98,6 +99,46 @@ ansible-playbook playbooks/services.yml
 2. Encrypt any secrets: `ansible-vault encrypt roles/docker_compose_app/files/<name>/env`
 3. Add a block to `playbooks/services.yml` setting `app_name`, and as needed `app_files`
    (env/config to copy) and `app_dirs` (host directories to create).
+
+### Taildrive (PdfDing consume folder)
+
+PdfDing's [consume folder](https://docs.pdfding.com/configuration/consumption/) watches
+`~/pdfding-data/consume/<user-id>/` and imports any PDF placed there (deleting the
+original afterwards, success or not). To make that folder reachable from other devices,
+it's shared over [Taildrive](https://tailscale.com/kb/1369/taildrive) — this is a manual,
+one-time step (mirroring how `tailscale up` itself is provisioned; see "Tailscale setup"
+below), not something Ansible manages.
+
+On s1, after the first PdfDing account has been created (the account's numeric id — `1`
+for the first user — is the subfolder name):
+
+```fish
+mkdir -p ~/pdfding-data/consume/1
+tailscale drive share pdfding_consume ~/pdfding-data/consume
+tailscale drive list   # confirm the share is up
+```
+
+The share name is restricted to lowercase letters, `_`, `()`, and spaces (no hyphens or
+digits). The `drive:share`/`drive:access` node attributes and the
+`tailscale.com/cap/drive` grant needed to use this are already declared in
+[`tailscale/policy.hujson`](../tailscale/policy.hujson).
+
+From a Mac, mount it with [rclone](https://rclone.org/) (`brew install rclone`),
+`~/.config/rclone/rclone.conf`:
+
+```ini
+[tsdrive]
+type = webdav
+url = http://100.100.100.100:8080/m1sk9.github
+vendor = other
+```
+
+```fish
+rclone copy ~/Downloads/book.pdf tsdrive:dev-m1sk9-s1/pdfding_consume/1/
+```
+
+Finder also works as a fallback (`Cmd+K` → `http://100.100.100.100:8080/m1sk9.github/dev-m1sk9-s1/pdfding_consume/`),
+but its WebDAV client is less reliable for repeated transfers than rclone.
 
 ## Backups
 

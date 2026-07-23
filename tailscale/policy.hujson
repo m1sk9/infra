@@ -27,6 +27,14 @@
             "dst": ["autogroup:internet"],
             "ip":  ["*"],
         },
+        // owner - server-s1 の Taildrive 共有 (PdfDing consume) へ rw アクセス
+        {
+            "src": ["autogroup:owner"],
+            "dst": ["tag:server-s1"],
+            "app": {
+                "tailscale.com/cap/drive": [{ "shares": ["*"], "access": "rw" }],
+            },
+        },
     ],
 
     // ===== Tailscale SSH Declaration =====
@@ -54,7 +62,7 @@
         },
         {
             "target": ["user:m1sk9@github", "tag:server-s1"],
-            "attr":   ["drive:share"],
+            "attr":   ["drive:share", "drive:access"],
         },
         {
             "target": ["*"],

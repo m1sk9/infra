@@ -67,3 +67,32 @@ resource "cloudflare_zero_trust_access_application" "dozzle" {
     precedence = 1
   }]
 }
+
+# Cloudflare Zero Trust Access for PdfDing
+
+resource "cloudflare_zero_trust_access_policy" "pdfding" {
+  account_id = local.cloudflare_account_id
+  name       = "Allow me@m1sk9.dev"
+  decision   = "allow"
+
+  include = [{
+    email = {
+      email = "me@m1sk9.dev"
+    }
+  }]
+}
+
+resource "cloudflare_zero_trust_access_application" "pdfding" {
+  account_id       = local.cloudflare_account_id
+  name             = "PdfDing"
+  domain           = "books.m1sk9.dev"
+  type             = "self_hosted"
+  session_duration = "24h"
+
+  allowed_idps = [cloudflare_zero_trust_access_identity_provider.github.id]
+
+  policies = [{
+    id         = cloudflare_zero_trust_access_policy.pdfding.id
+    precedence = 1
+  }]
+}
