@@ -20,3 +20,8 @@ backup_targets:
       - /home/m1sk9/wallos-data/db/wallos.db
     paths:
       - /home/m1sk9/wallos-data/logos
+  - name: pdfding
+    sqlite_dbs:
+      - /home/m1sk9/pdfding-data/db/db.sqlite3
+    paths:
+      - /home/m1sk9/pdfding-data/media
