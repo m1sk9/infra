@@ -57,11 +57,11 @@
     // ===== Node Attributes (Funnel / NextDNS / Taildrive) =====
     "nodeAttrs": [
         {
-            "target": ["user:m1sk9@github", "tag:server-s1"],
+            "target": ["m1sk9@github", "tag:server-s1"],
             "attr":   ["nextdns:${NEXTDNS_PROFILE_ID}"],
         },
         {
-            "target": ["user:m1sk9@github", "tag:server-s1"],
+            "target": ["m1sk9@github", "tag:server-s1"],
             "attr":   ["drive:share", "drive:access"],
         },
         {
