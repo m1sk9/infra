@@ -25,6 +25,19 @@
           - "{{ ansible_facts['env']['HOME'] }}/wallos-data/db"
           - "{{ ansible_facts['env']['HOME'] }}/wallos-data/logos"
 
+    - name: Deploy pdfding
+      ansible.builtin.include_role:
+        name: docker_compose_app
+      vars:
+        app_name: pdfding
+        app_dirs:
+          - "{{ ansible_facts['env']['HOME'] }}/pdfding-data/db"
+          - "{{ ansible_facts['env']['HOME'] }}/pdfding-data/media"
+          - "{{ ansible_facts['env']['HOME'] }}/pdfding-data/consume"
+        app_files:
+          - src: pdfding/env
+            dest: "{{ ansible_facts['env']['HOME'] }}/services/pdfding/.env"
+
     - name: Deploy dozzle
       ansible.builtin.include_role:
         name: docker_compose_app

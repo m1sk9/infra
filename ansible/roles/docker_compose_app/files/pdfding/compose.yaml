@@ -1,0 +1,15 @@
+name: pdfding
+services:
+  pdfding:
+    image: mrmn/pdfding:v1.10.0
+    ports:
+      - "8384:8000/tcp"
+    env_file:
+      - .env
+    environment:
+      TZ: "Asia/Tokyo"
+    volumes:
+      - /home/m1sk9/pdfding-data/db:/home/nonroot/pdfding/db
+      - /home/m1sk9/pdfding-data/media:/home/nonroot/pdfding/media
+      - /home/m1sk9/pdfding-data/consume:/home/nonroot/pdfding/consume
+    restart: unless-stopped
