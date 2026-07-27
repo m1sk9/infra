@@ -2,16 +2,9 @@
 
 # --- CNAME Records ---
 
-# Portfolio (GitHub Pages)
-resource "cloudflare_dns_record" "portfolio" {
-  zone_id = local.cloudflare_zone_id
-  name    = "m1sk9.dev"
-  content = "m1sk9.github.io"
-  type    = "CNAME"
-  ttl     = 1
-  proxied = true
-  comment = "portfolio"
-}
+# The apex record for the portfolio is not declared here: it is created and owned
+# by cloudflare_workers_custom_domain.portfolio. Declaring it in both places would
+# make the two resources fight over the same record on every apply.
 
 # babyrite API Documentation (GitHub Pages)
 resource "cloudflare_dns_record" "babyrite_api_docs" {

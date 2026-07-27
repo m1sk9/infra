@@ -1,5 +1,23 @@
 # Cloudflare Workers
 
+# m1sk9.dev - Portfolio (Zola static site served by Workers static assets)
+#
+# Why not a cloudflare_workers_script resource like the others below: the script
+# and its assets are a per-commit Zola build artifact, deployed by wrangler from
+# the m1sk9.dev repository. Terraform cannot own content it does not build, so
+# `service` is a plain string literal instead of a resource reference and the
+# ownership boundary is: wrangler owns the script, Terraform owns the hostname.
+#
+# Why not a cloudflare_workers_script_subdomain resource: wrangler touches the
+# workers.dev subdomain on every deploy, so Terraform would fight it on each
+# run. The exposure is disabled on the wrangler side (`workers_dev = false`).
+resource "cloudflare_workers_custom_domain" "portfolio" {
+  account_id = local.cloudflare_account_id
+  zone_id    = local.cloudflare_zone_id
+  hostname   = "m1sk9.dev"
+  service    = "m1sk9-dev"
+}
+
 # blog.m1sk9.dev - Redirect to m1sk9.dev/posts/ with Mastodon rel="me"
 resource "cloudflare_workers_script" "blog" {
   account_id         = local.cloudflare_account_id
