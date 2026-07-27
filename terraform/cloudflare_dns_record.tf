@@ -2,7 +2,17 @@
 
 # --- CNAME Records ---
 
-# Portfolio (GitHub Pages)
+# Portfolio (rollback target — the portfolio itself is served by Workers)
+#
+# Why keep a record that nothing resolves to in practice: the apex is claimed by
+# cloudflare_workers_route.portfolio, so requests are answered by the Worker and
+# GitHub Pages is never fetched. This record stays as the rollback path — delete
+# the route and the apex falls straight back to Pages with no DNS change. It is
+# also what the route attaches to: the route needs a proxied record on the
+# hostname to sit in front of.
+#
+# Note that the Pages certificate for this origin is expired, so it is only a
+# usable fallback while the zone runs SSL/TLS mode Full (non-strict).
 resource "cloudflare_dns_record" "portfolio" {
   zone_id = local.cloudflare_zone_id
   name    = "m1sk9.dev"
