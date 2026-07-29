@@ -56,6 +56,23 @@ resource "cloudflare_dns_record" "honeypot_api" {
   comment = "HoneyPot"
 }
 
+# Better Stack status page (status.m1sk9.dev)
+#
+# Why proxied = false: Better Stack terminates TLS on statuspage.betteruptime.com
+# and issues its own certificate for this hostname, so the record has to stay
+# DNS-only — proxying it would break HTTPS. This is a 1-level subdomain, so the
+# 2-level Universal SSL limitation that rules out proxying lc.api / babyrite.api
+# is not what is at play here.
+resource "cloudflare_dns_record" "status_page" {
+  zone_id = local.cloudflare_zone_id
+  name    = "status"
+  content = "statuspage.betteruptime.com"
+  type    = "CNAME"
+  ttl     = 1
+  proxied = false
+  comment = "Better Stack status page"
+}
+
 # Proton Mail DKIM
 resource "cloudflare_dns_record" "protonmail_dkim1" {
   zone_id = local.cloudflare_zone_id
