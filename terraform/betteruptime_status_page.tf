@@ -24,8 +24,9 @@
 # what the pricing page's "Custom sub-domain" wording suggests — the custom
 # domain.
 resource "betteruptime_status_page" "m1sk9" {
-  # Shown as the page heading, so it names the page rather than the owner.
-  company_name = "status.m1sk9.dev"
+  # Better Stack renders this as "<company_name> status", so it holds the name
+  # alone. Putting the hostname here reads as "status.m1sk9.dev status".
+  company_name = "m1sk9's infra"
   company_url  = "https://m1sk9.dev"
 
   # Required even with a custom domain, and unique across all of Better Stack —
