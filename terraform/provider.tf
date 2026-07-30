@@ -14,9 +14,17 @@ terraform {
       source  = "cloudflare/cloudflare"
       version = "5.22.0"
     }
+    betteruptime = {
+      source  = "BetterStackHQ/better-uptime"
+      version = "0.21.10"
+    }
   }
 }
 
 provider "cloudflare" {
   api_token = var.cloudflare_api_token
+}
+
+provider "betteruptime" {
+  api_token = var.betteruptime_api_token
 }

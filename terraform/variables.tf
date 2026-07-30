@@ -16,3 +16,10 @@ variable "github_client_secret" {
   type        = string
   sensitive   = true
 }
+
+variable "betteruptime_api_token" {
+  description = "A Better Stack Uptime API token"
+  type        = string
+  sensitive   = true
+  ephemeral   = true
+}
