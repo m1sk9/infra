@@ -1,0 +1,7 @@
+# {{ ansible_managed }}
+[Unit]
+Description=Report a failed s1 backup to Better Stack
+
+[Service]
+Type=oneshot
+ExecStart={{ restic_failure_script_path }}

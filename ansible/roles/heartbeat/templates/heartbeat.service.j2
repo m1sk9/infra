@@ -1,0 +1,11 @@
+# {{ ansible_managed }}
+[Unit]
+Description=Push the {{ item.name }} heartbeat to Better Stack
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+# The env file is sourced by the script rather than declared here, so the URL
+# never lands in the unit's environment where `systemctl show` would print it.
+ExecStart={{ heartbeat_script_dir }}/heartbeat-{{ item.name }}.sh

@@ -73,6 +73,25 @@
     owner: root
     group: root
 
+- name: "restic | Deploy failure reporter"
+  when: backup_heartbeat_url | length > 0
+  block:
+    - name: "restic | Deploy failure script"
+      ansible.builtin.template:
+        src: s1-backup-failure.sh.j2
+        dest: "{{ restic_failure_script_path }}"
+        mode: "0755"
+        owner: root
+        group: root
+
+    - name: "restic | Deploy failure systemd service"
+      ansible.builtin.template:
+        src: s1-backup-failure.service.j2
+        dest: /etc/systemd/system/s1-backup-failure.service
+        mode: "0644"
+        owner: root
+        group: root
+
 # `restic init` is not idempotent and touches the remote, so skip it in check
 # mode (mirrors docker_compose_app's "Start stack" guard). `cat config`
 # succeeds only when the repository is already initialised.

@@ -1,0 +1,17 @@
+# {{ ansible_managed }}
+[Unit]
+Description=Schedule the {{ item.name }} heartbeat
+
+[Timer]
+OnCalendar={{ item.oncalendar }}
+AccuracySec=5s
+# Stagger the senders so several timers sharing a minute do not fire at once on a
+# two-core machine.
+RandomizedDelaySec=15
+# Deliberately not Persistent=true, unlike s1-backup.timer: a catch-up send after
+# boot would report the service as healthy for a window when it was not running,
+# which is the opposite of what this is for.
+Persistent=false
+
+[Install]
+WantedBy=timers.target

@@ -1,0 +1,8 @@
+---
+- name: Configure Better Stack heartbeat senders on s1
+  hosts: s1
+  become: true
+  tasks:
+    - name: Deploy heartbeat timers
+      ansible.builtin.include_role:
+        name: heartbeat

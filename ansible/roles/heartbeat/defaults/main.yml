@@ -1,0 +1,8 @@
+---
+# Files rendered onto the host, one set per entry in `heartbeat_targets`.
+heartbeat_env_dir: /etc/heartbeat
+heartbeat_script_dir: /usr/local/bin
+
+# Targets are declared per host in group_vars; the role itself is data-agnostic.
+# See inventory/group_vars/all/vars.yml for the schema.
+heartbeat_targets: []
