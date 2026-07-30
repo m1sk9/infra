@@ -20,31 +20,6 @@ locals {
   monitor_recovery_period     = 180
 }
 
-# m1sk9.dev - Portfolio (Zola static site served by Workers)
-#
-# Why keyword rather than a bare 2xx check: the apex is answered by a Worker, and
-# a Worker that has lost its assets or been deployed empty still returns 200. The
-# title is the cheapest proof that the site actually rendered.
-#
-# This is the only monitor that checks domain expiration: every hostname here
-# lives on m1sk9.dev, so enabling it everywhere would just mean three copies of
-# the same warning.
-resource "betteruptime_monitor" "portfolio" {
-  url              = "https://m1sk9.dev"
-  monitor_type     = "keyword"
-  required_keyword = "Sho Sakuma"
-
-  check_frequency     = local.monitor_check_frequency
-  regions             = local.monitor_regions
-  request_timeout     = local.monitor_request_timeout
-  confirmation_period = local.monitor_confirmation_period
-  recovery_period     = local.monitor_recovery_period
-
-  email             = true
-  ssl_expiration    = 30
-  domain_expiration = 30
-}
-
 # books.m1sk9.dev - PdfDing (Access-protected, behind the s1 tunnel)
 #
 # Checks /healthz with the service token so the request travels the whole path:
@@ -73,9 +48,14 @@ resource "betteruptime_monitor" "books" {
   confirmation_period = local.monitor_confirmation_period
   recovery_period     = local.monitor_recovery_period
 
+  # domain_expiration is 30 on both monitors rather than disabled on one, because
+  # Better Stack ignores -1 and keeps 30 anyway — asking for -1 just produces a
+  # diff on every plan, forever. Both hostnames are on m1sk9.dev, so the
+  # expiry warning arrives twice. Once a year, which is cheaper than permanent
+  # plan noise.
   email             = true
   ssl_expiration    = 30
-  domain_expiration = -1
+  domain_expiration = 30
 }
 
 # wallos.m1sk9.dev - Wallos (Access-protected, edge reachability only)
@@ -108,7 +88,8 @@ resource "betteruptime_monitor" "wallos_edge" {
   confirmation_period = local.monitor_confirmation_period
   recovery_period     = local.monitor_recovery_period
 
+  # See the note on books above for why this is 30 rather than -1.
   email             = true
   ssl_expiration    = 30
-  domain_expiration = -1
+  domain_expiration = 30
 }

@@ -24,7 +24,8 @@
 # what the pricing page's "Custom sub-domain" wording suggests — the custom
 # domain.
 resource "betteruptime_status_page" "m1sk9" {
-  company_name = "m1sk9"
+  # Shown as the page heading, so it names the page rather than the owner.
+  company_name = "status.m1sk9.dev"
   company_url  = "https://m1sk9.dev"
 
   # Required even with a custom domain, and unique across all of Better Stack —
@@ -92,16 +93,6 @@ resource "betteruptime_status_page_resource" "backup" {
 
 # --- Web ---
 
-resource "betteruptime_status_page_resource" "portfolio" {
-  status_page_id         = betteruptime_status_page.m1sk9.id
-  status_page_section_id = betteruptime_status_page_section.web.id
-  resource_id            = betteruptime_monitor.portfolio.id
-  resource_type          = "Monitor"
-  public_name            = "m1sk9.dev"
-  widget_type            = "response_times"
-  position               = 0
-}
-
 resource "betteruptime_status_page_resource" "books" {
   status_page_id         = betteruptime_status_page.m1sk9.id
   status_page_section_id = betteruptime_status_page_section.web.id
@@ -110,7 +101,7 @@ resource "betteruptime_status_page_resource" "books" {
   public_name            = "books.m1sk9.dev"
   explanation            = "Checked end to end through Cloudflare Access and the tunnel to the container."
   widget_type            = "response_times"
-  position               = 1
+  position               = 0
 }
 
 # widget_type is history rather than response_times on purpose: the response time
@@ -124,7 +115,7 @@ resource "betteruptime_status_page_resource" "wallos_edge" {
   public_name            = "wallos.m1sk9.dev"
   explanation            = "Edge reachability only — confirms DNS, Cloudflare and Access. The container itself is covered by wallos under Self-hosted."
   widget_type            = "history"
-  position               = 2
+  position               = 1
 }
 
 # --- Self-hosted ---
