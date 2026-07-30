@@ -3,6 +3,11 @@
 Description=Weekly restic backup of s1 data to Cloudflare R2
 Wants=network-online.target
 After=network-online.target
+{% if backup_heartbeat_url %}
+# Report the reason immediately rather than letting the weekly heartbeat period
+# lapse in silence a week later.
+OnFailure=s1-backup-failure.service
+{% endif %}
 
 [Service]
 Type=oneshot
@@ -11,3 +16,10 @@ Type=oneshot
 Environment=HOME=/root
 EnvironmentFile={{ restic_env_file }}
 ExecStart={{ restic_script_path }}
+{% if backup_heartbeat_url %}
+# Only runs when ExecStart succeeded, so this is the success signal. The leading
+# "-" keeps a transient network error from failing the unit — without it a failed
+# ping would trip OnFailure above and raise an incident about the backup itself,
+# which did in fact succeed.
+ExecStartPost=-/usr/bin/curl -fsS --max-time 10 --retry 3 ${BACKUP_HEARTBEAT_URL}
+{% endif %}

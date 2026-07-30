@@ -1,0 +1,72 @@
+---
+- name: "heartbeat | Create env directory"
+  ansible.builtin.file:
+    path: "{{ heartbeat_env_dir }}"
+    state: directory
+    mode: "0755"
+    owner: root
+    group: root
+
+- name: "heartbeat | Deploy env files (ping URLs)"
+  ansible.builtin.template:
+    src: heartbeat.env.j2
+    dest: "{{ heartbeat_env_dir }}/{{ item.name }}.env"
+    mode: "0600"
+    owner: root
+    group: root
+  loop: "{{ heartbeat_targets }}"
+  loop_control:
+    label: "{{ item.name }}"
+  no_log: true
+
+- name: "heartbeat | Deploy sender scripts"
+  ansible.builtin.template:
+    src: heartbeat.sh.j2
+    dest: "{{ heartbeat_script_dir }}/heartbeat-{{ item.name }}.sh"
+    mode: "0755"
+    owner: root
+    group: root
+  loop: "{{ heartbeat_targets }}"
+  loop_control:
+    label: "{{ item.name }}"
+
+- name: "heartbeat | Deploy systemd services"
+  ansible.builtin.template:
+    src: heartbeat.service.j2
+    dest: "/etc/systemd/system/heartbeat-{{ item.name }}.service"
+    mode: "0644"
+    owner: root
+    group: root
+  loop: "{{ heartbeat_targets }}"
+  loop_control:
+    label: "{{ item.name }}"
+
+- name: "heartbeat | Deploy systemd timers"
+  ansible.builtin.template:
+    src: heartbeat.timer.j2
+    dest: "/etc/systemd/system/heartbeat-{{ item.name }}.timer"
+    mode: "0644"
+    owner: root
+    group: root
+  loop: "{{ heartbeat_targets }}"
+  loop_control:
+    label: "{{ item.name }}"
+
+# Reloaded once rather than per timer: s1 is a two-core Celeron and there is no
+# reason to make it re-read the unit tree five times.
+- name: "heartbeat | Reload systemd"
+  ansible.builtin.systemd_service:
+    daemon_reload: true
+  when: not ansible_check_mode
+
+# The unit files are only rendered for real outside check mode, so activating a
+# timer would fail on the absent unit during a plan. Same guard as restic_backup.
+- name: "heartbeat | Enable and start timers"
+  ansible.builtin.systemd_service:
+    name: "heartbeat-{{ item.name }}.timer"
+    enabled: true
+    state: started
+  loop: "{{ heartbeat_targets }}"
+  loop_control:
+    label: "{{ item.name }}"
+  when: not ansible_check_mode

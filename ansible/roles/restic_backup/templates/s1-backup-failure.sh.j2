@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+# {{ ansible_managed }}
+#
+# Invoked from OnFailure= on s1-backup.service. Posts the tail of the journal to
+# the heartbeat's /fail endpoint so the alert says why the backup broke, instead
+# of only reporting that it never reported.
+#
+# Why not `set -e`: every step here is best-effort. Failing loudly would only add
+# a second failed unit to the journal on top of the one being reported.
+set -uo pipefail
+
+set -a
+# shellcheck disable=SC1090
+. "{{ restic_env_file }}"
+set +a
+
+journalctl -u s1-backup.service -n 50 --no-pager \
+  | curl -fsS --max-time 15 --retry 3 --data-binary @- \
+      "${BACKUP_HEARTBEAT_URL}/fail" >/dev/null || true

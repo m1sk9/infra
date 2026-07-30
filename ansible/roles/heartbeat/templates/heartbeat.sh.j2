@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+# {{ ansible_managed }}
+#
+# Better Stack heartbeat sender for {{ item.name }}. Rendered from
+# `heartbeat_targets` (see inventory/group_vars/all/vars.yml) — this file is
+# generated, edit the variables rather than the host copy.
+#
+# Why not `set -e` like s1-backup.sh: a failing check has to reach the /fail
+# branch below. Aborting on the first non-zero exit would leave Better Stack
+# waiting out the whole period instead of being told immediately.
+set -uo pipefail
+
+set -a
+# shellcheck disable=SC1090
+. "{{ heartbeat_env_dir }}/{{ item.name }}.env"
+set +a
+
+# Why every curl ends in `|| true`: when the line is down the ping cannot get out
+# and neither can the failure report, so there is nothing useful to signal. The
+# missed period is what Better Stack acts on. Letting curl fail the unit instead
+# would fill the journal with entries for a condition already being reported.
+{% if item.check_command is defined %}
+if out="$({{ item.check_command }} 2>&1)"; then
+  curl -fsS --max-time 10 --retry 2 --retry-connrefused \
+    "${HEARTBEAT_URL}" >/dev/null || true
+else
+  rc=$?
+  printf 'check failed (exit %s): %s\n' "${rc}" "${out:-no output}" \
+    | curl -fsS --max-time 15 --retry 2 --data-binary @- \
+        "${HEARTBEAT_URL}/fail" >/dev/null || true
+fi
+{% else %}
+# No local probe for this target: the ping arriving at all is the signal.
+curl -fsS --max-time 10 --retry 2 --retry-connrefused \
+  "${HEARTBEAT_URL}" >/dev/null || true
+{% endif %}

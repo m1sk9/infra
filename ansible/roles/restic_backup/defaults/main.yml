@@ -8,6 +8,12 @@ restic_install_path: /usr/local/bin/restic
 # Files rendered onto the host.
 restic_env_file: /etc/restic/s1-backup.env
 restic_script_path: /usr/local/bin/s1-backup.sh
+restic_failure_script_path: /usr/local/bin/s1-backup-failure.sh
+
+# Better Stack heartbeat pinged on a successful run, and posted to with the
+# journal tail on a failed one. Empty leaves both out, so the role still works
+# without any monitoring configured. Set from group_vars.
+backup_heartbeat_url: ""
 
 # Scratch space for SQLite snapshots taken before handing them to restic.
 restic_work_dir: /var/lib/s1-backup

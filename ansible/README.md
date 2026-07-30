@@ -200,19 +200,121 @@ sudo bash -c 'set -a; . /etc/restic/s1-backup.env; restic restore latest --tag w
 sqlite3 /tmp/restore/.../wallos.db 'PRAGMA integrity_check;'
 ```
 
+## Monitoring
+
+s1 is reachable only over Cloudflare Tunnel and Tailscale, so nothing outside can
+poll it. Every check that needs to see the host is inverted: the `heartbeat` role
+installs systemd timers that push to [Better Stack](https://betterstack.com),
+which raises an incident when the pushes stop. The monitors, heartbeats and the
+status page at [status.m1sk9.dev](https://status.m1sk9.dev) are defined in
+Terraform (`terraform/betteruptime_*.tf`). Deploy the senders with:
+
+```fish
+ansible-playbook playbooks/monitoring.yml
+```
+
+### What is monitored from s1
+
+Targets are declared in [`inventory/group_vars/all/vars.yml`](./inventory/group_vars/all/vars.yml)
+as `heartbeat_targets`; the role itself is data-agnostic. **To monitor another
+service, add an entry and a matching `betteruptime_heartbeat` resource:**
+
+```yaml
+heartbeat_targets:
+  - name: <unit name>      # used for the unit, script and env file names
+    url: "{{ vault_heartbeat_url_<name> }}"
+    oncalendar: "*:0/3"    # systemd schedule
+    check_command: "..."   # optional; non-zero exit reports to <url>/fail
+```
+
+Omitting `check_command` makes the ping itself the signal, which is what the host
+heartbeat does. Note that this measures "s1 can reach the internet", not "s1 is
+powered on" — a home line outage raises the incident with the machine healthy.
+
+`check_command` uses `docker ps --filter` rather than `docker inspect --format`
+because the Go template in `--format` collides with Jinja2, and the filters ask
+the same question without template syntax.
+
+**How much each check actually proves differs:**
+
+| Target | Proves |
+|---|---|
+| `wallos` | The container answers on localhost — the other half of the edge check in `betteruptime_monitor.wallos_edge` |
+| `chime` | The scheduler is still ticking (its healthcheck fails once its heartbeat file goes stale) |
+| `babyrite`, `honeypot` | Only that the container runs. Both hold Discord gateway websockets, so **a dead gateway inside a live process stays invisible** until those bots push for themselves |
+
+### Backup notification
+
+`restic_backup` reports through a heartbeat of its own, so a broken backup no
+longer fails silently. Three cases are covered:
+
+- **Success** — `ExecStartPost` pings the heartbeat, refreshing the weekly period
+- **Failure** — `OnFailure=s1-backup-failure.service` posts the last 50 journal
+  lines to `<url>/fail` immediately, rather than waiting a week for the period to
+  lapse
+- **Never ran** (s1 down at the scheduled time) — the period lapses
+
+Setting `backup_heartbeat_url` to an empty string removes both units, so the role
+still works without Better Stack.
+
+### Required vault secrets
+
+Heartbeat ping URLs are issued by Terraform and consumed here, but Ansible cannot
+read Terraform state, so they are copied over by hand — the same arrangement as
+the R2 credentials. **The URL is the only credential involved: anyone holding it
+can report the service as healthy**, so treat it as a secret.
+
+```fish
+cd ../terraform
+terraform output -raw heartbeat_url_s1_host   # repeat per key below
+cd ../ansible && ansible-vault edit inventory/group_vars/all/vault.yml
+```
+
+| Vault key | Terraform output |
+|---|---|
+| `vault_heartbeat_url_s1_host` | `heartbeat_url_s1_host` |
+| `vault_heartbeat_url_wallos` | `heartbeat_url_wallos` |
+| `vault_heartbeat_url_chime` | `heartbeat_url_chime` |
+| `vault_heartbeat_url_babyrite` | `heartbeat_url_babyrite` |
+| `vault_heartbeat_url_honeypot` | `heartbeat_url_honeypot` |
+| `vault_heartbeat_url_backup` | `heartbeat_url_backup` |
+
+These change only when a heartbeat resource is replaced, so this is a one-off per
+heartbeat.
+
+### Settings that live in the dashboard
+
+Better Stack's free plan refuses API writes to anything the dashboard files under
+**Advanced settings**, so those are set by hand and deliberately left out of the
+Terraform configuration (which keeps Terraform from diffing against them):
+
+| Dashboard setting | Value |
+|---|---|
+| Status history → How many days to display? | 90 days |
+| Look & feel → Minimum incident length | above 0, so single failed probes stay hidden |
+| Search engines → Hide from search engines | enabled |
+| Replace top navigation links | link back to m1sk9.dev |
+| **Status page access → Published** | **enabled — the page is not public otherwise** |
+
+Design (modern look, dark theme, vertical layout) and the custom domain *are*
+managed in Terraform: those sit outside that section.
+
 ## CI / CD
 
 GitHub Actions deploys this configuration automatically, mirroring the Terraform setup.
 
-- **CI** ([`ci.yaml`](../.github/workflows/ci.yaml)) — on pull requests
-  touching `ansible/**`: runs `--syntax-check`, then a **plan**
-  (`ansible-playbook playbooks/services.yml --check --diff`) against s1 so the PR shows
-  exactly what would change — the Terraform `plan` equivalent. The `docker_compose_v2`
-  module supports check mode, so the diff is meaningful. The Terraform plan job runs in
-  the same workflow, gated by `paths-filter`.
+- **CI** ([`ci.yaml`](../.github/workflows/ci.yaml)) — on every pull request:
+  runs `--syntax-check` on all playbooks, then a **plan**
+  (`--check --diff` for `services.yml`, `backup.yml` and `monitoring.yml`) against s1
+  so the PR shows exactly what would change — the Terraform `plan` equivalent. The
+  `docker_compose_v2` module supports check mode, so the diff is meaningful.
 - **CD** ([`cd.yaml`](../.github/workflows/cd.yaml)) — on push to `main`
-  touching `ansible/**` (or manual `workflow_dispatch`): joins the tailnet, then runs
-  `ansible-playbook playbooks/services.yml` against s1.
+  (or manual `workflow_dispatch`): joins the tailnet, then runs `services.yml`,
+  `backup.yml` and `monitoring.yml` against s1.
+
+Both workflows run their full job set on every PR and push — there is no
+`paths`-based gating, so an Ansible-only change still runs the Terraform jobs and
+vice versa.
 
 Because s1 only exists inside the tailnet, the runner joins it as an ephemeral node via
 the [Tailscale GitHub Action](https://tailscale.com/kb/1276/tailscale-github-action) and
