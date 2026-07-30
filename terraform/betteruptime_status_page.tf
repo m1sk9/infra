@@ -5,10 +5,24 @@
 # precisely the moment this page matters. Serving it from Workers would take it
 # down together with everything it reports on.
 #
-# Design is limited to what the free plan allows. custom_css and
-# custom_javascript exist as attributes but are billed at $15/page/month, and
-# whitelabeled (dropping the "Powered by Better Stack" footer) at $250, so the
-# look is whatever design/theme/layout can express.
+# What this resource deliberately does not set, and why:
+#
+# The free plan refuses API writes to anything the dashboard files under
+# "Advanced settings" — "Cannot modify status page advanced settings. Please
+# upgrade your account to modify advanced status page settings." Some of those
+# are billed features (custom_css and custom_javascript at $15/page/month,
+# whitelabeled / password_enabled / ip_allowlist / require_sso far above that),
+# but others are free to set by hand and simply not reachable through the API:
+# history, min_incident_length, hide_from_search_engines, navigation_links and
+# even published. Those are configured in the dashboard — including flipping the
+# page to published, which is why this resource cannot do it. Leaving them out of
+# the configuration means Terraform does not diff against them, so the manual
+# values survive. subscribable is billed, so it stays off entirely.
+#
+# Everything below sits outside that section and applies cleanly: the identity
+# fields, the whole Personalization block (design / theme / layout) and — despite
+# what the pricing page's "Custom sub-domain" wording suggests — the custom
+# domain.
 resource "betteruptime_status_page" "m1sk9" {
   company_name = "m1sk9"
   company_url  = "https://m1sk9.dev"
@@ -22,25 +36,10 @@ resource "betteruptime_status_page" "m1sk9" {
   timezone = "Tokyo"
 
   custom_domain = "status.m1sk9.dev"
-  published     = true
 
-  design = "v2" # theme, layout and navigation_links require the modern design
+  design = "v2" # theme and layout require the modern design
   theme  = "dark"
   layout = "vertical"
-
-  history = 90
-
-  # Checks run every 3 minutes, so anything shorter than this is a single failed
-  # probe rather than an outage worth publishing.
-  min_incident_length = 300
-
-  hide_from_search_engines = true
-  subscribable             = true
-
-  navigation_links {
-    text = "m1sk9.dev"
-    href = "https://m1sk9.dev"
-  }
 
   # The custom domain is verified against the CNAME on creation, so the record
   # has to exist first.

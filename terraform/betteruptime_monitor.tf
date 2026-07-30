@@ -97,6 +97,11 @@ resource "betteruptime_monitor" "wallos_edge" {
   expected_status_codes = [302]
   follow_redirects      = false
 
+  # The API rejects the pair outright ("Cannot keep cookies when redirecting when
+  # expecting a 3xx status code"): remembering cookies only means anything if the
+  # redirect is followed, and here the redirect is the thing being asserted.
+  remember_cookies = false
+
   check_frequency     = local.monitor_check_frequency
   regions             = local.monitor_regions
   request_timeout     = local.monitor_request_timeout
