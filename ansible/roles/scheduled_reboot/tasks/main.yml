@@ -1,0 +1,53 @@
+---
+# The unit this role replaces was created by hand on s1 in 2025 and never lived
+# in this repository. It is stopped and removed before the new units are written
+# so that a single run cannot leave two timers both calling `systemctl reboot`.
+- name: "reboot | Look for the hand-made timer this role replaces"
+  ansible.builtin.stat:
+    path: /etc/systemd/system/reboot-daily.timer
+  register: reboot_legacy_timer
+
+- name: "reboot | Stop and disable the hand-made timer"
+  ansible.builtin.systemd_service:
+    name: reboot-daily.timer
+    enabled: false
+    state: stopped
+  when:
+    - reboot_legacy_timer.stat.exists
+    - not ansible_check_mode
+
+- name: "reboot | Remove the hand-made unit files"
+  ansible.builtin.file:
+    path: "/etc/systemd/system/{{ item }}"
+    state: absent
+  loop: "{{ reboot_legacy_units }}"
+
+- name: "reboot | Deploy systemd service"
+  ansible.builtin.template:
+    src: s1-reboot.service.j2
+    dest: "/etc/systemd/system/{{ reboot_unit_name }}.service"
+    mode: "0644"
+    owner: root
+    group: root
+
+- name: "reboot | Deploy systemd timer"
+  ansible.builtin.template:
+    src: s1-reboot.timer.j2
+    dest: "/etc/systemd/system/{{ reboot_unit_name }}.timer"
+    mode: "0644"
+    owner: root
+    group: root
+
+# The unit files are only rendered for real outside check mode, so activating the
+# timer would fail on the absent unit during a plan. Same guard as restic_backup.
+#
+# Starting a .timer arms the schedule without running its .service, and
+# Persistent=false means there is no catch-up run either — so applying this role
+# never reboots s1, however overdue the window is.
+- name: "reboot | Enable and start timer"
+  ansible.builtin.systemd_service:
+    name: "{{ reboot_unit_name }}.timer"
+    enabled: true
+    state: started
+    daemon_reload: true
+  when: not ansible_check_mode

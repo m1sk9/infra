@@ -48,6 +48,29 @@ resource "betteruptime_monitor" "books" {
   confirmation_period = local.monitor_confirmation_period
   recovery_period     = local.monitor_recovery_period
 
+  # Suppressed during s1's weekly maintenance reboot, scheduled by the Ansible
+  # `scheduled_reboot` role — move one and the other has to move with it.
+  #
+  # Why this monitor alone needs the window: it is the only check that travels to
+  # the container, so it is the only one the reboot can fail. wallos_edge is
+  # answered by Cloudflare without consulting the origin, and every heartbeat
+  # tolerates a missed run (the 2026-08-02 reboot left a 234 s gap in s1_host
+  # against its 420 s budget, and 366 s in the service heartbeats against 600 s).
+  #
+  # The window is far wider than the outage it covers — 04:00:02 to 04:02:08 on
+  # 2026-08-02 — because a forced fsck of the 865 GiB /home would stretch the boot
+  # well past two minutes, and a window sized to the good case would leak an
+  # incident the first time that happened. Nothing goes unwatched in the meantime:
+  # betteruptime_heartbeat.s1_host has no maintenance window and still fails 420 s
+  # after the pushes stop, so a reboot that never comes back is still reported.
+  #
+  # maintenance_timezone takes a Rails zone name, not an IANA one — "Tokyo", not
+  # "Asia/Tokyo". Contrast server_timezone in betteruptime_heartbeat.tf.
+  maintenance_from     = "04:00:00"
+  maintenance_to       = "04:15:00"
+  maintenance_days     = ["sun"]
+  maintenance_timezone = "Tokyo"
+
   # domain_expiration is 30 on both monitors rather than disabled on one, because
   # Better Stack ignores -1 and keeps 30 anyway — asking for -1 just produces a
   # diff on every plan, forever. Both hostnames are on m1sk9.dev, so the
@@ -71,6 +94,10 @@ resource "betteruptime_monitor" "books" {
 # betteruptime_heartbeat.wallos push from s1 covers. Neither half is sufficient
 # alone: the redirect is served without ever consulting the origin, and the
 # heartbeat cannot see a Cloudflare-side failure.
+#
+# The same blindness is why this one carries no maintenance window for the weekly
+# reboot: with the origin out of the picture there is nothing for the reboot to
+# take down here. See books above.
 resource "betteruptime_monitor" "wallos_edge" {
   url                   = "https://wallos.m1sk9.dev"
   monitor_type          = "expected_status_code"

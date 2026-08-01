@@ -1,0 +1,10 @@
+# {{ ansible_managed }}
+[Unit]
+Description=Scheduled maintenance reboot of s1
+
+[Service]
+Type=oneshot
+# `systemctl reboot` rather than a direct `reboot`: it goes through systemd's
+# ordinary shutdown transaction, so docker.service stops its containers with
+# SIGTERM and every stack marked `restart: unless-stopped` comes back on boot.
+ExecStart=/usr/bin/systemctl reboot
