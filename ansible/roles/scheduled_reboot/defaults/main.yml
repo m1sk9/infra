@@ -1,0 +1,16 @@
+---
+# s1 is a repurposed laptop, and a scheduled reboot is what keeps it stable over
+# weeks of uptime. This is load-bearing maintenance, not housekeeping — see the
+# README section "Scheduled reboot" before changing or removing it.
+reboot_unit_name: s1-reboot
+
+# systemd timer schedule. Kept in sync by hand with the Better Stack maintenance
+# window on `betteruptime_monitor.books` (terraform/betteruptime_monitor.tf):
+# moving this without moving that brings back a weekly false incident.
+reboot_oncalendar: "Sun *-*-* 04:00:00"
+
+# Unit files left behind by the hand-made timer this role replaces. Removed on
+# every run so the reboot can never be scheduled from two places at once.
+reboot_legacy_units:
+  - reboot-daily.timer
+  - reboot-daily.service

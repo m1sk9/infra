@@ -23,13 +23,19 @@ ansible/
 │       ├── vars.yml                 # non-sensitive variables; references vault_ secrets
 │       └── vault.yml                # ansible-vault encrypted secrets
 ├── roles/
-│   └── docker_compose_app/          # generic "deploy a compose stack" role
-│       ├── tasks/main.yml
-│       ├── defaults/main.yml
-│       └── files/<service>/         # compose.yaml + vault-encrypted env/config
+│   ├── docker_compose_app/          # generic "deploy a compose stack" role
+│   │   ├── tasks/main.yml
+│   │   ├── defaults/main.yml
+│   │   └── files/<service>/         # compose.yaml + vault-encrypted env/config
+│   ├── restic_backup/               # weekly restic backup to Cloudflare R2
+│   ├── heartbeat/                   # Better Stack heartbeat senders (systemd timers)
+│   └── scheduled_reboot/            # weekly maintenance reboot (systemd timer)
 └── playbooks/
     ├── site.yml                     # connectivity check
-    └── services.yml                 # deploy all Docker Compose services
+    ├── services.yml                 # deploy all Docker Compose services
+    ├── backup.yml                   # restic backup script and timer
+    ├── monitoring.yml               # heartbeat senders
+    └── maintenance.yml              # scheduled reboot
 ```
 
 ## Hosts
@@ -200,6 +206,47 @@ sudo bash -c 'set -a; . /etc/restic/s1-backup.env; restic restore latest --tag w
 sqlite3 /tmp/restore/.../wallos.db 'PRAGMA integrity_check;'
 ```
 
+## Scheduled reboot
+
+s1 is a repurposed laptop pressed into service as a always-on server, and it is
+rebooted every **Sunday 04:00 JST** to stay stable across weeks of uptime. The
+`scheduled_reboot` role owns that schedule (`s1-reboot.timer` →
+`s1-reboot.service` → `systemctl reboot`). Deploy it with:
+
+```fish
+ansible-playbook playbooks/maintenance.yml
+```
+
+**This is deliberate maintenance, not housekeeping — do not remove it without a
+replacement.** It was a hand-made unit on the host (`reboot-daily.timer`, named
+"daily" while firing weekly) until it was brought in here; the role deletes those
+files so the reboot cannot be scheduled from two places.
+
+Applying the role never reboots s1. Starting a `.timer` arms the schedule without
+running its `.service`, and the timer sets `Persistent=false`, so a window missed
+while s1 was down is not caught up on the next boot — a host that just booted has
+none of the accumulated state this reboot exists to clear.
+
+Every service comes back on its own: `systemctl reboot` stops `docker.service`
+through the normal shutdown transaction, and each stack is declared
+`restart: unless-stopped`. Measured on 2026-08-02, the whole cycle took just over
+two minutes end to end (reboot at 04:00:02, PdfDing serving again at 04:02:08).
+
+### The reboot and the monitors
+
+That two-minute gap is long enough for `betteruptime_monitor.books` to open an
+incident, because `/healthz` is the one external check that travels all the way to
+a container. It carries a matching **maintenance window (Sunday 04:00–04:15
+Tokyo)** in [`terraform/betteruptime_monitor.tf`](../terraform/betteruptime_monitor.tf)
+— **change `reboot_oncalendar` and that window has to move with it**, or the
+status page reports a failure every week for a reboot working as intended.
+
+Nothing else needs one. `wallos_edge` is answered by Cloudflare without consulting
+the origin, and the heartbeats each tolerate a missed run — the same reboot left a
+234 s gap in `s1_host` against its 420 s budget and 366 s in the service
+heartbeats against 600 s. `s1_host` is deliberately left without a window, so a
+reboot that fails to come back is still reported.
+
 ## Monitoring
 
 s1 is reachable only over Cloudflare Tunnel and Tailscale, so nothing outside can
@@ -305,12 +352,13 @@ GitHub Actions deploys this configuration automatically, mirroring the Terraform
 
 - **CI** ([`ci.yaml`](../.github/workflows/ci.yaml)) — on every pull request:
   runs `--syntax-check` on all playbooks, then a **plan**
-  (`--check --diff` for `services.yml`, `backup.yml` and `monitoring.yml`) against s1
-  so the PR shows exactly what would change — the Terraform `plan` equivalent. The
-  `docker_compose_v2` module supports check mode, so the diff is meaningful.
+  (`--check --diff` for `services.yml`, `backup.yml`, `monitoring.yml` and
+  `maintenance.yml`) against s1 so the PR shows exactly what would change — the
+  Terraform `plan` equivalent. The `docker_compose_v2` module supports check mode,
+  so the diff is meaningful.
 - **CD** ([`cd.yaml`](../.github/workflows/cd.yaml)) — on push to `main`
   (or manual `workflow_dispatch`): joins the tailnet, then runs `services.yml`,
-  `backup.yml` and `monitoring.yml` against s1.
+  `backup.yml`, `monitoring.yml` and `maintenance.yml` against s1.
 
 Both workflows run their full job set on every PR and push — there is no
 `paths`-based gating, so an Ansible-only change still runs the Terraform jobs and

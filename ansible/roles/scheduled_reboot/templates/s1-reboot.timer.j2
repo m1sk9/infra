@@ -1,0 +1,14 @@
+# {{ ansible_managed }}
+[Unit]
+Description=Schedule the weekly maintenance reboot of s1
+
+[Timer]
+OnCalendar={{ reboot_oncalendar }}
+# Deliberately not Persistent=true, unlike s1-backup.timer: this reboot exists to
+# clear state accumulated over a week of uptime, and a host that just booted has
+# none. Catching up on a window missed while s1 was down would spend real
+# downtime rebooting a machine that is already fresh.
+Persistent=false
+
+[Install]
+WantedBy=timers.target

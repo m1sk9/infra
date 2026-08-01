@@ -16,6 +16,11 @@
 # powered on". A home line outage raises this incident with the machine perfectly
 # healthy. From the outside those are the same thing, so that is the right
 # reading, but it is worth knowing before chasing a phantom failure.
+#
+# This is also the check that stays awake through the weekly maintenance reboot:
+# it carries no maintenance window, unlike betteruptime_monitor.books, and a normal
+# reboot fits inside the budget below with room to spare (234 s of the 420 s on
+# 2026-08-02). A reboot that fails to come back therefore still reports here.
 resource "betteruptime_heartbeat" "s1_host" {
   name   = "s1"
   period = 300 # timer fires every 2 min, so this tolerates one missed run

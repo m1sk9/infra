@@ -1,0 +1,9 @@
+---
+- name: Configure s1 maintenance schedules
+  hosts: s1
+  become: true
+
+  tasks:
+    - name: Schedule the weekly reboot
+      ansible.builtin.include_role:
+        name: scheduled_reboot
