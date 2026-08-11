@@ -1,7 +1,7 @@
 name: pdfding
 services:
   pdfding:
-    image: mrmn/pdfding:v1.12.0
+    image: mrmn/pdfding:v1.13.0
     ports:
       - "8384:8000/tcp"
     env_file:
