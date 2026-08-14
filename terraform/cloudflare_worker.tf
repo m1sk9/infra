@@ -98,3 +98,27 @@ resource "cloudflare_workers_script_subdomain" "working" {
   enabled          = false
   previews_enabled = false
 }
+
+# ledger.m1sk9.dev - Ledger's Discord chat archive viewer
+#
+# Why `service` is a string literal and not a cloudflare_workers_script
+# reference: the script is a build artifact of the Ledger repository, deployed
+# by wrangler, which reads the archive out of cloudflare_r2_bucket.ledger_archive
+# through an R2 binding wrangler also owns. Same boundary as the portfolio above:
+# wrangler owns the script, Terraform owns the routing.
+#
+# Why a custom domain and not a workers_route like the portfolio: a route needs
+# an existing proxied record to attach to, and ledger.m1sk9.dev has none. With no
+# record to adopt there is nothing to destroy and recreate, so the custom domain
+# creates the hostname itself — the same shape as blog, ua and working.
+#
+# Why not a cloudflare_workers_script_subdomain like its neighbours: the exposure
+# is already disabled on the wrangler side (`workers_dev: false` in Ledger's
+# wrangler.jsonc). Since wrangler owns this script, Terraform holding the same
+# setting would mean the two fighting over it on every deploy.
+resource "cloudflare_workers_custom_domain" "ledger" {
+  account_id = local.cloudflare_account_id
+  zone_id    = local.cloudflare_zone_id
+  hostname   = "ledger.m1sk9.dev"
+  service    = "ledger-web"
+}
