@@ -2,7 +2,7 @@
 lefthook = "2.1.10"
 terraform = "1.15.8"
 tflint = "0.64.0"
-uv = "0.12.4"
+uv = "0.12.5"
 "pipx:ansible-core" = "2.21.3"
 
 [settings]
