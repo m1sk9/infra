@@ -15,3 +15,26 @@ resource "cloudflare_r2_bucket" "s1_backup" {
   name       = "s1-backup"
   location   = "apac"
 }
+
+# R2 bucket for Ledger's Discord chat archive (github.com/m1sk9/Ledger).
+#
+# Ledger exports Discord chat history as NDJSON, one line per message, plus a
+# manifest.json describing which channels and time ranges have been archived.
+# The viewer on ledger.m1sk9.dev reads both straight out of this bucket through
+# a Worker's R2 binding, so the bucket is the storage layer and the source of
+# truth for the site — there is no database behind it.
+#
+# Why the bucket stays private: the archive is a copy of a private Discord
+# server's history, so it must never be reachable object-by-object. No managed
+# r2.dev domain and no custom domain is attached here; the only reader is the
+# Worker, which is what applies access control before returning anything.
+#
+# The Worker itself is not here for the same reason the portfolio's is not (see
+# cloudflare_worker.tf): the script is a build artifact of the Ledger
+# repository, deployed by wrangler. Terraform owns the bucket and the routing,
+# wrangler owns the script and its R2 binding.
+resource "cloudflare_r2_bucket" "ledger_archive" {
+  account_id = local.cloudflare_account_id
+  name       = "ledger-archive"
+  location   = "apac"
+}
