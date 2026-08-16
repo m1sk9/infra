@@ -1,7 +1,7 @@
 name: wallos
 services:
   wallos:
-    image: ghcr.io/ellite/wallos:5.4.2
+    image: ghcr.io/ellite/wallos:5.4.4
     ports:
       - "8282:80/tcp"
     environment:
