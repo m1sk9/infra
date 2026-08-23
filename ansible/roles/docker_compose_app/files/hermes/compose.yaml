@@ -9,19 +9,21 @@ services:
       # gateway cannot write config.yaml, state.db, or sessions.
       PUID: "1000"
       PGID: "1000"
-      # Open to anyone who can see the bot, against the fail-closed default,
-      # but in server channels only. The wildcard is what draws that line:
-      # Hermes consults the channel allow-list solely when `not is_dm`, so a
-      # DM matches nothing and is refused, while every guild channel matches.
-      # DISCORD_ALLOW_ALL_USERS would open both at once, and a user allow-list
-      # cannot be combined with this — configuring one disables the
-      # channel-based path entirely.
+      # Open to anyone who can see the bot, against the fail-closed default.
+      #
+      # Not DISCORD_ALLOWED_CHANNELS: that gates the Discord adapter but never
+      # authorizes anyone at the gateway above it. That layer refuses to read an
+      # adapter's "open" policy as authorization at all — SECURITY.md 2.6
+      # requires an allowlist for every network-exposed adapter, and trusting
+      # "open" was a fail-open bug (#34515). A channel list is not a sender
+      # list, so every message fell through to default-deny. This flag is one of
+      # the explicit opt-ins that layer does honour.
       #
       # It sits here rather than in the vault-encrypted env file because "the
       # door is open" is a fact a reviewer should read in the diff, not one
       # buried in a blob. Slash commands stay gated separately — see
       # gateway.platforms.discord in config.yaml.
-      DISCORD_ALLOWED_CHANNELS: "*"
+      DISCORD_ALLOW_ALL_USERS: "true"
     volumes:
       - /home/m1sk9/hermes-data:/opt/data
     env_file:
