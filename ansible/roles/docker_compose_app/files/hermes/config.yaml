@@ -13,11 +13,18 @@ providers:
 
 model:
   provider: "orcarouter"
-  default: "deepseek/deepseek-v4-flash-free"
-  # Stated by the vendor, not discoverable: OrcaRouter's /v1/models returns a
-  # null context_length for the -free variants, so auto-detection has nothing
-  # to read and would fall back to a generic window.
-  context_length: 1048576
+  # An account-scoped route, so it appears only on the authenticated /v1/models
+  # listing — the public catalogue does not have it. Being a route rather than a
+  # model, what actually answers can change without anything here changing.
+  default: "orcarouter/meai"
+  # The listing reports a null context_length for this route, so auto-detection
+  # has nothing to read. Pinned low on purpose: the two errors are not
+  # symmetric. Too small only compresses earlier than it had to; too large lets
+  # Hermes build a request the upstream then rejects outright. 200k matches the
+  # smallest window OrcaRouter publishes for its own routes, and sessions here
+  # reset after a day idle and are per-user, so they rarely approach it. Raise
+  # it once the route's real floor is known.
+  context_length: 200000
 
 # Allow-list of what the agent may call. `web` is web_search plus web_extract:
 # search alone returns titles, URLs and snippets, which is not enough to answer
