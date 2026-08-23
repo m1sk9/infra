@@ -30,6 +30,9 @@ sqlite3 "{{ db }}" ".backup '${snap_base}/{{ t.name }}/{{ db | basename }}'"
 {% endfor %}
 {% endif %}
 restic backup --tag {{ t.name }} \
+{% for e in t.excludes | default([]) %}
+  --exclude "{{ e }}" \
+{% endfor %}
 {% if has_sqlite %}
   "${snap_base}/{{ t.name }}" \
 {% endif %}

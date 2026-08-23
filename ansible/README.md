@@ -92,6 +92,7 @@ Docker Compose services managed on s1. Each is deployed to `~/services/<name>/` 
 | babyrite | `ghcr.io/m1sk9/babyrite` | mounts `~/babyrite-data/config.toml`; `.env` |
 | wallos | `ghcr.io/ellite/wallos` | published on `:8282`; data in `~/wallos-data` |
 | pdfding | `mrmn/pdfding` | published on `:8384`; data in `~/pdfding-data/{db,media,consume}`; `.env` |
+| hermes | `nousresearch/hermes-agent` | Discord-only chat bot; `~/hermes-data` is `/opt/data`; `.env`; toolsets restricted in `config.yaml` |
 
 Deploy or update all services (idempotent — unchanged stacks are not recreated):
 
@@ -170,7 +171,14 @@ backup_targets:
       - /path/to/foo.db
     paths:                 # optional: files/dirs handed to restic as-is
       - /path/to/assets
+    excludes:              # optional: restic --exclude patterns
+      - /path/to/assets/cache
 ```
+
+Use `excludes` when naming the whole tree and carving out the regenerable parts
+is more durable than listing the parts worth keeping — a service whose data
+layout grows new directories across releases would otherwise stop being covered
+without anyone noticing.
 
 SQLite databases are snapshotted with `.backup` (consistent even while the
 service writes) before restic reads them, so services need not be stopped.
@@ -288,7 +296,7 @@ the same question without template syntax.
 |---|---|
 | `wallos` | The container answers on localhost — the other half of the edge check in `betteruptime_monitor.wallos_edge` |
 | `chime` | The scheduler is still ticking (its healthcheck fails once its heartbeat file goes stale) |
-| `babyrite`, `honeypot` | Only that the container runs. Both hold Discord gateway websockets, so **a dead gateway inside a live process stays invisible** until those bots push for themselves |
+| `babyrite`, `honeypot`, `hermes` | Only that the container runs. All three hold Discord gateway websockets, so **a dead gateway inside a live process stays invisible** until those bots push for themselves |
 
 ### Backup notification
 
@@ -324,6 +332,7 @@ cd ../ansible && ansible-vault edit inventory/group_vars/all/vault.yml
 | `vault_heartbeat_url_chime` | `heartbeat_url_chime` |
 | `vault_heartbeat_url_babyrite` | `heartbeat_url_babyrite` |
 | `vault_heartbeat_url_honeypot` | `heartbeat_url_honeypot` |
+| `vault_heartbeat_url_hermes` | `heartbeat_url_hermes` |
 | `vault_heartbeat_url_backup` | `heartbeat_url_backup` |
 
 These change only when a heartbeat resource is replaced, so this is a one-off per
