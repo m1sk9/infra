@@ -66,8 +66,17 @@ web:
   extract_char_limit: 50000
 
 memory:
+  # The agent's own notes: environment facts, conventions, things it worked out.
+  # Guild-level knowledge, so one shared store is the right shape.
   memory_enabled: true
-  user_profile_enabled: true
+  # Off, unlike the default. USER.md holds preferences and communication style,
+  # and memory is scoped per profile rather than per Discord user — so with the
+  # guild open, one person's "keep answers short" becomes the bot's belief about
+  # everyone. The 1375-character budget makes it worse than merely wrong: several
+  # speakers thrash it, the agent consolidating one person's entries out to fit
+  # another's. Per-user profiles would need an external memory provider, which is
+  # far more machinery than this is worth.
+  user_profile_enabled: false
 
 # Against the upstream default of "none". Every message re-sends the whole
 # session, and the model is a rate-limited free tier, so a session that never
