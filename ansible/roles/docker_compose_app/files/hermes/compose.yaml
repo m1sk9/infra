@@ -1,0 +1,30 @@
+name: hermes
+services:
+  app:
+    image: nousresearch/hermes-agent:v2026.8.19
+    command: gateway run
+    environment:
+      # The image runs as UID 10000, but /opt/data is a bind mount owned by
+      # m1sk9 (1000:1000) that the container cannot chown. Without these the
+      # gateway cannot write config.yaml, state.db, or sessions.
+      PUID: "1000"
+      PGID: "1000"
+      # Open to anyone who can see the bot, against the fail-closed default.
+      # Deliberate: this is a chat assistant in a small guild. It sits here
+      # rather than in the vault-encrypted env file because "the door is open"
+      # is a fact a reviewer should read in the diff, not one buried in a blob.
+      # Slash commands stay gated separately — see gateway.platforms.discord
+      # in config.yaml.
+      DISCORD_ALLOW_ALL_USERS: "true"
+    volumes:
+      - /home/m1sk9/hermes-data:/opt/data
+    env_file:
+      - .env
+    restart: always
+    # s1 has 3.7 GiB total with six other containers on it. Browser automation
+    # is the memory-hungry part of Hermes and its toolset is disabled, so the
+    # 1 GiB floor from the upstream sizing table applies; the headroom above it
+    # bounds the blast radius of a runaway session instead of letting the kernel
+    # OOM-kill a neighbouring service.
+    mem_limit: 1536m
+    cpus: 1.5
