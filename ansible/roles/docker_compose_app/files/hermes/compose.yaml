@@ -9,19 +9,26 @@ services:
       # gateway cannot write config.yaml, state.db, or sessions.
       PUID: "1000"
       PGID: "1000"
-      # Open to anyone who can see the bot, against the fail-closed default,
-      # but in server channels only. The wildcard is what draws that line:
-      # Hermes consults the channel allow-list solely when `not is_dm`, so a
-      # DM matches nothing and is refused, while every guild channel matches.
-      # DISCORD_ALLOW_ALL_USERS would open both at once, and a user allow-list
-      # cannot be combined with this — configuring one disables the
-      # channel-based path entirely.
+      # Access is a granted Discord role, which is the one lever that opens
+      # server channels without also opening DMs.
       #
-      # It sits here rather than in the vault-encrypted env file because "the
-      # door is open" is a fact a reviewer should read in the diff, not one
-      # buried in a blob. Slash commands stay gated separately — see
-      # gateway.platforms.discord in config.yaml.
-      DISCORD_ALLOWED_CHANNELS: "*"
+      # Both layers have to agree, and only this one satisfies both. The gateway
+      # refuses to read an adapter's permissive intake as authorization at all
+      # (SECURITY.md 2.6; trusting "open" was the fail-open of #34515), so
+      # DISCORD_ALLOWED_CHANNELS authorized nobody and denied every message.
+      # Roles are different — the adapter verifies the role against the message's
+      # own guild and sets source.role_authorized, which the gateway honours.
+      #
+      # DMs are refused by construction: the adapter's DM branch demands
+      # discord.dm_role_auth_guild before it will consider a role at all, and
+      # that key is deliberately unset. Leave it that way — it exists to stop a
+      # role held in any mutual guild from authorizing a DM.
+      #
+      # Requires the Server Members Intent (auto-enabled on connect once this is
+      # set); without it in the Developer Portal the gateway will not connect.
+      # It sits here rather than in the vault-encrypted env file because who may
+      # reach the bot is a fact a reviewer should read in the diff.
+      DISCORD_ALLOWED_ROLES: "1521203591954829384"
     volumes:
       - /home/m1sk9/hermes-data:/opt/data
     env_file:
