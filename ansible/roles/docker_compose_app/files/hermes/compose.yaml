@@ -9,13 +9,19 @@ services:
       # gateway cannot write config.yaml, state.db, or sessions.
       PUID: "1000"
       PGID: "1000"
-      # Open to anyone who can see the bot, against the fail-closed default.
-      # Deliberate: this is a chat assistant in a small guild. It sits here
-      # rather than in the vault-encrypted env file because "the door is open"
-      # is a fact a reviewer should read in the diff, not one buried in a blob.
-      # Slash commands stay gated separately — see gateway.platforms.discord
-      # in config.yaml.
-      DISCORD_ALLOW_ALL_USERS: "true"
+      # Open to anyone who can see the bot, against the fail-closed default,
+      # but in server channels only. The wildcard is what draws that line:
+      # Hermes consults the channel allow-list solely when `not is_dm`, so a
+      # DM matches nothing and is refused, while every guild channel matches.
+      # DISCORD_ALLOW_ALL_USERS would open both at once, and a user allow-list
+      # cannot be combined with this — configuring one disables the
+      # channel-based path entirely.
+      #
+      # It sits here rather than in the vault-encrypted env file because "the
+      # door is open" is a fact a reviewer should read in the diff, not one
+      # buried in a blob. Slash commands stay gated separately — see
+      # gateway.platforms.discord in config.yaml.
+      DISCORD_ALLOWED_CHANNELS: "*"
     volumes:
       - /home/m1sk9/hermes-data:/opt/data
     env_file:
