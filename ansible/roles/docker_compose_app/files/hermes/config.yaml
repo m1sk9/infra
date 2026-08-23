@@ -138,4 +138,7 @@ discord:
   # sessions this bot holds are per-user already (group_sessions_per_user
   # defaults to true), so the isolation is redundant here.
   auto_thread: false
-  reactions: true
+  # No 👀/✅/❌ on the messages it processes. With auto_thread off the bot already
+  # replies inline, so the reply is the acknowledgement and the reactions only
+  # mark up other people's messages in a shared channel.
+  reactions: false
