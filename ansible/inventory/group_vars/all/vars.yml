@@ -99,3 +99,10 @@ heartbeat_targets:
     url: "{{ vault_heartbeat_url_honeypot }}"
     oncalendar: "*:0/3"
     check_command: "docker ps --filter 'name=^honeypot-app-1$' --filter status=running -q | grep -q ."
+
+  # Same shape and the same blind spot as the two above: no healthcheck in the
+  # image, and a Discord gateway websocket held inside the process.
+  - name: hermes
+    url: "{{ vault_heartbeat_url_hermes }}"
+    oncalendar: "*:0/3"
+    check_command: "docker ps --filter 'name=^hermes-app-1$' --filter status=running -q | grep -q ."
