@@ -88,6 +88,18 @@ memory:
   # far more machinery than this is worth.
   user_profile_enabled: false
 
+# The first-contact offer to build a user profile, which upstream leaves on
+# ("ask"). It persists through memory(target="user"), and user_profile_enabled
+# above is false, so the offer can only end in facts it has nowhere to put.
+# Quoted because YAML reads a bare off as false, and the mode is compared as a
+# string -- an unquoted value silently means "ask".
+#
+# Turning it off also keeps Hermes' own writes out of this file: the offer
+# marks itself under onboarding.seen in config.yaml, which Ansible deploys, so
+# the write reappears as drift and recreates the stack on the next merge.
+onboarding:
+  profile_build: "off"
+
 # Against the upstream default of "none". Every message re-sends the whole
 # session, and the model is a rate-limited free tier, so a session that never
 # resets walks itself into HTTP 429. A day of silence is the cheap boundary to
@@ -114,6 +126,27 @@ display:
 gateway:
   platforms:
     discord:
+      # Silences the "No home channel is set" notice. Upstream calls it a
+      # one-time prompt, but the check is `not history` with no seen flag, so
+      # it fires on every fresh session -- with session_reset idle 1440 and
+      # per-user sessions, that is once a day per person. Nothing suppresses
+      # the notice itself; declaring a home channel is the only way off it.
+      #
+      # A DM channel, and declared here rather than set with /sethome: the
+      # command writes config.yaml back, and Ansible deploys this file, so the
+      # drift would recreate the stack on the next merge to main.
+      #
+      # This does not open DMs. Inbound DMs are still refused for want of
+      # discord.dm_role_auth_guild (see compose.yaml), so the bot can post
+      # here while a reply to it is dropped like any other DM.
+      home_channel:
+        platform: "discord"
+        chat_id: "1541426195990581399"
+        name: "DM"
+      # A home channel also turns on the "Gateway online" notice for every
+      # gateway start. Liveness is Better Stack's job, and a Renovate image
+      # bump should not announce itself.
+      gateway_restart_notification: false
       extra:
         allow_admin_from:
           - "586824421470109716"
