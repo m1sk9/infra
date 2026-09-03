@@ -13,9 +13,7 @@ r2_secret_access_key: "{{ vault_r2_secret_access_key }}"
 # Targets consumed by the restic_backup role. Back up more data by adding an
 # entry here — the role itself needs no changes. Per target: `name` (used as
 # the restic --tag), optional `sqlite_dbs` (online-snapshotted via .backup),
-# optional `paths` (files/dirs handed to restic as-is), and optional `excludes`
-# (restic --exclude patterns, for when a whole tree is easier to name than the
-# handful of subdirectories worth keeping).
+# and optional `paths` (files/dirs handed to restic as-is).
 backup_targets:
   - name: wallos
     sqlite_dbs:
@@ -27,29 +25,6 @@ backup_targets:
       - /home/m1sk9/pdfding-data/db/db.sqlite3
     paths:
       - /home/m1sk9/pdfding-data/media
-  # Hermes keeps everything in one HERMES_HOME, so the tree is named whole and
-  # the parts that must not travel are excluded rather than the reverse: the
-  # layout gains directories across releases and an allow-list would silently
-  # stop covering them.
-  - name: hermes
-    sqlite_dbs:
-      - /home/m1sk9/hermes-data/state.db
-    paths:
-      - /home/m1sk9/hermes-data
-    excludes:
-      # Taken consistently by the sqlite snapshot above. The live file plus its
-      # WAL sidecars would restore to a half-committed state.
-      - /home/m1sk9/hermes-data/state.db*
-      # Regenerated on demand, and the bulk of the tree: rotated gateway logs,
-      # per-session trajectory caches, spillover, and the lazy-installed Python
-      # packages the image redirects here (HERMES_LAZY_INSTALL_TARGET).
-      - /home/m1sk9/hermes-data/logs
-      - /home/m1sk9/hermes-data/cache
-      - /home/m1sk9/hermes-data/checkpoints
-      - /home/m1sk9/hermes-data/lazy-packages
-      # `hermes backup` zips, if anyone ever runs one by hand. Each already
-      # holds its own copy of state.db.
-      - /home/m1sk9/hermes-data/backups
 
 # Ping URL for the backup heartbeat, consumed by the restic_backup role. Empty
 # disables the pings, so the role stays usable without Better Stack.
@@ -99,10 +74,3 @@ heartbeat_targets:
     url: "{{ vault_heartbeat_url_honeypot }}"
     oncalendar: "*:0/3"
     check_command: "docker ps --filter 'name=^honeypot-app-1$' --filter status=running -q | grep -q ."
-
-  # Same shape and the same blind spot as the two above: no healthcheck in the
-  # image, and a Discord gateway websocket held inside the process.
-  - name: hermes
-    url: "{{ vault_heartbeat_url_hermes }}"
-    oncalendar: "*:0/3"
-    check_command: "docker ps --filter 'name=^hermes-app-1$' --filter status=running -q | grep -q ."

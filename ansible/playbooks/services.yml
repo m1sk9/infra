@@ -72,27 +72,6 @@
             dest: "{{ ansible_facts['env']['HOME'] }}/honeypot-data/config.toml"
             mode: "0644"
 
-    - name: Deploy hermes
-      ansible.builtin.include_role:
-        name: docker_compose_app
-      vars:
-        app_name: hermes
-        app_dirs:
-          - "{{ ansible_facts['env']['HOME'] }}/hermes-data"
-        app_files:
-          - src: hermes/env
-            dest: "{{ ansible_facts['env']['HOME'] }}/services/hermes/.env"
-          # 0640, not 0644: Hermes tightens this file's mode itself on startup.
-          # Declaring the looser mode makes copy reset it on every run, and the
-          # role recreates the stack whenever a deployed file changed — so the
-          # container would restart on every unrelated merge to main.
-          - src: hermes/config.yaml
-            dest: "{{ ansible_facts['env']['HOME'] }}/hermes-data/config.yaml"
-            mode: "0640"
-          - src: hermes/SOUL.md
-            dest: "{{ ansible_facts['env']['HOME'] }}/hermes-data/SOUL.md"
-            mode: "0644"
-
     - name: Settle window for chime
       ansible.builtin.pause:
         seconds: 10
