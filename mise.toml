@@ -1,6 +1,6 @@
 [tools]
 lefthook = "2.1.12"
-terraform = "1.16.0"
+terraform = "1.16.1"
 tflint = "0.64.0"
 uv = "0.12.9"
 "pipx:ansible-core" = "2.21.3"
