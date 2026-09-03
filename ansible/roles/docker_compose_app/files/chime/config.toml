@@ -93,3 +93,21 @@ timezone = "Asia/Tokyo"
   day_of_month = [26]
   webhook = "m1sk9"
   message = "<@586824421470109716> **Netflix の徴収を行ってください**"
+
+[[status_pages]]
+  name = "github"
+  url = "https://www.githubstatus.com"
+  webhook = "dev-status"
+  display_name = "GitHub Status"
+
+[[status_pages]]
+  name = "proton"
+  url = "https://status.proton.me"
+  webhook = "dev-status"
+  display_name = "Proton Status"
+
+[[status_pages]]
+  name = "claude"
+  url = "https://status.claude.com"
+  webhook = "dev-status"
+  display_name = "Claude Status"
