@@ -3,96 +3,8 @@ log_level = "info"
 tick_interval_sec = 30
 timezone = "Asia/Tokyo"
 
-[[reminders]]
-  name = "daily-reset-00"
-  time = "00:00"
-  days = ["every"]
-  webhook = "ffxiv"
-  message = """<@&1521204034747367456> **デイリーリセット (00:00)**
-次のコンテンツがリセットされました:
-- コンテンツルーレット
-- 友好部族クエスト
-- デイリーモブハント
-- ミニくじテンダー"""
-
-[[reminders]]
-  name = "daily-reset-05"
-  time = "05:00"
-  days = ["every"]
-  webhook = "ffxiv"
-  message = """<@&1521204034747367456> **デイリーリセット (05:00)**
-次のコンテンツがリセットされました:
-- グランドカンパニー調達任務
-- 冒険者小隊訓練"""
-
-[[reminders]]
-  name = "daily-reset-cosmic"
-  time = "18:00"
-  days = ["every"]
-  webhook = "ffxiv"
-  message = "<@&1521204034747367456> **コスモエクスプローラーのデイリー課題** がリセットされました (18:00)"
-
-[[reminders]]
-  name = "daily-leves-reset-09"
-  time = "09:00"
-  days = ["every"]
-  webhook = "ffxiv"
-  message = "<@&1521204034747367456> **リーフ権** が回復されました"
-
-[[reminders]]
-  name = "daily-leves-reset-21"
-  time = "21:00"
-  days = ["every"]
-  webhook = "ffxiv"
-  message = "<@&1521204034747367456> **リーフ権** が回復されました"
-
-[[reminders]]
-  name = "weekly-reset"
-  time = "17:00"
-  days = ["tue"]
-  webhook = "ffxiv"
-  message = """<@&1521204034747367456> **週課リセット (火 17:00)**
-次のコンテンツがリセットされました:
-- レイド・アライアンスレイドの装備取得制限
-- アラガントームストーン: 数理取得制限
-- リスキーモブ手配書
-- お得意様取引
-- クロの空想帳
-- ソーチョーの幻想盤
-- 攻略手帳
-- マスクカーニバル
-- 青魔道士ログ
-- 冒険者小隊の小隊任務"""
-
-[[reminders]]
-  name = "fashioncheck-start"
-  time = "17:00"
-  days = ["tue"]
-  webhook = "ffxiv"
-  message = """<@&1521204034747367456> **ファッションチェックのお題** が発表されました
-[お題を確認する](<https://game8.jp/ff14/360622>)"""
-
-[[reminders]]
-  name = "gs-jumbo-cactpot"
-  time = "21:00"
-  days = ["sat"]
-  webhook = "ffxiv"
-  message = """<@&1521204034747367456> **ジャンボくじテンダー** の結果発表が行われました
--# 22:00 までに確認すると獲得 MGP にボーナスが加算されます！"""
-
-[[reminders]]
-  name = "monthly-salary-statement"
-  time = "00:00"
-  day_of_month = [30]
-  webhook = "m1sk9"
-  message = "<@586824421470109716> **給与明細をスプレッドシートに登録してください**"
-
-[[reminders]]
-  name = "monthly-netflix-collection"
-  time = "00:00"
-  day_of_month = [26]
-  webhook = "m1sk9"
-  message = "<@586824421470109716> **Netflix の徴収を行ってください**"
+# Status ----
+## 現状対応しているのは Atlassian Statuspage v2 のみです ( /api/v2/incidents.json を使うタイプ)
 
 [[status_pages]]
   name = "github"
@@ -111,3 +23,83 @@ timezone = "Asia/Tokyo"
   url = "https://status.claude.com"
   webhook = "dev-status"
   display_name = "Claude Status"
+
+## ---
+
+# FFXIV reminders are disabled. Kept commented out instead of deleted so they can be restored as-is.
+# [[reminders]]
+#   name = "daily-reset-00"
+#   time = "00:00"
+#   days = ["every"]
+#   webhook = "ffxiv"
+#   message = """<@&1521204034747367456> **デイリーリセット (00:00)**
+# 次のコンテンツがリセットされました:
+# - コンテンツルーレット
+# - 友好部族クエスト
+# - デイリーモブハント
+# - ミニくじテンダー"""
+#
+# [[reminders]]
+#   name = "daily-reset-05"
+#   time = "05:00"
+#   days = ["every"]
+#   webhook = "ffxiv"
+#   message = """<@&1521204034747367456> **デイリーリセット (05:00)**
+# 次のコンテンツがリセットされました:
+# - グランドカンパニー調達任務
+# - 冒険者小隊訓練"""
+#
+# [[reminders]]
+#   name = "daily-reset-cosmic"
+#   time = "18:00"
+#   days = ["every"]
+#   webhook = "ffxiv"
+#   message = "<@&1521204034747367456> **コスモエクスプローラーのデイリー課題** がリセットされました (18:00)"
+#
+# [[reminders]]
+#   name = "daily-leves-reset-09"
+#   time = "09:00"
+#   days = ["every"]
+#   webhook = "ffxiv"
+#   message = "<@&1521204034747367456> **リーフ権** が回復されました"
+#
+# [[reminders]]
+#   name = "daily-leves-reset-21"
+#   time = "21:00"
+#   days = ["every"]
+#   webhook = "ffxiv"
+#   message = "<@&1521204034747367456> **リーフ権** が回復されました"
+#
+# [[reminders]]
+#   name = "weekly-reset"
+#   time = "17:00"
+#   days = ["tue"]
+#   webhook = "ffxiv"
+#   message = """<@&1521204034747367456> **週課リセット (火 17:00)**
+# 次のコンテンツがリセットされました:
+# - レイド・アライアンスレイドの装備取得制限
+# - アラガントームストーン: 数理取得制限
+# - リスキーモブ手配書
+# - お得意様取引
+# - クロの空想帳
+# - ソーチョーの幻想盤
+# - 攻略手帳
+# - マスクカーニバル
+# - 青魔道士ログ
+# - 冒険者小隊の小隊任務"""
+#
+# [[reminders]]
+#   name = "fashioncheck-start"
+#   time = "17:00"
+#   days = ["tue"]
+#   webhook = "ffxiv"
+#   message = """<@&1521204034747367456> **ファッションチェックのお題** が発表されました
+# [お題を確認する](<https://game8.jp/ff14/360622>)"""
+#
+# [[reminders]]
+#   name = "gs-jumbo-cactpot"
+#   time = "21:00"
+#   days = ["sat"]
+#   webhook = "ffxiv"
+#   message = """<@&1521204034747367456> **ジャンボくじテンダー** の結果発表が行われました
+# -# 22:00 までに確認すると獲得 MGP にボーナスが加算されます！"""
