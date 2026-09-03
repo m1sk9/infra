@@ -58,12 +58,6 @@ output "heartbeat_url_honeypot" {
   sensitive   = true
 }
 
-output "heartbeat_url_hermes" {
-  description = "Better Stack heartbeat URL for hermes"
-  value       = betteruptime_heartbeat.hermes.url
-  sensitive   = true
-}
-
 output "heartbeat_url_backup" {
   description = "Better Stack heartbeat URL for the weekly restic backup"
   value       = betteruptime_heartbeat.backup.url
