@@ -122,34 +122,3 @@ resource "cloudflare_workers_custom_domain" "ledger" {
   hostname   = "ledger.m1sk9.dev"
   service    = "ledger-web"
 }
-
-# lain.m1sk9.dev - Usage notes for the Discord chat bot running on s1
-#
-# A cloudflare_workers_script like blog/ua/working rather than the string-literal
-# service used by portfolio and ledger: there is no build step and no other repo
-# involved, so Terraform owns the content as well as the routing. The page is a
-# single static document with the bot's behaviour written into it — deployed from
-# the same repository that configures the bot, so the two move together.
-resource "cloudflare_workers_script" "lain" {
-  account_id         = local.cloudflare_account_id
-  script_name        = "lain-site"
-  content_file       = "${path.module}/workers/lain.js"
-  content_sha256     = filesha256("${path.module}/workers/lain.js")
-  main_module        = "lain.js"
-  compatibility_date = "2025-05-01"
-}
-
-resource "cloudflare_workers_custom_domain" "lain" {
-  account_id = local.cloudflare_account_id
-  zone_id    = local.cloudflare_zone_id
-  hostname   = "lain.m1sk9.dev"
-  service    = cloudflare_workers_script.lain.script_name
-}
-
-# Custom domain only — disable the workers.dev subdomain exposure.
-resource "cloudflare_workers_script_subdomain" "lain" {
-  account_id       = local.cloudflare_account_id
-  script_name      = cloudflare_workers_script.lain.script_name
-  enabled          = false
-  previews_enabled = false
-}

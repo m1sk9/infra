@@ -73,16 +73,6 @@ resource "betteruptime_heartbeat" "honeypot" {
   email  = true
 }
 
-# Same shape as the two above, and the same blind spot: the Hermes container
-# holds a Discord gateway websocket and ships no healthcheck, so this reports
-# that the process is alive and nothing about whether the bot is still connected.
-resource "betteruptime_heartbeat" "hermes" {
-  name   = "hermes"
-  period = 420
-  grace  = 180
-  email  = true
-}
-
 # The weekly restic backup to R2, which until now failed silently.
 #
 # The unit pings this on success and posts to <url>/fail with the last 50 journal
