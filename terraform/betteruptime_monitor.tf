@@ -71,14 +71,26 @@ resource "betteruptime_monitor" "books" {
   maintenance_days     = ["sun"]
   maintenance_timezone = "Tokyo"
 
-  # domain_expiration is 30 on both monitors rather than disabled on one, because
-  # Better Stack ignores -1 and keeps 30 anyway — asking for -1 just produces a
-  # diff on every plan, forever. Both hostnames are on m1sk9.dev, so the
-  # expiry warning arrives twice. Once a year, which is cheaper than permanent
-  # plan noise.
-  email             = true
-  ssl_expiration    = 30
-  domain_expiration = 30
+  # Why domain_expiration is absent rather than set: Better Stack scopes it to
+  # the domain, not the monitor — "changing the settings for the domain
+  # expiration will automatically update the domain expiration settings for all
+  # monitors for this domain in your team". Both monitors are on m1sk9.dev, so
+  # declaring it here and on wallos_edge put two Terraform resources on one
+  # server-side value. That is what the earlier note here read as "-1 is
+  # ignored": setting -1 on one monitor and 30 on the other cannot converge,
+  # because they are the same setting.
+  #
+  # Writing 30 to both does not converge either. The value comes back null —
+  # which the provider reports as -1 — some time after each apply, so unrelated
+  # plans keep picking up a `-1 -> 30` change on both monitors (2026-08-15,
+  # 2026-09-12). The provider only sends the field when it changes, so leaving
+  # it out of the configuration is what actually stops the churn. It is set in
+  # the UI instead, under the monitor's Advanced settings — the same boundary
+  # that already keeps the status page's advanced attributes out of Terraform.
+  #
+  # ssl_expiration stays: it really is per-monitor and it holds the value.
+  email          = true
+  ssl_expiration = 30
 }
 
 # wallos.m1sk9.dev - Wallos (Access-protected, edge reachability only)
@@ -115,8 +127,7 @@ resource "betteruptime_monitor" "wallos_edge" {
   confirmation_period = local.monitor_confirmation_period
   recovery_period     = local.monitor_recovery_period
 
-  # See the note on books above for why this is 30 rather than -1.
-  email             = true
-  ssl_expiration    = 30
-  domain_expiration = 30
+  # See the note on books above for why domain_expiration is not declared here.
+  email          = true
+  ssl_expiration = 30
 }
