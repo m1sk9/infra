@@ -23,7 +23,21 @@ resource "cloudflare_dns_record" "portfolio" {
   comment = "portfolio"
 }
 
-# babyrite API Documentation (GitHub Pages)
+# API documentation on GitHub Pages (babyrite, LunaticChat)
+#
+# Why proxied = false on both records below: the Universal SSL edge certificate
+# for m1sk9.dev covers the apex and a single label of subdomain, so a two-label
+# host like `lc.api` has no matching certificate at the edge. Proxying these is
+# an outage rather than a hardening step — #232 took lc.api down with a TLS
+# handshake failure until it went back to DNS-only. Left grey, GitHub Pages
+# terminates TLS with its own certificate and both hosts serve HTTPS correctly.
+#
+# Cloudflare Security Insights reports both as "Unproxied CNAME Record detected"
+# (Moderate). The finding is accepted rather than fixed: what sits behind them is
+# public documentation on GitHub Pages, so there is no origin address the CNAME
+# chain could expose, and GitHub absorbs the traffic the insight warns about.
+# Proxying anyway would mean Total TLS, which Cloudflare gates behind Advanced
+# Certificate Manager.
 resource "cloudflare_dns_record" "babyrite_api_docs" {
   zone_id = local.cloudflare_zone_id
   name    = "babyrite.api"
@@ -34,7 +48,6 @@ resource "cloudflare_dns_record" "babyrite_api_docs" {
   comment = "babyrite API Documentation"
 }
 
-# LunaticChat API Docs (GitHub Pages)
 resource "cloudflare_dns_record" "lc_api_docs" {
   zone_id = local.cloudflare_zone_id
   name    = "lc.api"
@@ -43,17 +56,6 @@ resource "cloudflare_dns_record" "lc_api_docs" {
   ttl     = 1
   proxied = false
   comment = "LunaticChat API Docs"
-}
-
-# HoneyPot (GitHub Pages)
-resource "cloudflare_dns_record" "honeypot_api" {
-  zone_id = local.cloudflare_zone_id
-  name    = "honeypot.api"
-  content = "m1sk9.github.io"
-  type    = "CNAME"
-  ttl     = 1
-  proxied = false
-  comment = "HoneyPot"
 }
 
 # Better Stack status page (status.m1sk9.dev)
