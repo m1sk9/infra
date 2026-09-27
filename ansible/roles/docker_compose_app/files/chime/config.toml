@@ -43,6 +43,35 @@ timezone = "Asia/Tokyo"
 
 ## ---
 
+# Browser releases ----
+
+[[watches]]
+  name = "firefox"
+  webhook = "www"
+  source = { kind = "firefox", channel = "release" }
+  display_name = "Firefox Releases"
+  avatar_url = "https://github.com/mozilla.png"
+
+[[watches]]
+  name = "chrome"
+  webhook = "www"
+  source = { kind = "chrome", platform = "win", channel = "stable", rollout = "started" }
+  display_name = "Chrome Releases"
+  avatar_url = "https://github.com/GoogleChrome.png"
+
+## ---
+
+# RSS ----
+
+[[rss]]
+  name = "claude-code-changelog"
+  url = "https://code.claude.com/docs/en/changelog/rss.xml"
+  webhook = "ai"
+  display_name = "Claude Code Changelog"
+  avatar_url = "https://github.com/claude.png"
+
+## ---
+
 # FFXIV reminders are disabled. Kept commented out instead of deleted so they can be restored as-is.
 # [[reminders]]
 #   name = "daily-reset-00"
