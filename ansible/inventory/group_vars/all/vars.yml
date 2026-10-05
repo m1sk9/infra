@@ -62,7 +62,7 @@ heartbeat_targets:
     oncalendar: "*:0/3"
     check_command: "docker ps --filter 'name=^chime-app-1$' --filter health=healthy -q | grep -q ."
 
-  # babyrite and honeypot have no healthcheck and hold Discord gateway
+  # babyrite, honeypot and pythia have no healthcheck and hold Discord gateway
   # websockets, so this only proves the container is running — a dead gateway
   # inside a live process stays invisible.
   - name: babyrite
@@ -74,3 +74,8 @@ heartbeat_targets:
     url: "{{ vault_heartbeat_url_honeypot }}"
     oncalendar: "*:0/3"
     check_command: "docker ps --filter 'name=^honeypot-app-1$' --filter status=running -q | grep -q ."
+
+  - name: pythia
+    url: "{{ vault_heartbeat_url_pythia }}"
+    oncalendar: "*:0/3"
+    check_command: "docker ps --filter 'name=^pythia-app-1$' --filter status=running -q | grep -q ."
