@@ -3,7 +3,7 @@ lefthook = "2.1.17"
 terraform = "1.16.5"
 tflint = "0.64.0"
 uv = "0.12.23"
-"pipx:ansible-core" = "2.21.4"
+"pipx:ansible-core" = "2.21.5"
 
 [settings]
 pipx.uvx = true
