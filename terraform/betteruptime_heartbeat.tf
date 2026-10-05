@@ -52,13 +52,13 @@ resource "betteruptime_heartbeat" "chime" {
   email  = true
 }
 
-# babyrite and honeypot report container liveness only.
+# babyrite, honeypot and pythia report container liveness only.
 #
-# Neither image ships a healthcheck, and both hold a websocket to the Discord
-# gateway. A dropped gateway connection inside a running process is therefore
-# invisible here: these two say "the container is up" and nothing more. Closing
-# that gap needs a push from inside the bots themselves, which lives in their own
-# repositories — chime's heartbeat.rs is the worked example.
+# None of the images ships a healthcheck, and all of them hold a websocket to
+# the Discord gateway. A dropped gateway connection inside a running process is
+# therefore invisible here: these say "the container is up" and nothing more.
+# Closing that gap needs a push from inside the bots themselves, which lives in
+# their own repositories — chime's heartbeat.rs is the worked example.
 resource "betteruptime_heartbeat" "babyrite" {
   name   = "babyrite"
   period = 420
@@ -68,6 +68,13 @@ resource "betteruptime_heartbeat" "babyrite" {
 
 resource "betteruptime_heartbeat" "honeypot" {
   name   = "honeypot"
+  period = 420
+  grace  = 180
+  email  = true
+}
+
+resource "betteruptime_heartbeat" "pythia" {
+  name   = "pythia"
   period = 420
   grace  = 180
   email  = true

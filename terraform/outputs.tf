@@ -58,6 +58,12 @@ output "heartbeat_url_honeypot" {
   sensitive   = true
 }
 
+output "heartbeat_url_pythia" {
+  description = "Better Stack heartbeat URL for pythia"
+  value       = betteruptime_heartbeat.pythia.url
+  sensitive   = true
+}
+
 output "heartbeat_url_backup" {
   description = "Better Stack heartbeat URL for the weekly restic backup"
   value       = betteruptime_heartbeat.backup.url

@@ -164,3 +164,14 @@ resource "betteruptime_status_page_resource" "honeypot" {
   widget_type            = "history"
   position               = 3
 }
+
+resource "betteruptime_status_page_resource" "pythia" {
+  status_page_id         = betteruptime_status_page.m1sk9.id
+  status_page_section_id = betteruptime_status_page_section.self_hosted.id
+  resource_id            = betteruptime_heartbeat.pythia.id
+  resource_type          = "Heartbeat"
+  public_name            = "pythia"
+  explanation            = "Container liveness only — a dropped Discord gateway connection is not visible here."
+  widget_type            = "history"
+  position               = 4
+}
