@@ -72,6 +72,23 @@
             dest: "{{ ansible_facts['env']['HOME'] }}/honeypot-data/config.toml"
             mode: "0644"
 
+    - name: Deploy pythia
+      ansible.builtin.include_role:
+        name: docker_compose_app
+      vars:
+        app_name: pythia
+        app_dirs:
+          - "{{ ansible_facts['env']['HOME'] }}/pythia-data"
+        app_files:
+          - src: pythia/env
+            dest: "{{ ansible_facts['env']['HOME'] }}/services/pythia/.env"
+          - src: pythia/config.toml
+            dest: "{{ ansible_facts['env']['HOME'] }}/pythia-data/config.toml"
+            mode: "0644"
+          - src: pythia/system_prompt.md
+            dest: "{{ ansible_facts['env']['HOME'] }}/pythia-data/system_prompt.md"
+            mode: "0644"
+
     - name: Settle window for chime
       ansible.builtin.pause:
         seconds: 10
