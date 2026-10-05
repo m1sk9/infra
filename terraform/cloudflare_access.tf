@@ -41,16 +41,27 @@ resource "cloudflare_zero_trust_access_application" "wallos" {
 
 # Cloudflare Zero Trust Access for Dozzle
 
+# nanai10a@outlook.jp gets the same access as me, which is safe only because
+# Dozzle runs with shell and container actions disabled. Access cannot pass
+# per-user roles to Dozzle, so re-enabling either would hand them to every
+# address listed here.
 resource "cloudflare_zero_trust_access_policy" "dozzle" {
   account_id = local.cloudflare_account_id
-  name       = "Allow me@m1sk9.dev"
+  name       = "Allow Dozzle viewers"
   decision   = "allow"
 
-  include = [{
-    email = {
-      email = "me@m1sk9.dev"
-    }
-  }]
+  include = [
+    {
+      email = {
+        email = "me@m1sk9.dev"
+      }
+    },
+    {
+      email = {
+        email = "nanai10a@outlook.jp"
+      }
+    },
+  ]
 }
 
 resource "cloudflare_zero_trust_access_application" "dozzle" {
