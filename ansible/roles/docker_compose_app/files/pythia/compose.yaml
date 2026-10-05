@@ -1,0 +1,12 @@
+name: pythia
+services:
+  app:
+    image: ghcr.io/m1sk9/pythia:v3.0.0
+    environment:
+      CONFIG_FILE_PATH: /config/config.toml
+    volumes:
+      - /home/m1sk9/pythia-data/config.toml:/config/config.toml:ro
+      - /home/m1sk9/pythia-data/system_prompt.md:/config/system_prompt.md:ro
+    env_file:
+      - .env
+    restart: always
