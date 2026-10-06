@@ -1,7 +1,7 @@
 name: pythia
 services:
   app:
-    image: ghcr.io/m1sk9/pythia:v3.0.0
+    image: ghcr.io/m1sk9/pythia:v3.1.0
     environment:
       CONFIG_FILE_PATH: /config/config.toml
     volumes:
