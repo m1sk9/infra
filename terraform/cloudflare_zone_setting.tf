@@ -1,4 +1,4 @@
-# Cloudflare Zone SSL/TLS settings.
+# Cloudflare zone settings (SSL/TLS, security headers, Scrape Shield).
 #
 # In provider v5 each zone setting is its own cloudflare_zone_setting resource
 # (the v4 cloudflare_zone_settings_override block no longer exists).
@@ -54,4 +54,20 @@ resource "cloudflare_zone_setting" "security_header" {
       preload            = false
     }
   }
+}
+
+# Hotlink Protection (Scrape Shield) stays off.
+#
+# Why not keep it on with a configuration rule exempting search engines: in the
+# 30 days to 2026-10-08 it blocked 19 requests and every one was a real visitor
+# arriving from Google / Bing image results, Copilot or a Notion link preview.
+# No actual hotlinking was seen, and the images are Workers static assets, so
+# there is no origin bandwidth for it to save.
+#
+# Removing this resource does not turn the setting back on; set value = "on"
+# to roll back.
+resource "cloudflare_zone_setting" "hotlink_protection" {
+  zone_id    = local.cloudflare_zone_id
+  setting_id = "hotlink_protection"
+  value      = "off"
 }
