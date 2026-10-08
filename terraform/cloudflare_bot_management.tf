@@ -11,6 +11,11 @@
 # reads it, so any apply that touches it fails with "inconsistent result after
 # apply" (cloudflare/terraform-provider-cloudflare#7385).
 #
+# Why cf_robots_variant is not set: provider v5.27.0 does not read it back, so
+# import leaves it null and every plan wants to update it, and the Free plan API
+# ignores writes to it (cloudflare/terraform-provider-cloudflare#6727). The zone
+# stays on "policy_only", the Free plan default.
+#
 # Why there are no sbfm_* attributes: Super Bot Fight Mode is not available on
 # the Free plan.
 
@@ -30,5 +35,4 @@ resource "cloudflare_bot_management" "zone" {
   ai_user                 = "disabled"
   aisearch                = "disabled"
   is_robots_txt_managed   = false
-  cf_robots_variant       = "policy_only"
 }
