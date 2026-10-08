@@ -3,20 +3,31 @@
 [discord]
 ## Guilds where Pythia responds. Empty means nowhere.
 allowed_guilds = [1390203929182339092]
+## Pythia's custom status, set at startup: "model" (llm.model),
+## "version" ("Running v3.x.y"), "custom" (activity_custom), or "disabled".
+activity_display = "custom"
+## Required when activity_display = "custom". At most 128 characters.
+activity_custom = "Using Haiku 5.5"
 
 [llm]
 ## v3.0.0 supports OpenRouter only.
 provider = "openrouter"
 ## Required. Pythia refuses to start without it (models differ widely in price).
-## Free variant while OpenRouter credit purchases fail (2026-10-05); free
-## variants are capped per day, so switch back once credits go through.
-model = "openai/gpt-6-luna:floor"
+model = "anthropic/claude-haiku-5.5:floor"
 ## System prompt: either inline or from a file. Setting both is an error.
 system_prompt_file = "/config/system_prompt.md"
-max_output_tokens = 4096
+max_output_tokens = 16384
 timeout_secs = 120
 ## Retries apply to 429 / 5xx / connection errors only.
 max_retries = 20
+## Reasoning effort: "max", "xhigh", "high", "medium", "low", "minimal", or "none".
+## Unset leaves it to the model's default. Ignored (with a warning) when the
+## model does not take it. Reasoning tokens count against max_output_tokens,
+## so raise that too when raising the effort: models that take a token budget
+## spend up to 95% of max_output_tokens on reasoning at "max" / "xhigh" (80% at
+## "high", 50% at "medium"), never less than 1024 tokens, and some (Anthropic)
+## reject requests whose max_output_tokens is not above that budget.
+reasoning_effort = "high"
 
 [context]
 ## Thread messages fetched per turn (Discord allows at most 100 per request).
@@ -35,7 +46,13 @@ images = true
 max_images = 4
 ## Only images on this many of the newest user messages are sent.
 recent_messages = 5
-## Larger images are left out with a note.
+## Images whose longest side exceeds this many pixels are downscaled to fit
+## before they are sent. Pythia keeps no state, so this happens every turn.
+max_image_edge = 2048
+## Attachments larger than this are not downloaded and are left out with a note.
+max_download_bytes = 26214400
+## Images still larger than this after downscaling are left out with a note.
+## Measured after base64 encoding (about 4/3 of the file size), as providers do.
 max_image_bytes = 5242880
 
 [tools]
