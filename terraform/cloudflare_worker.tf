@@ -151,6 +151,11 @@ resource "cloudflare_workers_script" "leak_alert" {
       text = local.cloudflare_zone_id
     },
     {
+      name = "DISCORD_MENTION_USER_ID"
+      type = "plain_text"
+      text = "586824421470109716"
+    },
+    {
       name = "CF_ANALYTICS_TOKEN"
       type = "secret_text"
       text = var.leak_alert_cloudflare_api_token

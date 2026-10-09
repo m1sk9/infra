@@ -92,9 +92,9 @@ async function findLeaks(env, window) {
   return body.data.viewer.zones[0].httpRequestsAdaptiveGroups;
 }
 
-function formatMessage(rows, { start, end }) {
+function formatMessage(rows, { start, end }, userId) {
   const header =
-    `:rotating_light: **Possible leak**: ${rows.length} secret-looking path(s) answered 2xx\n` +
+    `<@${userId}> :rotating_light: **Possible leak**: ${rows.length} secret-looking path(s) answered 2xx\n` +
     `${start.toISOString()} – ${end.toISOString()}\n`;
   const lines = rows.map((r) => {
     const d = r.dimensions;
@@ -115,7 +115,10 @@ async function postToDiscord(env, content) {
   const res = await fetch(env.DISCORD_WEBHOOK_URL, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ content, allowed_mentions: { parse: [] } }),
+    // Why an explicit users list rather than parse: ["users"]: a path echoed
+    // into the message could carry its own <@id> or @everyone, and only the
+    // configured user should ever be pinged.
+    body: JSON.stringify({ content, allowed_mentions: { users: [env.DISCORD_MENTION_USER_ID] } }),
   });
   if (!res.ok) {
     throw new Error(`Discord webhook HTTP ${res.status}`);
@@ -126,7 +129,7 @@ async function run(env, scheduledTime) {
   const window = windowFor(scheduledTime);
   const rows = await findLeaks(env, window);
   if (rows.length > 0) {
-    await postToDiscord(env, formatMessage(rows, window));
+    await postToDiscord(env, formatMessage(rows, window, env.DISCORD_MENTION_USER_ID));
   }
   // Why the heartbeat is sent last and only on success: a failed query or a
   // failed post must leave the heartbeat silent, so Better Stack raises the
