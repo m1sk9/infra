@@ -98,3 +98,16 @@ resource "betteruptime_heartbeat" "backup" {
   server_timezone = "Asia/Tokyo"
   email           = true
 }
+
+# The leak-alert Worker (cloudflare_workers_script.leak_alert).
+#
+# A detector that stops running looks exactly like one that finds nothing, so the
+# Worker pings this after every run whose query and Discord post both succeeded.
+# Unlike the heartbeats above, the URL never leaves Terraform: it is passed to
+# the Worker as a secret binding, so there is nothing to copy into the vault.
+resource "betteruptime_heartbeat" "leak_alert" {
+  name   = "leak-alert"
+  period = 1800 # cron fires every 15 min, so this tolerates one missed run
+  grace  = 300
+  email  = true
+}
