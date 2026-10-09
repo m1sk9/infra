@@ -122,3 +122,64 @@ resource "cloudflare_workers_custom_domain" "ledger" {
   hostname   = "ledger.m1sk9.dev"
   service    = "ledger-web"
 }
+
+# leak-alert - Discord alert when a secret-looking path is answered with 2xx
+#
+# Why HTTP requests rather than Firewall events: a leak is a request that got
+# through, so it never appears among the mitigated events. The Worker reads
+# httpRequestsAdaptiveGroups every 15 minutes and posts to Discord only when
+# something like /.git/config or /.env returned 2xx outside the catch-all
+# Workers (see the comment in workers/leak-alert.js).
+#
+# Why an API token instead of the Analytics SQL binding, which needs none: that
+# binding is configured through wrangler only, and provider v5.27.0 has no
+# binding type for it. The token is scoped to Zone Analytics Read on m1sk9.dev.
+#
+# No route or custom domain: the Worker has only a scheduled handler.
+resource "cloudflare_workers_script" "leak_alert" {
+  account_id         = local.cloudflare_account_id
+  script_name        = "leak-alert"
+  content_file       = "${path.module}/workers/leak-alert.js"
+  content_sha256     = filesha256("${path.module}/workers/leak-alert.js")
+  main_module        = "leak-alert.js"
+  compatibility_date = "2026-10-01"
+
+  bindings = [
+    {
+      name = "ZONE_TAG"
+      type = "plain_text"
+      text = local.cloudflare_zone_id
+    },
+    {
+      name = "CF_ANALYTICS_TOKEN"
+      type = "secret_text"
+      text = var.leak_alert_cloudflare_api_token
+    },
+    {
+      name = "DISCORD_WEBHOOK_URL"
+      type = "secret_text"
+      text = var.leak_alert_discord_webhook_url
+    },
+    {
+      name = "HEARTBEAT_URL"
+      type = "secret_text"
+      text = betteruptime_heartbeat.leak_alert.url
+    },
+  ]
+}
+
+resource "cloudflare_workers_cron_trigger" "leak_alert" {
+  account_id  = local.cloudflare_account_id
+  script_name = cloudflare_workers_script.leak_alert.script_name
+  schedules = [{
+    cron = "*/15 * * * *"
+  }]
+}
+
+# Scheduled only — disable the workers.dev subdomain exposure.
+resource "cloudflare_workers_script_subdomain" "leak_alert" {
+  account_id       = local.cloudflare_account_id
+  script_name      = cloudflare_workers_script.leak_alert.script_name
+  enabled          = false
+  previews_enabled = false
+}
