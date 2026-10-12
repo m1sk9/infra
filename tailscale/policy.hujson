@@ -28,6 +28,16 @@
             "dst": ["autogroup:internet"],
             "ip":  ["*"],
         },
+        // k3s ノード間通信 (s1 agent <-> s2 server) - 必要なポートのみ
+        // 6443/tcp: apiserver (agent -> server の join / 通信)
+        // 10250/tcp: kubelet (server -> agent の logs / exec)
+        // 8472/udp: flannel vxlan (Pod 間通信)
+        // 双方向の新規接続が発生するため，src / dst を両方向に許可している
+        {
+            "src": ["tag:server-s1", "tag:server-s2"],
+            "dst": ["tag:server-s1", "tag:server-s2"],
+            "ip":  ["tcp:6443", "tcp:10250", "udp:8472"],
+        },
     ],
 
     // ===== Tailscale SSH Declaration =====
