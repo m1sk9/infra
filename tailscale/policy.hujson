@@ -2,15 +2,16 @@
     // ===== Tag Declaration =====
     "tagOwners": {
         "tag:server-s1": ["autogroup:owner"],
+        "tag:server-s2": ["autogroup:owner"],
         "tag:ci":        [],
     },
 
     // ===== Grants Declaration =====
     "grants": [
-        // server-s1 へのフルアクセス - owner / CI / nanai10a
+        // server-s1 / server-s2 へのフルアクセス - owner / CI / nanai10a
         {
             "src": ["autogroup:owner", "tag:ci", "nanai10a@github"],
-            "dst": ["tag:server-s1"],
+            "dst": ["tag:server-s1", "tag:server-s2"],
             "ip":  ["*"],
         },
         // member - 任意の Exit Node 経由でインターネット
@@ -27,14 +28,6 @@
             "dst": ["autogroup:internet"],
             "ip":  ["*"],
         },
-        // owner - server-s1 の Taildrive 共有 (PdfDing consume) へ rw アクセス
-        {
-            "src": ["autogroup:owner"],
-            "dst": ["tag:server-s1"],
-            "app": {
-                "tailscale.com/cap/drive": [{ "shares": ["*"], "access": "rw" }],
-            },
-        },
     ],
 
     // ===== Tailscale SSH Declaration =====
@@ -43,26 +36,22 @@
         {
             "action": "accept",
             "src":    ["autogroup:owner", "tag:ci"],
-            "dst":    ["tag:server-s1"],
+            "dst":    ["tag:server-s1", "tag:server-s2"],
             "users":  ["m1sk9"],
         },
         {
             "action": "accept",
             "src":    ["nanai10a@github"],
-            "dst":    ["tag:server-s1"],
+            "dst":    ["tag:server-s1", "tag:server-s2"],
             "users":  ["nanai"],
         },
     ],
 
-    // ===== Node Attributes (Funnel / NextDNS / Taildrive) =====
+    // ===== Node Attributes (Funnel / NextDNS) =====
     "nodeAttrs": [
         {
-            "target": ["m1sk9@github", "tag:server-s1"],
+            "target": ["m1sk9@github", "tag:server-s1", "tag:server-s2"],
             "attr":   ["nextdns:${NEXTDNS_PROFILE_ID}"],
-        },
-        {
-            "target": ["m1sk9@github", "tag:server-s1"],
-            "attr":   ["drive:share", "drive:access"],
         },
         {
             "target": ["*"],
