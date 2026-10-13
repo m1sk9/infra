@@ -24,6 +24,12 @@ output "heartbeat_url_s1_host" {
   sensitive   = true
 }
 
+output "heartbeat_url_s2_host" {
+  description = "Better Stack heartbeat URL for the s2 host"
+  value       = betteruptime_heartbeat.s2_host.url
+  sensitive   = true
+}
+
 output "heartbeat_url_chime" {
   description = "Better Stack heartbeat URL for chime"
   value       = betteruptime_heartbeat.chime.url

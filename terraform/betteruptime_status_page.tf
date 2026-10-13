@@ -50,9 +50,15 @@ resource "betteruptime_status_page" "m1sk9" {
 
 # --- Sections ---
 #
-# The hosts sit at the top level without a section, so the page opens with them.
-# Positions are shared by loose resources and sections: the hosts come first, then
-# the sections.
+# The two hosts sit at the top level without a section, so the page opens with
+# them. Positions are shared by loose resources and sections: s1 and s2 come first,
+# then the sections.
+
+resource "betteruptime_status_page_section" "infra" {
+  status_page_id = betteruptime_status_page.m1sk9.id
+  name           = "Infra"
+  position       = 2
+}
 
 resource "betteruptime_status_page_section" "discord_bot" {
   status_page_id = betteruptime_status_page.m1sk9.id
@@ -74,6 +80,40 @@ resource "betteruptime_status_page_resource" "host_s1" {
   explanation    = "The host pushes a heartbeat every 2 minutes. Reported down when the pushes stop, which includes the home line going out."
   widget_type    = "history"
   position       = 0
+}
+
+resource "betteruptime_status_page_resource" "host_s2" {
+  status_page_id = betteruptime_status_page.m1sk9.id
+  resource_id    = betteruptime_heartbeat.s2_host.id
+  resource_type  = "Heartbeat"
+  public_name    = "s2"
+  explanation    = "The k3s server pushes a heartbeat every 2 minutes. Reported down when the pushes stop, which includes the home line going out."
+  widget_type    = "history"
+  position       = 1
+}
+
+# --- Infra ---
+
+resource "betteruptime_status_page_resource" "argocd" {
+  status_page_id         = betteruptime_status_page.m1sk9.id
+  status_page_section_id = betteruptime_status_page_section.infra.id
+  resource_id            = betteruptime_monitor.argocd.id
+  resource_type          = "Monitor"
+  public_name            = "ArgoCD"
+  explanation            = "Checked end to end through Cloudflare Access and the tunnel to the Pod."
+  widget_type            = "response_times"
+  position               = 0
+}
+
+resource "betteruptime_status_page_resource" "grafana" {
+  status_page_id         = betteruptime_status_page.m1sk9.id
+  status_page_section_id = betteruptime_status_page_section.infra.id
+  resource_id            = betteruptime_monitor.grafana.id
+  resource_type          = "Monitor"
+  public_name            = "Grafana"
+  explanation            = "Checked end to end through Cloudflare Access and the tunnel to the Pod."
+  widget_type            = "response_times"
+  position               = 1
 }
 
 # --- Discord Bot ---
