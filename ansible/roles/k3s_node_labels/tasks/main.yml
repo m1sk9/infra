@@ -1,0 +1,20 @@
+---
+# A drop-in rather than an edit of config.yaml: that file holds tls-san and the
+# kubeconfig mode, was changed by hand during the s2 recovery, and a managed
+# line inside it would be overwritten or clash on the next manual change.
+- name: "k3s labels | Ensure config.yaml.d exists"
+  ansible.builtin.file:
+    path: /etc/rancher/k3s/config.yaml.d
+    state: directory
+    mode: "0755"
+    owner: root
+    group: root
+
+- name: "k3s labels | Deploy node-label drop-in"
+  ansible.builtin.template:
+    src: 10-node-label.yaml.j2
+    dest: /etc/rancher/k3s/config.yaml.d/10-node-label.yaml
+    mode: "0600"
+    owner: root
+    group: root
+  notify: Restart k3s
