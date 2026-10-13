@@ -1,0 +1,8 @@
+---
+# Not part of CD: the first run is applied by hand after the join token is in the vault.
+- name: Join s1 to the k3s cluster
+  hosts: k3s_agents
+  become: true
+
+  roles:
+    - k3s_agent
