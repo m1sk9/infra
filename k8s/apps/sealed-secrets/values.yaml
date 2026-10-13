@@ -1,0 +1,3 @@
+sealed-secrets:
+  # kubeseal looks for a controller with this name by default.
+  fullnameOverride: sealed-secrets-controller

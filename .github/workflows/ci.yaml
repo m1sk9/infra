@@ -101,3 +101,32 @@ jobs:
           tailnet: ${{ secrets.TS_TAILNET }}
           action: test
           policy-file: ./tailscale/policy.rendered.hujson
+
+  helm:
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: ./k8s/apps
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Setup Development Environment
+        uses: jdx/mise-action@v4
+
+      - name: Helm Dependency Update
+        run: |
+          for chart in */; do
+            helm dependency update "$chart"
+          done
+
+      - name: Helm Lint
+        run: |
+          for chart in */; do
+            helm lint "$chart"
+          done
+
+      - name: Helm Template
+        run: |
+          for chart in */; do
+            helm template "${chart%/}" "$chart" --namespace "${chart%/}" > /dev/null
+          done
