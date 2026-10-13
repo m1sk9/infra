@@ -1,0 +1,54 @@
+# Applied once by hand (later by Ansible). After that, ArgoCD manages itself
+# through k8s/apps/argocd.
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: apps
+  namespace: argocd
+spec:
+  description: All workloads on the s1/s2 k3s cluster
+  sourceRepos:
+    - https://github.com/m1sk9/infra
+    # Upstream Helm charts referenced from each umbrella chart's dependencies.
+    - "*"
+  destinations:
+    - namespace: "*"
+      server: https://kubernetes.default.svc
+  clusterResourceWhitelist:
+    - group: "*"
+      kind: "*"
+---
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: apps
+  namespace: argocd
+spec:
+  goTemplate: true
+  goTemplateOptions: ["missingkey=error"]
+  generators:
+    - git:
+        repoURL: https://github.com/m1sk9/infra
+        revision: main
+        directories:
+          - path: k8s/apps/*
+  template:
+    metadata:
+      # Applications live in the argocd namespace, so the name must be unique there.
+      name: "{{.path.basenameNormalized}}"
+    spec:
+      project: apps
+      source:
+        repoURL: https://github.com/m1sk9/infra
+        targetRevision: main
+        path: "{{.path.path}}"
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: "{{.path.basename}}"
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
+          - ServerSideApply=true
