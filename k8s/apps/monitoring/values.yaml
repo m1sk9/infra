@@ -18,6 +18,20 @@ kube-prometheus-stack:
   kubeProxy:
     enabled: false
 
+  # node-exporter is scraped by node IP and port, so its `instance` label reads
+  # 100.x.y.z:9100 and the node dashboards list addresses that change whenever a
+  # Tailscale IP does. The node's own short name (dev-m1sk9-s1 -> s1) is stable and
+  # is what the instance selector should show.
+  prometheus-node-exporter:
+    prometheus:
+      monitor:
+        relabelings:
+          - action: replace
+            sourceLabels: [__meta_kubernetes_pod_node_name]
+            regex: dev-m1sk9-(.*)
+            targetLabel: instance
+            replacement: $1
+
   prometheusOperator:
     nodeSelector:
       m1sk9.dev/pool: observability
