@@ -63,6 +63,7 @@ jobs:
           ansible-playbook playbooks/backup.yml --syntax-check
           ansible-playbook playbooks/monitoring.yml --syntax-check
           ansible-playbook playbooks/maintenance.yml --syntax-check
+          ansible-playbook playbooks/k8s-agent.yml --syntax-check
           ansible-playbook playbooks/k8s.yml --syntax-check
 
       - name: Connect to Tailscale

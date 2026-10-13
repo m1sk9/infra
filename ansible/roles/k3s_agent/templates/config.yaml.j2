@@ -1,0 +1,11 @@
+# Managed by Ansible (role k3s_agent).
+server: "{{ k3s_server_url }}"
+token-file: /etc/rancher/k3s/token
+node-ip: "{{ k3s_agent_node_ip }}"
+flannel-iface: tailscale0
+{% if k3s_agent_node_labels %}
+node-label:
+{% for label in k3s_agent_node_labels %}
+  - "{{ label }}"
+{% endfor %}
+{% endif %}
