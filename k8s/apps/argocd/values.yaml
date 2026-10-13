@@ -6,3 +6,20 @@ argo-cd:
       node-role.kubernetes.io/control-plane: "true"
   dex:
     enabled: false
+  configs:
+    params:
+      # TLS ends at Cloudflare; the tunnel reaches the server over plain HTTP inside the cluster.
+      server.insecure: true
+    cm:
+      url: https://argocd.m1sk9.dev
+      oidc.config: |
+        name: Cloudflare Access
+        issuer: https://m1sk9.cloudflareaccess.com/cdn-cgi/access/sso/oidc/3454b50d37efff3759248392c9dc26080948ef0a30fb15884daba5cacddef249
+        clientID: 3454b50d37efff3759248392c9dc26080948ef0a30fb15884daba5cacddef249
+        clientSecret: $argocd-oidc:clientSecret
+        requestedScopes: ["openid", "email", "profile"]
+    rbac:
+      policy.default: ""
+      policy.csv: |
+        g, me@m1sk9.dev, role:admin
+      scopes: "[email]"
