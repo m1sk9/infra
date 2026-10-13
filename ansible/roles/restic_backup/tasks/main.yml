@@ -113,8 +113,11 @@
         group: root
 
 # `restic init` is not idempotent and touches the remote, so skip it in check
-# mode (mirrors docker_compose_app's "Start stack" guard). `cat config`
-# succeeds only when the repository is already initialised.
+# mode. `cat config` succeeds only when the repository is already initialised.
+#
+# throttle: 1 because hosts share one repository: run in parallel on a new one,
+# both see no config, both init, and the second overwrites config while the first
+# key file stays behind, leaving one host with a key that cannot read the repo.
 - name: "restic | Initialise repository (once)"
   ansible.builtin.shell: >-
     set -o pipefail &&
@@ -125,6 +128,7 @@
   register: restic_init
   changed_when: "'created restic repository' in restic_init.stdout"
   when: not ansible_check_mode
+  throttle: 1
 
 - name: "restic | Deploy systemd service"
   ansible.builtin.template:
