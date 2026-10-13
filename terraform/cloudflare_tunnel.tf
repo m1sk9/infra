@@ -1,37 +1,3 @@
-# Cloudflare Tunnel for server s1
-
-resource "cloudflare_zero_trust_tunnel_cloudflared" "s1" {
-  account_id = local.cloudflare_account_id
-  name       = "s1"
-}
-
-resource "cloudflare_zero_trust_tunnel_cloudflared_config" "s1" {
-  account_id = local.cloudflare_account_id
-  tunnel_id  = cloudflare_zero_trust_tunnel_cloudflared.s1.id
-  config = {
-    ingress = [
-      {
-        hostname = "dozzle-s1.m1sk9.dev"
-        service  = "http://localhost:8181"
-      },
-      {
-        service = "http_status:404"
-      }
-    ]
-  }
-}
-
-# DNS Record for Dozzle (Docker log viewer)
-resource "cloudflare_dns_record" "dozzle_s1" {
-  zone_id = local.cloudflare_zone_id
-  name    = "dozzle-s1"
-  content = "${cloudflare_zero_trust_tunnel_cloudflared.s1.id}.cfargotunnel.com"
-  type    = "CNAME"
-  ttl     = 1
-  proxied = true
-  comment = "Cloudflare Tunnel - Dozzle (s1)"
-}
-
 # Cloudflare Tunnel for the k3s cluster (ArgoCD and Grafana)
 #
 # Unlike the s1 tunnel, the connector is a Deployment inside the cluster, so the
