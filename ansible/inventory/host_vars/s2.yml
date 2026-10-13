@@ -32,3 +32,29 @@ heartbeat_targets:
     url: "{{ vault_heartbeat_url_pythia }}"
     oncalendar: "*:0/3"
     check_command: "test \"$(k3s kubectl -n pythia get deployment pythia -o jsonpath='{.status.availableReplicas}')\" = 1"
+
+# --- Backups ---
+# What Git cannot restore: the cluster CA, join token and datastore, and the Sealed
+# Secrets keys (without them every SealedSecret in Git is unreadable). Everything
+# else on s2 is rebuilt by ArgoCD from Git, and the Prometheus and Loki volumes are
+# only metrics and logs that start collecting again.
+#
+# The keys are exported with a pre_command because they live in the API, not on
+# disk; the export lands in the target's scratch directory, which is created 0700.
+backup_heartbeat_url: "{{ vault_heartbeat_url_backup_s2 }}"
+
+# Half an hour after s1: both hosts share one repository, and `restic forget --prune`
+# takes an exclusive lock that would make the other host's backup fail.
+restic_oncalendar: "Fri *-*-* 03:30:00"
+backup_targets:
+  - name: k3s
+    sqlite_dbs:
+      - /var/lib/rancher/k3s/server/db/state.db
+    paths:
+      - /var/lib/rancher/k3s/server/token
+      - /var/lib/rancher/k3s/server/tls
+      - /etc/rancher/k3s
+
+  - name: sealed-secrets-keys
+    pre_commands:
+      - 'k3s kubectl -n sealed-secrets get secrets -l sealedsecrets.bitnami.com/sealed-secrets-key -o yaml > "${snap_base}/sealed-secrets-keys/keys.yaml"'

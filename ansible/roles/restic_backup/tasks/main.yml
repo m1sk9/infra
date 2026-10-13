@@ -37,8 +37,28 @@
 # pull in the CLI when a target actually declares one.
 - name: "restic | Ensure sqlite CLI for online snapshots"
   ansible.builtin.package:
-    name: sqlite
+    name: "{{ restic_sqlite_package }}"
   when: backup_targets | selectattr('sqlite_dbs', 'defined') | list | length > 0
+
+- name: "restic | Look for the s1-only timer"
+  ansible.builtin.stat:
+    path: /etc/systemd/system/s1-backup.timer
+  register: restic_legacy_timer
+
+- name: "restic | Stop and disable the s1-only timer"
+  ansible.builtin.systemd_service:
+    name: s1-backup.timer
+    enabled: false
+    state: stopped
+  when:
+    - restic_legacy_timer.stat.exists
+    - not ansible_check_mode
+
+- name: "restic | Remove the s1-only units and files"
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  loop: "{{ (restic_legacy_units | map('regex_replace', '^', '/etc/systemd/system/') | list) + restic_legacy_files }}"
 
 - name: "restic | Create env directory"
   ansible.builtin.file:
@@ -50,7 +70,7 @@
 
 - name: "restic | Deploy env file (repository + credentials)"
   ansible.builtin.template:
-    src: s1-backup.env.j2
+    src: infra-backup.env.j2
     dest: "{{ restic_env_file }}"
     mode: "0600"
     owner: root
@@ -67,7 +87,7 @@
 
 - name: "restic | Deploy backup script"
   ansible.builtin.template:
-    src: s1-backup.sh.j2
+    src: infra-backup.sh.j2
     dest: "{{ restic_script_path }}"
     mode: "0755"
     owner: root
@@ -78,7 +98,7 @@
   block:
     - name: "restic | Deploy failure script"
       ansible.builtin.template:
-        src: s1-backup-failure.sh.j2
+        src: infra-backup-failure.sh.j2
         dest: "{{ restic_failure_script_path }}"
         mode: "0755"
         owner: root
@@ -86,8 +106,8 @@
 
     - name: "restic | Deploy failure systemd service"
       ansible.builtin.template:
-        src: s1-backup-failure.service.j2
-        dest: /etc/systemd/system/s1-backup-failure.service
+        src: infra-backup-failure.service.j2
+        dest: /etc/systemd/system/infra-backup-failure.service
         mode: "0644"
         owner: root
         group: root
@@ -108,16 +128,16 @@
 
 - name: "restic | Deploy systemd service"
   ansible.builtin.template:
-    src: s1-backup.service.j2
-    dest: /etc/systemd/system/s1-backup.service
+    src: infra-backup.service.j2
+    dest: /etc/systemd/system/infra-backup.service
     mode: "0644"
     owner: root
     group: root
 
 - name: "restic | Deploy systemd timer"
   ansible.builtin.template:
-    src: s1-backup.timer.j2
-    dest: /etc/systemd/system/s1-backup.timer
+    src: infra-backup.timer.j2
+    dest: /etc/systemd/system/infra-backup.timer
     mode: "0644"
     owner: root
     group: root
@@ -127,7 +147,7 @@
 # (same guard as the repository init).
 - name: "restic | Enable and start timer"
   ansible.builtin.systemd_service:
-    name: s1-backup.timer
+    name: infra-backup.timer
     enabled: true
     state: started
     daemon_reload: true

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # {{ ansible_managed }}
 #
-# Weekly restic backup for s1. Targets are rendered from `backup_targets`
+# Weekly restic backup for {{ restic_host_tag }}. Targets are rendered from `backup_targets`
 # (see inventory/group_vars/all/vars.yml) — this script is generated, edit the
 # variables, not this file.
 set -euo pipefail
@@ -17,30 +17,37 @@ set +a
 # that were removed from the config.
 snap_base="{{ restic_work_dir }}/snapshots"
 rm -rf "${snap_base}"
+umask 077
 mkdir -p "${snap_base}"
 
 {% for t in backup_targets %}
 # --- {{ t.name }} ---
 {% set has_sqlite = (t.sqlite_dbs | default([])) | length > 0 %}
-{% if has_sqlite %}
+{% set has_pre = (t.pre_commands | default([])) | length > 0 %}
+{% if has_sqlite or has_pre %}
 mkdir -p "${snap_base}/{{ t.name }}"
-{% for db in t.sqlite_dbs %}
+{% endif %}
+{% for cmd in t.pre_commands | default([]) %}
+# Writes into ${snap_base}/{{ t.name }}, which is backed up as part of this target.
+{{ cmd }}
+{% endfor %}
+{% for db in t.sqlite_dbs | default([]) %}
 # Online .backup yields a consistent snapshot even while the service writes.
 sqlite3 "{{ db }}" ".backup '${snap_base}/{{ t.name }}/{{ db | basename }}'"
 {% endfor %}
-{% endif %}
-restic backup --tag {{ t.name }} \
-{% if has_sqlite %}
+restic backup --tag {{ restic_host_tag }} --tag {{ t.name }} \
+{% if has_sqlite or has_pre %}
   "${snap_base}/{{ t.name }}" \
 {% endif %}
 {% for p in t.paths | default([]) %}
   "{{ p }}" \
 {% endfor %}
-  --host s1
+  --host {{ restic_host_tag }}
 
 {% endfor %}
-# Retention: weekly cadence, keep weeks then months (~half a year).
-restic forget \
+# Retention: weekly cadence, keep weeks then months (~half a year). Limited to this
+# host's snapshots so one host never prunes on behalf of the other.
+restic forget --host {{ restic_host_tag }} \
   --keep-weekly {{ restic_keep_weekly }} \
   --keep-monthly {{ restic_keep_monthly }} \
   --prune
