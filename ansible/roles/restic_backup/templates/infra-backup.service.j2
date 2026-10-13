@@ -1,12 +1,12 @@
 # {{ ansible_managed }}
 [Unit]
-Description=Weekly restic backup of s1 data to Cloudflare R2
+Description=Weekly restic backup of {{ restic_host_tag }} data to Cloudflare R2
 Wants=network-online.target
 After=network-online.target
 {% if backup_heartbeat_url %}
 # Report the reason immediately rather than letting the weekly heartbeat period
 # lapse in silence a week later.
-OnFailure=s1-backup-failure.service
+OnFailure=infra-backup-failure.service
 {% endif %}
 
 [Service]

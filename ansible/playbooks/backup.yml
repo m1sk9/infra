@@ -1,6 +1,6 @@
 ---
-- name: Configure s1 backups
-  hosts: s1
+- name: Configure backups
+  hosts: s1:s2
   become: true
   gather_facts: true
 
