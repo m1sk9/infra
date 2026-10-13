@@ -14,17 +14,7 @@ r2_secret_access_key: "{{ vault_r2_secret_access_key }}"
 # entry here — the role itself needs no changes. Per target: `name` (used as
 # the restic --tag), optional `sqlite_dbs` (online-snapshotted via .backup),
 # and optional `paths` (files/dirs handed to restic as-is).
-backup_targets:
-  - name: wallos
-    sqlite_dbs:
-      - /home/m1sk9/wallos-data/db/wallos.db
-    paths:
-      - /home/m1sk9/wallos-data/logos
-  - name: pdfding
-    sqlite_dbs:
-      - /home/m1sk9/pdfding-data/db/db.sqlite3
-    paths:
-      - /home/m1sk9/pdfding-data/media
+backup_targets: []
 
 # Ping URL for the backup heartbeat, consumed by the restic_backup role. Empty
 # disables the pings, so the role stays usable without Better Stack.
@@ -49,11 +39,6 @@ heartbeat_targets:
     url: "{{ vault_heartbeat_url_s1_host }}"
     oncalendar: "*:0/2"
     # No check_command: the ping arriving at all is the signal.
-
-  - name: wallos
-    url: "{{ vault_heartbeat_url_wallos }}"
-    oncalendar: "*:0/3"
-    check_command: "curl -fsS -o /dev/null --max-time 10 http://localhost:8282/"
 
   # chime ships a real liveness check: it fails once the scheduler stops ticking,
   # so the container health status means more here than mere process liveness.

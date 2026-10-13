@@ -4,9 +4,9 @@
 # README section "Scheduled reboot" before changing or removing it.
 reboot_unit_name: s1-reboot
 
-# systemd timer schedule. Kept in sync by hand with the Better Stack maintenance
-# window on `betteruptime_monitor.books` (terraform/betteruptime_monitor.tf):
-# moving this without moving that brings back a weekly false incident.
+# systemd timer schedule. No Better Stack monitor carries a maintenance window
+# for it: the heartbeat periods (terraform/betteruptime_heartbeat.tf) are sized
+# to absorb a normal reboot, so this can move without touching Terraform.
 reboot_oncalendar: "Sun *-*-* 04:00:00"
 
 # Unit files left behind by the hand-made timer this role replaces. Removed on
