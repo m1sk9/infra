@@ -74,6 +74,38 @@ Grafana では Prometheus のメトリクスと Loki のログを確認できま
 {node="dev-m1sk9-s1"} |= "error"
 ```
 
+### Claude Code から使う (Grafana MCP)
+
+リポジトリの `.mcp.json` に [Grafana MCP サーバー](https://github.com/grafana/mcp-grafana) を登録しています．Claude Code からダッシュボードの参照やメトリクス・ログの検索ができます．`--disable-write` を付けているため読み取り専用です．
+
+MCP サーバーは GitHub ログインを通れません．そのため，次の 2 つの token で認証します．
+
+- **Cloudflare Access の service token**: Access を通過するためのものです．Terraform が発行します (`grafana_mcp_access_*`)．
+- **Grafana の service account token**: Grafana の API を呼ぶためのものです．Grafana の UI で発行します．
+
+初回は次の手順で設定します．
+
+1. Grafana の **Administration > Users and access > Service accounts** で，Role を **Viewer** にした service account を作り，token を発行します．
+2. `terraform/` で service token を取得します．
+
+   ```fish
+   terraform output -raw grafana_mcp_access_client_id
+   terraform output -raw grafana_mcp_access_client_secret
+   ```
+
+3. リポジトリ直下に `mise.local.toml` を作り，取得した値を書きます．このファイルは git-ignore されています．
+
+   ```toml
+   [env]
+   GRAFANA_SERVICE_ACCOUNT_TOKEN = "glsa_..."
+   GRAFANA_MCP_ACCESS_CLIENT_ID = "..."
+   GRAFANA_MCP_ACCESS_CLIENT_SECRET = "..."
+   ```
+
+4. リポジトリのディレクトリで Claude Code を起動し直します．`/mcp` で `grafana` が connected になっていれば完了です．
+
+環境変数は Claude Code の起動時に読み込まれます．値を変えた場合は Claude Code を起動し直してください．
+
 ### 公式ドキュメント
 
 - [Grafana documentation](https://grafana.com/docs/grafana/latest/)

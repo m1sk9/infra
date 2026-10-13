@@ -10,7 +10,7 @@ State は [HCP Terraform](https://app.terraform.io/) で管理しています (o
 |---|---|
 | [`cloudflare_dns_record.tf`](./cloudflare_dns_record.tf) | DNS レコード (Proton Mail，GitHub Pages，Bluesky / Discord の検証など) |
 | [`cloudflare_tunnel.tf`](./cloudflare_tunnel.tf) | k3s クラスタ向けの Cloudflare Tunnel (`argocd.m1sk9.dev`，`grafana.m1sk9.dev`) |
-| [`cloudflare_access.tf`](./cloudflare_access.tf) | Zero Trust Access (GitHub IdP，ArgoCD / Grafana の Access と OIDC，monitor 用の service token) |
+| [`cloudflare_access.tf`](./cloudflare_access.tf) | Zero Trust Access (GitHub IdP，ArgoCD / Grafana の Access と OIDC，monitor 用と Grafana MCP 用の service token) |
 | [`cloudflare_worker.tf`](./cloudflare_worker.tf) | Workers とそのカスタムドメイン・ルート．スクリプト本体は [`workers/`](./workers) にあります |
 | [`cloudflare_r2_bucket.tf`](./cloudflare_r2_bucket.tf) | R2 バケット (restic バックアップ用，ledger のアーカイブ用) |
 | [`cloudflare_ruleset.tf`](./cloudflare_ruleset.tf) | WAF カスタムルール |
@@ -49,6 +49,7 @@ Terraform が発行する値のうち，次のものは手作業で他のディ�
 
 - **heartbeat の URL** (`heartbeat_url_*`): Ansible の vault に格納します．詳細は [`ansible/README.md`](../ansible/README.md) を参照してください．
 - **Tunnel トークン・OIDC クライアント** (`k8s_tunnel_token`，`*_oidc_*`): SealedSecret として [`k8s/apps/`](../k8s/apps) 配下に格納します．
+- **Grafana MCP 用の service token** (`grafana_mcp_access_*`): 手元の `mise.local.toml` に書きます．詳細は [`docs/RESOURCE.md`](../docs/RESOURCE.md#claude-code-から使う-grafana-mcp) を参照してください．
 
 ```fish
 terraform output -raw <output 名>
