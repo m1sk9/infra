@@ -1,0 +1,8 @@
+---
+# Same handler name as in k3s_node_labels, so one play that changes both drop-ins
+# restarts k3s once.
+- name: Restart k3s
+  ansible.builtin.systemd_service:
+    name: k3s
+    state: restarted
+  when: not ansible_check_mode

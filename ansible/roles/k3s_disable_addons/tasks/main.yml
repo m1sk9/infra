@@ -1,0 +1,20 @@
+---
+# Disabled in the config rather than by deleting the manifests under
+# /var/lib/rancher/k3s/server/manifests: k3s writes those files again on every
+# start, so a hand-made deletion does not survive a restart or an upgrade.
+- name: "k3s addons | Ensure config.yaml.d exists"
+  ansible.builtin.file:
+    path: /etc/rancher/k3s/config.yaml.d
+    state: directory
+    mode: "0755"
+    owner: root
+    group: root
+
+- name: "k3s addons | Deploy disable drop-in"
+  ansible.builtin.template:
+    src: 20-disable-addons.yaml.j2
+    dest: /etc/rancher/k3s/config.yaml.d/20-disable-addons.yaml
+    mode: "0600"
+    owner: root
+    group: root
+  notify: Restart k3s
