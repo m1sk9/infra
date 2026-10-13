@@ -66,9 +66,6 @@ jobs:
       - name: Deploy monitoring
         run: ansible-playbook playbooks/monitoring.yml
 
-      - name: Deploy maintenance schedules
-        run: ansible-playbook playbooks/maintenance.yml
-
       - name: Cleanup
         if: always()
         run: rm -f .vault_pass
