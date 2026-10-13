@@ -1,347 +1,217 @@
-# Ansible
+# ansible
 
-Configuration management for the self-hosted servers. Secrets are protected with
-[`ansible-vault`](https://docs.ansible.com/ansible/latest/vault_guide/index.html),
-and hosts are reached over the Tailscale tailnet using their MagicDNS names.
+s1 / s2 のホストの設定を Ansible で管理します．ワークロードは k3s ([`k8s/`](../k8s)) で動かしており，ここで扱うのはホストの設定だけです．
 
-## Prerequisites
+- restic による Cloudflare R2 へのバックアップ
+- Better Stack への heartbeat 送信
+- k3s のセットアップ (s2: server，s1: agent) と ArgoCD の初期導入
 
-- `ansible-core` is installed via [mise](https://mise.jdx.dev/) (see the repository root [`mise.toml`](../mise.toml)). Run `mise install` to set it up — mise uses `uv` as the backend for the `pipx:ansible-core` package.
-- Install required collections: `ansible-galaxy collection install -r requirements.yml` (provides `community.docker`).
-- The control machine must be connected to the Tailscale tailnet; hosts are only reachable from within it.
-- The vault password file `ansible/.vault_pass` must exist locally (git-ignored). Without it, `ansible-vault`-encrypted variables cannot be decrypted.
+ホストには Tailnet の MagicDNS 名で接続します．シークレットは `ansible-vault` で暗号化しています．
 
-## Layout
+## 前提
+
+- `ansible-core` は [mise](https://mise.jdx.dev/) でインストールします ([`mise.toml`](../mise.toml))．`mise install` を実行すると，uv をバックエンドに `pipx:ansible-core` が入ります．
+- 操作するマシンが Tailnet に参加している必要があります．ホストには Tailnet の中からしか到達できません．
+- vault のパスワードファイル `ansible/.vault_pass` を手元に置く必要があります (git-ignore 済み)．`ansible.cfg` が常にこのファイルを読むため，`--syntax-check` でもこのファイルがないと失敗します．
+
+## 構成
 
 ```
 ansible/
-├── ansible.cfg                      # inventory path, vault password file, SSH options
-├── requirements.yml                 # Galaxy collections (community.docker)
+├── ansible.cfg
 ├── inventory/
-│   ├── hosts.yml                    # hosts and connection variables
-│   └── group_vars/all/             # loaded relative to the inventory, so it applies
-│       ├── vars.yml                 # non-sensitive variables; references vault_ secrets
-│       └── vault.yml                # ansible-vault encrypted secrets
+│   ├── hosts.yml                # ホスト，k3s のグループ，ノードラベル
+│   ├── group_vars/all/
+│   │   ├── vars.yml             # 共通の変数．シークレットは vault_ 変数を参照する
+│   │   └── vault.yml            # ansible-vault で暗号化したシークレット
+│   └── host_vars/
+│       └── s2.yml               # s2 固有の変数 (bot の heartbeat，k3s のバックアップ対象)
 ├── roles/
-│   ├── docker_compose_app/          # generic "deploy a compose stack" role
-│   │   ├── tasks/main.yml
-│   │   ├── defaults/main.yml
-│   │   └── files/<service>/         # compose.yaml + vault-encrypted env/config
-│   ├── restic_backup/               # weekly restic backup to Cloudflare R2
-│   └── heartbeat/                   # Better Stack heartbeat senders (systemd timers)
+│   ├── restic_backup/           # restic による週次バックアップ
+│   ├── heartbeat/               # Better Stack への heartbeat 送信 (systemd timer)
+│   ├── k3s_agent/               # s1 を k3s agent として参加させる
+│   ├── k3s_node_labels/         # s2 のノードラベル
+│   ├── k3s_disable_addons/      # s2 で traefik / servicelb を無効化
+│   └── argocd_bootstrap/        # ArgoCD の初期導入 (一度だけ)
 └── playbooks/
-    ├── site.yml                     # connectivity check
-    ├── services.yml                 # deploy all Docker Compose services
-    ├── backup.yml                   # restic backup script and timer
-    └── monitoring.yml               # heartbeat senders
+    ├── site.yml                 # 疎通確認
+    ├── backup.yml               # s1 / s2 のバックアップ
+    ├── monitoring.yml           # s1 / s2 の heartbeat
+    ├── k8s.yml                  # s2 の k3s 設定と ArgoCD の初期導入 (手動)
+    └── k8s-agent.yml            # s1 の k3s 参加 (手動)
 ```
 
-## Hosts
+## ホスト
 
-| Host | MagicDNS name   |
-|------|-----------------|
-| s1   | `dev-m1sk9-s1`  |
+| ホスト | MagicDNS 名 | 役割 |
+|---|---|---|
+| s1 | `dev-m1sk9-s1` | k3s agent (`m1sk9.dev/pool=apps`) |
+| s2 | `dev-m1sk9-s2` | k3s server (`m1sk9.dev/pool=observability`) |
 
-## Secrets (ansible-vault)
+## 使い方
 
-Secrets live in [`inventory/group_vars/all/vault.yml`](./inventory/group_vars/all/vault.yml),
-encrypted with `ansible-vault`. Each secret uses a `vault_` prefix and is referenced from
-[`inventory/group_vars/all/vars.yml`](./inventory/group_vars/all/vars.yml) so that playbooks
-never read raw secret values directly.
-
-The vault password is stored in `ansible/.vault_pass` (git-ignored). **Back it up
-somewhere safe (e.g. a password manager) — without it the encrypted secrets are
-unrecoverable.**
-
-```fish
-# Edit secrets
-ansible-vault edit inventory/group_vars/all/vault.yml
-
-# View secrets
-ansible-vault view inventory/group_vars/all/vault.yml
-```
-
-`ansible.cfg` points `vault_password_file` at `.vault_pass`, so the regular `ansible`
-and `ansible-playbook` commands decrypt secrets automatically.
-
-## Usage
-
-Run commands from within the `ansible/` directory (relative paths in `ansible.cfg` are
-resolved against the current directory):
+`ansible.cfg` の相対パスはカレントディレクトリを基準に解決されるため，`ansible/` に移動してから実行します．
 
 ```fish
 cd ansible
 
-# Connectivity check
+# 疎通確認
 ansible-playbook playbooks/site.yml
 
-# Dry-run before applying changes
-ansible-playbook playbooks/site.yml --check --diff
-```
+# 変更の確認 (plan 相当)
+ansible-playbook playbooks/backup.yml --check --diff
 
-## Services
-
-Docker Compose services managed on s1. Each is deployed to `~/services/<name>/` by the
-`docker_compose_app` role, with secrets stored vault-encrypted under
-`roles/docker_compose_app/files/<service>/` and decrypted on deploy.
-
-| Service | Image | Notes |
-|---|---|---|
-| babyrite | `ghcr.io/m1sk9/babyrite` | mounts `~/babyrite-data/config.toml`; `.env` |
-| wallos | `ghcr.io/ellite/wallos` | published on `:8282`; data in `~/wallos-data` |
-| pdfding | `mrmn/pdfding` | published on `:8384`; data in `~/pdfding-data/{db,media,consume}`; `.env` |
-
-Deploy or update all services (idempotent — unchanged stacks are not recreated):
-
-```fish
-ansible-playbook playbooks/services.yml
-```
-
-### Adding a service
-
-1. Create `roles/docker_compose_app/files/<name>/compose.yaml` with a top-level `name:`.
-2. Encrypt any secrets: `ansible-vault encrypt roles/docker_compose_app/files/<name>/env`
-3. Add a block to `playbooks/services.yml` setting `app_name`, and as needed `app_files`
-   (env/config to copy) and `app_dirs` (host directories to create).
-
-### Taildrive (PdfDing consume folder)
-
-PdfDing's [consume folder](https://docs.pdfding.com/configuration/consumption/) watches
-`~/pdfding-data/consume/<user-id>/` and imports any PDF placed there (deleting the
-original afterwards, success or not). To make that folder reachable from other devices,
-it's shared over [Taildrive](https://tailscale.com/kb/1369/taildrive) — this is a manual,
-one-time step (mirroring how `tailscale up` itself is provisioned; see "Tailscale setup"
-below), not something Ansible manages.
-
-On s1, after the first PdfDing account has been created (the account's numeric id — `1`
-for the first user — is the subfolder name):
-
-```fish
-mkdir -p ~/pdfding-data/consume/1
-tailscale drive share pdfding_consume ~/pdfding-data/consume
-tailscale drive list   # confirm the share is up
-```
-
-The share name is restricted to lowercase letters, `_`, `()`, and spaces (no hyphens or
-digits). The `drive:share`/`drive:access` node attributes and the
-`tailscale.com/cap/drive` grant needed to use this are already declared in
-[`tailscale/policy.hujson`](../tailscale/policy.hujson).
-
-From a Mac, mount it with [rclone](https://rclone.org/) (`brew install rclone`),
-`~/.config/rclone/rclone.conf`:
-
-```ini
-[tsdrive]
-type = webdav
-url = http://100.100.100.100:8080/m1sk9.github
-vendor = other
-```
-
-```fish
-rclone copy ~/Downloads/book.pdf tsdrive:dev-m1sk9-s1/pdfding_consume/1/
-```
-
-Finder also works as a fallback (`Cmd+K` → `http://100.100.100.100:8080/m1sk9.github/dev-m1sk9-s1/pdfding_consume/`),
-but its WebDAV client is less reliable for repeated transfers than rclone.
-
-## Backups
-
-s1's non-regenerable data is backed up weekly to a Cloudflare R2 bucket
-(`s1-backup`) with [restic](https://restic.net/) — encrypted, deduplicated, and
-versioned. The `restic_backup` role installs a pinned restic, renders a backup
-script, and schedules it with a systemd timer (Friday 03:00). Deploy it with:
-
-```fish
+# 適用
 ansible-playbook playbooks/backup.yml
 ```
 
-### What is backed up
+`backup.yml` と `monitoring.yml` は CD が自動で適用します (「CI / CD」を参照)．手元で適用する必要があるのは `k8s.yml` と `k8s-agent.yml` だけです．
 
-Targets are declared in [`inventory/group_vars/all/vars.yml`](./inventory/group_vars/all/vars.yml)
-as `backup_targets`; the role itself is data-agnostic. **To back up more data,
-add an entry — no role changes needed:**
+## シークレット (ansible-vault)
+
+シークレットは [`inventory/group_vars/all/vault.yml`](./inventory/group_vars/all/vault.yml) に `vault_` 接頭辞付きで格納します．[`vars.yml`](./inventory/group_vars/all/vars.yml) の変数がそれを参照するので，playbook や role がシークレットを直接読むことはありません．
+
+```fish
+ansible-vault edit inventory/group_vars/all/vault.yml
+ansible-vault view inventory/group_vars/all/vault.yml
+```
+
+vault のパスワードは `.vault_pass`，GitHub Secret の `ANSIBLE_VAULT_PASSWORD`，パスワードマネージャーの 3 箇所に同じ値で保管しています．失うと暗号化したシークレットを復元できません．
+
+| Vault キー | 内容 |
+|---|---|
+| `vault_become_password` | `become` のパスワード |
+| `vault_restic_password` | restic リポジトリのパスワード |
+| `vault_r2_access_key_id` / `vault_r2_secret_access_key` | R2 の S3 API トークン (バックアップ用バケットへの Object Read & Write) |
+| `vault_heartbeat_url_*` | Better Stack の heartbeat URL (Terraform の出力からコピー) |
+| `vault_k3s_token` | k3s の join トークン |
+
+R2 の S3 API トークンは Terraform では発行できないため，手作業で発行して vault に格納しています．
+
+## バックアップ
+
+restic で Cloudflare R2 のバケットにバックアップします．暗号化・重複排除・世代管理は restic が行います．`restic_backup` role は次のことを行います．
+
+- バージョンを固定した restic をインストールする
+- バックアップスクリプトを配置する
+- systemd timer で週に 1 回実行する
+
+s1 と s2 は同じリポジトリを共有しています．各スナップショットにはホスト名を `--host` とタグの両方で付けます．`restic forget --prune` が排他ロックを取るため，s2 の実行時刻は s1 より 30 分遅らせています (s1: 金曜 03:00，s2: 金曜 03:30)．
+
+### バックアップ対象
+
+バックアップ対象は変数 `backup_targets` で宣言し，role 自体はデータに依存しません．**対象を増やすときは，role ではなくエントリを追加します．**
 
 ```yaml
 backup_targets:
-  - name: <tag>            # restic --tag identifying this target
-    sqlite_dbs:            # optional: online-snapshotted with `sqlite3 .backup`
+  - name: <tag>            # restic の --tag
+    sqlite_dbs:            # 省略可: `sqlite3 .backup` でオンラインスナップショットを取る
       - /path/to/foo.db
-    paths:                 # optional: files/dirs handed to restic as-is
-      - /path/to/assets
+    paths:                 # 省略可: そのまま restic に渡すファイル・ディレクトリ
+      - /path/to/dir
+    pre_commands:          # 省略可: バックアップ前に実行するコマンド (出力先は ${snap_base}/<name>/)
+      - "..."
 ```
 
-SQLite databases are snapshotted with `.backup` (consistent even while the
-service writes) before restic reads them, so services need not be stopped.
+現在の対象は次のとおりです．s1 は k3s に移行してホスト上に残すデータがなくなったため，対象はありません．
 
-### Required vault secrets
+| ホスト | 対象 | 内容 |
+|---|---|---|
+| s2 | `k3s` | k3s のデータストア (SQLite)，join トークン，CA，設定 |
+| s2 | `sealed-secrets-keys` | Sealed Secrets の秘密鍵．失うと Git 上の SealedSecret をすべて復号できなくなる |
 
-The R2 S3 API token (Object Read & Write, scoped to `s1-backup`) and the restic
-repository password are **manually provisioned** — Terraform cannot issue R2 S3
-tokens. Store them in the vault (`ansible-vault edit`):
+これ以外のクラスタの状態は ArgoCD が Git から再構築します．
 
-| Vault key | Value |
-|---|---|
-| `vault_restic_password` | restic repository password (`openssl rand -base64 32`) |
-| `vault_r2_access_key_id` | R2 S3 API token — Access Key ID |
-| `vault_r2_secret_access_key` | R2 S3 API token — Secret Access Key |
+### 通知
 
-Back these up in a password manager too — losing `vault_restic_password` makes
-every backup unrecoverable.
+成功時は `ExecStartPost` で heartbeat に ping を送ります．失敗時は `OnFailure=` で journal の末尾を `<url>/fail` に送ります．`backup_heartbeat_url` を空にするとどちらも無効になります．
 
-### Restore
+### リストア
 
-On s1, run restic with the deployed env file loaded (it holds the repository URL
-and credentials). Wrap commands in a subshell that sources it:
+ホスト上で，配置済みの env ファイル (リポジトリの URL と認証情報) を読み込んでから restic を実行します．
 
 ```fish
-# List snapshots for a target
-sudo bash -c 'set -a; . /etc/restic/s1-backup.env; restic snapshots --tag wallos'
+# スナップショットの一覧
+sudo bash -c 'set -a; . /etc/restic/infra-backup.env; restic snapshots --host s2'
 
-# Restore the latest wallos snapshot
-sudo bash -c 'set -a; . /etc/restic/s1-backup.env; restic restore latest --tag wallos --target /tmp/restore'
-
-# Verify the restored SQLite DB, then place it back and restart the service
-sqlite3 /tmp/restore/.../wallos.db 'PRAGMA integrity_check;'
+# 最新の k3s スナップショットを復元
+sudo bash -c 'set -a; . /etc/restic/infra-backup.env; restic restore latest --host s2 --tag k3s --target /tmp/restore'
 ```
 
-## Monitoring
+## 監視 (heartbeat)
 
-s1 is reachable only over Cloudflare Tunnel and Tailscale, so nothing outside can
-poll it. Every check that needs to see the host is inverted: the `heartbeat` role
-installs systemd timers that push to [Better Stack](https://betterstack.com),
-which raises an incident when the pushes stop. The monitors, heartbeats and the
-status page at [status.m1sk9.dev](https://status.m1sk9.dev) are defined in
-Terraform (`terraform/betteruptime_*.tf`). Deploy the senders with:
+ホストには外部から到達できないため，監視は push 型にしています．`heartbeat` role が systemd timer を配置して Better Stack に ping を送り，ping が途絶えると Better Stack がインシデントを起票します．heartbeat とステータスページ ([status.m1sk9.dev](https://status.m1sk9.dev)) は Terraform で定義しています．
 
-```fish
-ansible-playbook playbooks/monitoring.yml
-```
-
-### What is monitored from s1
-
-Targets are declared in [`inventory/group_vars/all/vars.yml`](./inventory/group_vars/all/vars.yml)
-as `heartbeat_targets`; the role itself is data-agnostic. **To monitor another
-service, add an entry and a matching `betteruptime_heartbeat` resource:**
+送信対象は変数 `heartbeat_targets` で宣言します．**監視を増やすときは，エントリを追加し，対応する `betteruptime_heartbeat` リソースを Terraform に追加します．**
 
 ```yaml
 heartbeat_targets:
-  - name: <unit name>      # used for the unit, script and env file names
+  - name: <unit 名>         # unit・スクリプト・env ファイルの名前に使う
     url: "{{ vault_heartbeat_url_<name> }}"
-    oncalendar: "*:0/3"    # systemd schedule
-    check_command: "..."   # optional; non-zero exit reports to <url>/fail
+    oncalendar: "*:0/3"     # systemd の schedule
+    check_command: "..."    # 省略可: 0 以外で終了すると <url>/fail に送る
 ```
 
-Omitting `check_command` makes the ping itself the signal, which is what the host
-heartbeat does. Note that this measures "s1 can reach the internet", not "s1 is
-powered on" — a home line outage raises the incident with the machine healthy.
+| ホスト | 対象 | 何を確認しているか |
+|---|---|---|
+| s1 | `s1-host` | ping が届くこと自体を確認する．ただし確認できるのは「s1 からインターネットに出られる」ことまでで，回線障害でも同じように落ちる |
+| s2 | `chime` | Deployment の `availableReplicas` が 1 であること．readiness probe で `chime health` を実行しているので，アプリの動作まで確認できる |
+| s2 | `babyrite`，`honeypot`，`pythia` | Deployment の `availableReplicas` が 1 であること．Pod が動いていることしか確認できず，Discord gateway の切断は検知できない |
 
-`check_command` uses `docker ps --filter` rather than `docker inspect --format`
-because the Go template in `--format` collides with Jinja2, and the filters ask
-the same question without template syntax.
+k3s 上の bot の確認は `k3s kubectl` を実行できる s2 から送っています．Pod が Pending (s1 停止) ・CrashLoop・readiness 失敗のどれでも，s2 が停止しても ping が途絶えます．
 
-**How much each check actually proves differs:**
+ArgoCD と Grafana は，外部から HTTP で確認する monitor を Terraform で定義しています ([`terraform/betteruptime_monitor.tf`](../terraform/betteruptime_monitor.tf))．Cloudflare Access の service token を付けて health エンドポイントを確認するため，Pod までの経路全体が対象です．ホストへの heartbeat とは別の仕組みで，Ansible の設定は不要です．
 
-| Target | Proves |
-|---|---|
-| `wallos` | The container answers on localhost — the other half of the edge check in `betteruptime_monitor.wallos_edge` |
-| `chime` | The scheduler is still ticking (its healthcheck fails once its heartbeat file goes stale) |
-| `babyrite`, `honeypot` | Only that the container runs. Both hold Discord gateway websockets, so **a dead gateway inside a live process stays invisible** until those bots push for themselves |
-
-### Backup notification
-
-`restic_backup` reports through a heartbeat of its own, so a broken backup no
-longer fails silently. Three cases are covered:
-
-- **Success** — `ExecStartPost` pings the heartbeat, refreshing the weekly period
-- **Failure** — `OnFailure=s1-backup-failure.service` posts the last 50 journal
-  lines to `<url>/fail` immediately, rather than waiting a week for the period to
-  lapse
-- **Never ran** (s1 down at the scheduled time) — the period lapses
-
-Setting `backup_heartbeat_url` to an empty string removes both units, so the role
-still works without Better Stack.
-
-### Required vault secrets
-
-Heartbeat ping URLs are issued by Terraform and consumed here, but Ansible cannot
-read Terraform state, so they are copied over by hand — the same arrangement as
-the R2 credentials. **The URL is the only credential involved: anyone holding it
-can report the service as healthy**, so treat it as a secret.
+heartbeat の URL は Terraform が発行しますが，Ansible は Terraform の state を読めないため，手作業で vault にコピーします．**URL を知っていれば誰でも正常を報告できるため，シークレットとして扱います．**
 
 ```fish
-cd ../terraform
-terraform output -raw heartbeat_url_s1_host   # repeat per key below
-cd ../ansible && ansible-vault edit inventory/group_vars/all/vault.yml
+cd terraform
+terraform output -raw heartbeat_url_s1_host
+cd ../ansible
+ansible-vault edit inventory/group_vars/all/vault.yml
 ```
 
-| Vault key | Terraform output |
-|---|---|
-| `vault_heartbeat_url_s1_host` | `heartbeat_url_s1_host` |
-| `vault_heartbeat_url_wallos` | `heartbeat_url_wallos` |
-| `vault_heartbeat_url_chime` | `heartbeat_url_chime` |
-| `vault_heartbeat_url_babyrite` | `heartbeat_url_babyrite` |
-| `vault_heartbeat_url_honeypot` | `heartbeat_url_honeypot` |
-| `vault_heartbeat_url_backup` | `heartbeat_url_backup` |
+### Dashboard でしか設定できない項目
 
-These change only when a heartbeat resource is replaced, so this is a one-off per
-heartbeat.
+Better Stack の Free プランでは，ステータスページの **Advanced settings** を API から書き込めません．そのため以下は手作業で設定しており，Terraform では管理していません．
 
-### Settings that live in the dashboard
-
-Better Stack's free plan refuses API writes to anything the dashboard files under
-**Advanced settings**, so those are set by hand and deliberately left out of the
-Terraform configuration (which keeps Terraform from diffing against them):
-
-| Dashboard setting | Value |
+| 設定 | 値 |
 |---|---|
 | Status history → How many days to display? | 90 days |
-| Look & feel → Minimum incident length | above 0, so single failed probes stay hidden |
-| Search engines → Hide from search engines | enabled |
-| Replace top navigation links | link back to m1sk9.dev |
-| **Status page access → Published** | **enabled — the page is not public otherwise** |
+| Look & feel → Minimum incident length | 0 より大きくする (単発の失敗を表示しないため) |
+| Search engines → Hide from search engines | 有効 |
+| Replace top navigation links | m1sk9.dev へのリンク |
+| **Status page access → Published** | **有効 (無効だとページが公開されない) ** |
 
-Design (modern look, dark theme, vertical layout) and the custom domain *are*
-managed in Terraform: those sit outside that section.
+## k3s
+
+`k8s.yml` と `k8s-agent.yml` は CD に含めず，手動で適用します．
+
+- **`k8s.yml` (s2) **: ノードラベルを付け，traefik / servicelb を無効化し，ArgoCD を初期導入します．
+  - ノードラベルと無効化の設定は，`config.yaml.d/` の drop-in として書き込みます．
+  - ArgoCD の初期導入は一度だけ行います．導入後は ArgoCD が `k8s/apps/argocd` を通じて自分自身を管理するため，2 回目以降の実行では何もしません．
+- **`k8s-agent.yml` (s1) **: k3s のバイナリをチェックサムで検証してインストールし，s2 に join します．
+  - node IP は `tailscale ip -4` から取得します．
+  - join トークンは `vault_k3s_token` から読みます．
+
+バージョンを上げるときの注意:
+
+- **k3s**: agent (`k3s_agent` の `k3s_version`) を server より新しくしてはいけません．server を先に上げます．
+- **Helm**: `argocd_bootstrap` の `helm_version` は [`mise.toml`](../mise.toml) の `helm` と揃えます．
 
 ## CI / CD
 
-GitHub Actions deploys this configuration automatically, mirroring the Terraform setup.
+- **CI** ([`ci.yaml`](../.github/workflows/ci.yaml)，pull request): すべての playbook に `--syntax-check` を実行します．続いて `backup.yml`，`monitoring.yml` を `--check --diff` で実行し，PR で変更内容を確認できるようにします．
+- **CD** ([`cd.yaml`](../.github/workflows/cd.yaml)，`main` への push): Tailnet に参加してから，`backup.yml`，`monitoring.yml` を適用します．
 
-- **CI** ([`ci.yaml`](../.github/workflows/ci.yaml)) — on every pull request:
-  runs `--syntax-check` on all playbooks, then a **plan**
-  (`--check --diff` for `services.yml`, `backup.yml` and `monitoring.yml`) against s1 so the PR shows exactly what would change — the
-  Terraform `plan` equivalent. The `docker_compose_v2` module supports check mode,
-  so the diff is meaningful.
-- **CD** ([`cd.yaml`](../.github/workflows/cd.yaml)) — on push to `main`
-  (or manual `workflow_dispatch`): joins the tailnet, then runs `services.yml`,
-  `backup.yml` and `monitoring.yml` against s1.
+runner は [Tailscale GitHub Action](https://tailscale.com/kb/1276/tailscale-github-action) で `tag:ci` のエフェメラルノードとして Tailnet に参加し，**Tailscale SSH** でホストに接続します．そのため長期間有効な SSH 鍵は GitHub に置いていません．SSH の認可は [`tailscale/policy.hujson`](../tailscale/policy.hujson) の `ssh` ルールで行います．
 
-Both workflows run their full job set on every PR and push — there is no
-`paths`-based gating, so an Ansible-only change still runs the Terraform jobs and
-vice versa.
+### GitHub Secrets
 
-Because s1 only exists inside the tailnet, the runner joins it as an ephemeral node via
-the [Tailscale GitHub Action](https://tailscale.com/kb/1276/tailscale-github-action) and
-connects to s1 over **Tailscale SSH** — no long-lived CI key is stored in GitHub.
-Authentication is handled by Tailscale (the runner's `tag:ci` identity must be allowed
-to SSH to s1 by the ACL, and s1 must have `tailscale up --ssh` enabled).
-
-### Required GitHub secrets
-
-| Secret | Purpose |
+| Secret | 用途 |
 |---|---|
-| `ANSIBLE_VAULT_PASSWORD` | decrypts the vault files |
-| `TS_OAUTH_CLIENT_ID` | Tailscale OAuth client id |
-| `TS_OAUTH_SECRET` | Tailscale OAuth client secret |
+| `ANSIBLE_VAULT_PASSWORD` | vault の復号 |
+| `TS_OAUTH_CLIENT_ID` | Tailscale OAuth クライアント ID (`auth_keys` スコープ，`tag:ci` を所有) |
+| `TS_OAUTH_SECRET` | 上記クライアントのシークレット |
 
-### Tailscale setup (one-time)
-
-1. In the Tailscale admin console, create an **OAuth client** with the `auth_keys` scope,
-   owning the tag `tag:ci`.
-2. Register its id / secret as the `TS_OAUTH_*` secrets above.
-3. On s1, enable Tailscale SSH: `sudo tailscale up --ssh` (or set `--ssh` on the existing
-   `tailscale up` invocation).
-4. In the ACL policy, define `tag:ci`, allow it to reach s1, and grant it SSH access to
-   the `m1sk9` user via `ssh` rules. The policy is managed as IaC in
-   [`tailscale/policy.hujson`](../tailscale/policy.hujson) — see the root
-   [README](../README.md#tailscale) for how changes are tested and applied.
+ホスト側では Tailscale SSH を有効にしておく必要があります (`sudo tailscale up --ssh`)．
