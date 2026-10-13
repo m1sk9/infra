@@ -1,0 +1,3 @@
+---
+# k3s packaged components to turn off on this node, e.g. traefik, servicelb.
+k3s_disable_addons: []

@@ -1,0 +1,5 @@
+# Managed by Ansible (role k3s_disable_addons).
+disable:
+{% for addon in k3s_disable_addons %}
+  - "{{ addon }}"
+{% endfor %}

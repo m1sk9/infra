@@ -9,6 +9,10 @@
       ansible.builtin.include_role:
         name: k3s_node_labels
 
+    - name: Disable packaged components
+      ansible.builtin.include_role:
+        name: k3s_disable_addons
+
     - name: Bootstrap ArgoCD
       ansible.builtin.include_role:
         name: argocd_bootstrap
