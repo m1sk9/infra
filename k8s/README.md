@@ -21,6 +21,7 @@ Nodes carry a `m1sk9.dev/pool` label, set with `node-label` in the k3s config so
 
 - Pin workloads with `nodeSelector` on that label.
 - Metrics and log collectors are DaemonSets without a `nodeSelector` so they run on both nodes.
+- ArgoCD is pinned to the k3s server (s2) with `node-role.kubernetes.io/control-plane`, which k3s sets itself, so that it stays off s1 while its OS is reinstalled.
 - No taints are used.
 
 ## Storage

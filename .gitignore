@@ -2,3 +2,4 @@
 .env
 ansible/.vault_pass
 tailscale/policy.rendered.hujson
+k8s/apps/*/charts/

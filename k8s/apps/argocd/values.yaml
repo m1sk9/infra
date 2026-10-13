@@ -1,0 +1,8 @@
+argo-cd:
+  global:
+    # s2 is the only k3s server and k3s labels it control-plane itself.
+    # Pinning by that label rather than a custom one keeps ArgoCD off s1, whose OS is reinstalled.
+    nodeSelector:
+      node-role.kubernetes.io/control-plane: "true"
+  dex:
+    enabled: false
