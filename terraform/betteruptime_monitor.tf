@@ -10,8 +10,7 @@ locals {
   monitor_regions = ["as", "us"]
 
   # Valid options for HTTP monitors are 2, 3, 5, 10, 15, 30, 45 and 60 seconds.
-  # 10 is generous for Cloudflare-fronted hosts but s1 is a Celeron 3855U, so
-  # the origin-backed checks need the headroom.
+  # 10 is generous for Cloudflare-fronted hosts.
   monitor_request_timeout = 10
 
   # Wait one further check before opening or closing an incident, so a single
@@ -20,114 +19,30 @@ locals {
   monitor_recovery_period     = 180
 }
 
-# books.m1sk9.dev - PdfDing (Access-protected, behind the s1 tunnel)
+# m1sk9.dev - portfolio (served by a Worker, no origin behind it)
 #
-# Checks /healthz with the service token so the request travels the whole path:
-# Cloudflare edge, Access, tunnel, container. Without the token Access would
-# answer with a redirect at the edge and this monitor would stay green with the
-# server switched off. See cloudflare_zero_trust_access_service_token.uptime for
-# why the token is scoped to this one path.
-resource "betteruptime_monitor" "books" {
-  url          = "https://books.m1sk9.dev/healthz"
+# Why this is the only HTTP monitor: everything else on s1 is Access-protected
+# or has no health endpoint, so the heartbeats cover it from the inside. This
+# one exists so that ssl_expiration still has a monitor to live on.
+#
+# Why domain_expiration is absent rather than set: Better Stack scopes it to
+# the domain, not the monitor, and the provider reads it back as null some time
+# after each apply, so unrelated plans keep picking up a `-1 -> 30` change
+# (2026-08-15, 2026-09-12). The provider only sends the field when it changes,
+# so leaving it out of the configuration is what stops the churn. It is set in
+# the UI instead, under the monitor's Advanced settings.
+#
+# ssl_expiration stays: it really is per-monitor and it holds the value.
+resource "betteruptime_monitor" "portfolio" {
+  url          = "https://m1sk9.dev"
   monitor_type = "status"
 
-  request_headers = [
-    {
-      name  = "CF-Access-Client-Id"
-      value = cloudflare_zero_trust_access_service_token.uptime.client_id
-    },
-    {
-      name  = "CF-Access-Client-Secret"
-      value = cloudflare_zero_trust_access_service_token.uptime.client_secret
-    },
-  ]
-
   check_frequency     = local.monitor_check_frequency
   regions             = local.monitor_regions
   request_timeout     = local.monitor_request_timeout
   confirmation_period = local.monitor_confirmation_period
   recovery_period     = local.monitor_recovery_period
 
-  # Suppressed during s1's weekly maintenance reboot, scheduled by the Ansible
-  # `scheduled_reboot` role — move one and the other has to move with it.
-  #
-  # Why this monitor alone needs the window: it is the only check that travels to
-  # the container, so it is the only one the reboot can fail. wallos_edge is
-  # answered by Cloudflare without consulting the origin, and every heartbeat
-  # tolerates a missed run (the 2026-08-02 reboot left a 234 s gap in s1_host
-  # against its 420 s budget, and 366 s in the service heartbeats against 600 s).
-  #
-  # The window is far wider than the outage it covers — 04:00:02 to 04:02:08 on
-  # 2026-08-02 — because a forced fsck of the 865 GiB /home would stretch the boot
-  # well past two minutes, and a window sized to the good case would leak an
-  # incident the first time that happened. Nothing goes unwatched in the meantime:
-  # betteruptime_heartbeat.s1_host has no maintenance window and still fails 420 s
-  # after the pushes stop, so a reboot that never comes back is still reported.
-  #
-  # maintenance_timezone takes a Rails zone name, not an IANA one — "Tokyo", not
-  # "Asia/Tokyo". Contrast server_timezone in betteruptime_heartbeat.tf.
-  maintenance_from     = "04:00:00"
-  maintenance_to       = "04:15:00"
-  maintenance_days     = ["sun"]
-  maintenance_timezone = "Tokyo"
-
-  # Why domain_expiration is absent rather than set: Better Stack scopes it to
-  # the domain, not the monitor — "changing the settings for the domain
-  # expiration will automatically update the domain expiration settings for all
-  # monitors for this domain in your team". Both monitors are on m1sk9.dev, so
-  # declaring it here and on wallos_edge put two Terraform resources on one
-  # server-side value. That is what the earlier note here read as "-1 is
-  # ignored": setting -1 on one monitor and 30 on the other cannot converge,
-  # because they are the same setting.
-  #
-  # Writing 30 to both does not converge either. The value comes back null —
-  # which the provider reports as -1 — some time after each apply, so unrelated
-  # plans keep picking up a `-1 -> 30` change on both monitors (2026-08-15,
-  # 2026-09-12). The provider only sends the field when it changes, so leaving
-  # it out of the configuration is what actually stops the churn. It is set in
-  # the UI instead, under the monitor's Advanced settings — the same boundary
-  # that already keeps the status page's advanced attributes out of Terraform.
-  #
-  # ssl_expiration stays: it really is per-monitor and it holds the value.
-  email          = true
-  ssl_expiration = 30
-}
-
-# wallos.m1sk9.dev - Wallos (Access-protected, edge reachability only)
-#
-# Why 302 is the expected result: Wallos has no health endpoint (its compose file
-# disables the container healthcheck outright), so there is no safe path to scope
-# a service token to the way books.m1sk9.dev has /healthz. Pointing a token at
-# `/` would leave a standing credential for the subscription data, so this
-# deliberately checks only that the edge still answers with the Access login
-# redirect — DNS, Cloudflare and the Access configuration.
-#
-# That leaves the tunnel and the container unproven, which is what the
-# betteruptime_heartbeat.wallos push from s1 covers. Neither half is sufficient
-# alone: the redirect is served without ever consulting the origin, and the
-# heartbeat cannot see a Cloudflare-side failure.
-#
-# The same blindness is why this one carries no maintenance window for the weekly
-# reboot: with the origin out of the picture there is nothing for the reboot to
-# take down here. See books above.
-resource "betteruptime_monitor" "wallos_edge" {
-  url                   = "https://wallos.m1sk9.dev"
-  monitor_type          = "expected_status_code"
-  expected_status_codes = [302]
-  follow_redirects      = false
-
-  # The API rejects the pair outright ("Cannot keep cookies when redirecting when
-  # expecting a 3xx status code"): remembering cookies only means anything if the
-  # redirect is followed, and here the redirect is the thing being asserted.
-  remember_cookies = false
-
-  check_frequency     = local.monitor_check_frequency
-  regions             = local.monitor_regions
-  request_timeout     = local.monitor_request_timeout
-  confirmation_period = local.monitor_confirmation_period
-  recovery_period     = local.monitor_recovery_period
-
-  # See the note on books above for why domain_expiration is not declared here.
   email          = true
   ssl_expiration = 30
 }
