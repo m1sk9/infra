@@ -1,0 +1,89 @@
+kube-prometheus-stack:
+  # Keeps resource names short; the Grafana Service is monitoring-grafana, which
+  # the Cloudflare Tunnel ingress points at.
+  fullnameOverride: monitoring
+
+  # No receiver is configured yet, so an Alertmanager would only hold alerts.
+  alertmanager:
+    enabled: false
+
+  # k3s runs these inside the k3s process, so their endpoints do not exist as
+  # scrape targets and would sit permanently down.
+  kubeEtcd:
+    enabled: false
+  kubeScheduler:
+    enabled: false
+  kubeControllerManager:
+    enabled: false
+  kubeProxy:
+    enabled: false
+
+  prometheusOperator:
+    nodeSelector:
+      m1sk9.dev/pool: observability
+    admissionWebhooks:
+      patch:
+        nodeSelector:
+          m1sk9.dev/pool: observability
+
+  kube-state-metrics:
+    nodeSelector:
+      m1sk9.dev/pool: observability
+
+  prometheus:
+    prometheusSpec:
+      nodeSelector:
+        m1sk9.dev/pool: observability
+      retention: 15d
+      retentionSize: 18GB
+      # Pick up ServiceMonitors and rules from every namespace, not only those
+      # labelled with this release.
+      serviceMonitorSelectorNilUsesHelmValues: false
+      podMonitorSelectorNilUsesHelmValues: false
+      ruleSelectorNilUsesHelmValues: false
+      storageSpec:
+        volumeClaimTemplate:
+          spec:
+            accessModes: ["ReadWriteOnce"]
+            resources:
+              requests:
+                storage: 20Gi
+      resources:
+        requests:
+          cpu: 200m
+          memory: 1Gi
+        limits:
+          memory: 3Gi
+
+  grafana:
+    nodeSelector:
+      m1sk9.dev/pool: observability
+    admin:
+      existingSecret: grafana-admin
+      userKey: admin-user
+      passwordKey: admin-password
+    envFromSecret: grafana-oidc
+    persistence:
+      enabled: true
+      size: 2Gi
+    grafana.ini:
+      server:
+        root_url: https://grafana.m1sk9.dev
+      auth.generic_oauth:
+        enabled: true
+        name: Cloudflare Access
+        allow_sign_up: true
+        client_id: aba9ddd5bb5205b2c5a190e964c4782b1cf6f23733c4d544c44d0ce421471f90
+        scopes: openid email profile
+        auth_url: https://m1sk9.cloudflareaccess.com/cdn-cgi/access/sso/oidc/aba9ddd5bb5205b2c5a190e964c4782b1cf6f23733c4d544c44d0ce421471f90/authorization
+        token_url: https://m1sk9.cloudflareaccess.com/cdn-cgi/access/sso/oidc/aba9ddd5bb5205b2c5a190e964c4782b1cf6f23733c4d544c44d0ce421471f90/token
+        api_url: https://m1sk9.cloudflareaccess.com/cdn-cgi/access/sso/oidc/aba9ddd5bb5205b2c5a190e964c4782b1cf6f23733c4d544c44d0ce421471f90/userinfo
+        email_attribute_path: email
+        login_attribute_path: email
+        role_attribute_path: "email == 'me@m1sk9.dev' && 'GrafanaAdmin' || 'Viewer'"
+        allow_assign_grafana_admin: true
+    additionalDataSources:
+      - name: Loki
+        type: loki
+        access: proxy
+        url: http://loki.loki.svc.cluster.local:3100
