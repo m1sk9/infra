@@ -28,6 +28,15 @@ resource "betteruptime_heartbeat" "s1_host" {
   email  = true
 }
 
+# s2, pushed from s2 itself like s1 above. The same reading applies: "s2 can reach the
+# internet", which from the outside is indistinguishable from "s2 is up".
+resource "betteruptime_heartbeat" "s2_host" {
+  name   = "s2"
+  period = 300 # timer fires every 2 min, so this tolerates one missed run
+  grace  = 120
+  email  = true
+}
+
 # chime reports its container healthcheck rather than mere process liveness.
 #
 # Why this one is stronger than the two below: chime writes a heartbeat file on

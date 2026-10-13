@@ -110,3 +110,62 @@ resource "cloudflare_zero_trust_access_application" "grafana_sso" {
 data "cloudflare_zero_trust_organization" "this" {
   account_id = local.cloudflare_account_id
 }
+
+# Uptime probe access for ArgoCD and Grafana health endpoints
+#
+# Why a service token at all: Access answers unauthenticated requests at the edge
+# with a redirect to the IdP, before the origin is ever consulted. An external
+# monitor that treats that redirect as success would be confirming Cloudflare is
+# up and nothing else — it would keep reporting green with the cluster down. The
+# token is what lets a probe reach the Pod and observe a real response.
+#
+# Why separate path-scoped applications instead of adding the token to the
+# self-hosted policies above: Cloudflare evaluates the most specific path first and
+# does not inherit rules from the broader application, so each of these grants one
+# health path and nothing else. ArgoCD's /healthz and Grafana's /api/health need no
+# login and return a bare status, so a leaked token buys an attacker that and
+# nothing more, while the apps themselves stay behind the GitHub IdP.
+#
+# Note that this also means those two paths stop being reachable from a browser
+# signed in as an admin — non_identity admits service tokens only.
+resource "cloudflare_zero_trust_access_service_token" "uptime" {
+  account_id = local.cloudflare_account_id
+  name       = "betterstack-uptime"
+  duration   = "8760h" # 1 year; rotate by bumping client_secret_version
+}
+
+resource "cloudflare_zero_trust_access_policy" "uptime_probe" {
+  account_id = local.cloudflare_account_id
+  name       = "Allow Better Stack uptime probe"
+  decision   = "non_identity"
+
+  include = [{
+    service_token = {
+      token_id = cloudflare_zero_trust_access_service_token.uptime.id
+    }
+  }]
+}
+
+resource "cloudflare_zero_trust_access_application" "argocd_health" {
+  account_id = local.cloudflare_account_id
+  name       = "ArgoCD Health"
+  domain     = "argocd.m1sk9.dev/healthz"
+  type       = "self_hosted"
+
+  policies = [{
+    id         = cloudflare_zero_trust_access_policy.uptime_probe.id
+    precedence = 1
+  }]
+}
+
+resource "cloudflare_zero_trust_access_application" "grafana_health" {
+  account_id = local.cloudflare_account_id
+  name       = "Grafana Health"
+  domain     = "grafana.m1sk9.dev/api/health"
+  type       = "self_hosted"
+
+  policies = [{
+    id         = cloudflare_zero_trust_access_policy.uptime_probe.id
+    precedence = 1
+  }]
+}
