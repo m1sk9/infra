@@ -69,9 +69,12 @@
             dest: "{{ argocd_chart_dir }}/"
             mode: "0644"
 
-        - name: "argocd | Build chart dependencies"
+        # `dependency build` honours Chart.lock but only resolves repositories
+        # already added with `helm repo add`, which s2 has none of. `update` adds
+        # them on the fly; the versions are pinned in Chart.yaml either way.
+        - name: "argocd | Update chart dependencies"
           ansible.builtin.command:
-            argv: [/usr/local/bin/helm, dependency, build, "{{ argocd_chart_dir }}"]
+            argv: [/usr/local/bin/helm, dependency, update, "{{ argocd_chart_dir }}"]
 
         # No --atomic: a failed install is left in place so it can be inspected;
         # the PR's rollback notes cover cleaning it up.
