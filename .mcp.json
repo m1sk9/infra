@@ -8,6 +8,19 @@
         "@drawio/mcp"
       ],
       "env": {}
+    },
+    "grafana": {
+      "type": "stdio",
+      "command": "uvx",
+      "args": [
+        "mcp-grafana@2.0.2",
+        "--disable-write"
+      ],
+      "env": {
+        "GRAFANA_URL": "https://grafana.m1sk9.dev",
+        "GRAFANA_SERVICE_ACCOUNT_TOKEN": "${GRAFANA_SERVICE_ACCOUNT_TOKEN}",
+        "GRAFANA_EXTRA_HEADERS": "{\"CF-Access-Client-Id\": \"${GRAFANA_MCP_ACCESS_CLIENT_ID}\", \"CF-Access-Client-Secret\": \"${GRAFANA_MCP_ACCESS_CLIENT_SECRET}\"}"
+      }
     }
   }
 }

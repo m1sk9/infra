@@ -103,3 +103,16 @@ output "grafana_oidc_client_secret" {
   value       = cloudflare_zero_trust_access_application.grafana_sso.saas_app.client_secret
   sensitive   = true
 }
+
+# Grafana MCP server (read into mise.local.toml on the workstation)
+
+output "grafana_mcp_access_client_id" {
+  description = "Cloudflare Access service token client ID for the Grafana MCP server"
+  value       = cloudflare_zero_trust_access_service_token.grafana_mcp.client_id
+}
+
+output "grafana_mcp_access_client_secret" {
+  description = "Cloudflare Access service token client secret for the Grafana MCP server"
+  value       = cloudflare_zero_trust_access_service_token.grafana_mcp.client_secret
+  sensitive   = true
+}

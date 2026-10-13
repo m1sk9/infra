@@ -60,10 +60,16 @@ resource "cloudflare_zero_trust_access_application" "grafana" {
 
   allowed_idps = [cloudflare_zero_trust_access_identity_provider.github.id]
 
-  policies = [{
-    id         = cloudflare_zero_trust_access_policy.k8s_admins.id
-    precedence = 1
-  }]
+  policies = [
+    {
+      id         = cloudflare_zero_trust_access_policy.k8s_admins.id
+      precedence = 1
+    },
+    {
+      id         = cloudflare_zero_trust_access_policy.grafana_mcp.id
+      precedence = 2
+    },
+  ]
 }
 
 resource "cloudflare_zero_trust_access_application" "argocd_sso" {
@@ -167,5 +173,33 @@ resource "cloudflare_zero_trust_access_application" "grafana_health" {
   policies = [{
     id         = cloudflare_zero_trust_access_policy.uptime_probe.id
     precedence = 1
+  }]
+}
+
+# Grafana MCP server access
+#
+# The MCP server runs on a workstation and cannot complete the GitHub IdP login,
+# so it presents a service token at the edge and a Grafana service account token
+# (Viewer) at the origin. The Access token alone gets no further than Grafana's
+# own login, which is why it is admitted to the whole hostname rather than scoped
+# to /api like the health probes.
+#
+# Why a separate token from `uptime`: that one is stored in Better Stack, this one
+# on a workstation; keeping them apart lets either be revoked without the other.
+resource "cloudflare_zero_trust_access_service_token" "grafana_mcp" {
+  account_id = local.cloudflare_account_id
+  name       = "grafana-mcp"
+  duration   = "8760h" # 1 year; rotate by bumping client_secret_version
+}
+
+resource "cloudflare_zero_trust_access_policy" "grafana_mcp" {
+  account_id = local.cloudflare_account_id
+  name       = "Allow Grafana MCP server"
+  decision   = "non_identity"
+
+  include = [{
+    service_token = {
+      token_id = cloudflare_zero_trust_access_service_token.grafana_mcp.id
+    }
   }]
 }

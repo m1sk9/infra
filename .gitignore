@@ -3,3 +3,4 @@
 ansible/.vault_pass
 tailscale/policy.rendered.hujson
 k8s/apps/*/charts/
+mise.local.toml
