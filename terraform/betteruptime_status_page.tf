@@ -49,115 +49,80 @@ resource "betteruptime_status_page" "m1sk9" {
 }
 
 # --- Sections ---
+#
+# The hosts sit at the top level without a section, so the page opens with them.
+# Positions are shared by loose resources and sections: the hosts come first, then
+# the sections.
 
-resource "betteruptime_status_page_section" "server" {
+resource "betteruptime_status_page_section" "discord_bot" {
   status_page_id = betteruptime_status_page.m1sk9.id
-  name           = "Servers"
+  name           = "Discord Bot"
+  position       = 3
+}
+
+# --- Hosts ---
+
+# Not named s1_host any more, so that Terraform replaces the old entry rather than
+# trying to move it out of the section it was in: the provider does not clear
+# status_page_section_id when the attribute is dropped, and that section is deleted
+# in the same apply.
+resource "betteruptime_status_page_resource" "host_s1" {
+  status_page_id = betteruptime_status_page.m1sk9.id
+  resource_id    = betteruptime_heartbeat.s1_host.id
+  resource_type  = "Heartbeat"
+  public_name    = "s1"
+  explanation    = "The host pushes a heartbeat every 2 minutes. Reported down when the pushes stop, which includes the home line going out."
+  widget_type    = "history"
   position       = 0
 }
 
-resource "betteruptime_status_page_section" "web" {
-  status_page_id = betteruptime_status_page.m1sk9.id
-  name           = "Web"
-  position       = 1
-}
-
-resource "betteruptime_status_page_section" "self_hosted" {
-  status_page_id = betteruptime_status_page.m1sk9.id
-  name           = "Self-hosted"
-  position       = 2
-}
-
-# --- Servers ---
-
-resource "betteruptime_status_page_resource" "s1_host" {
-  status_page_id         = betteruptime_status_page.m1sk9.id
-  status_page_section_id = betteruptime_status_page_section.server.id
-  resource_id            = betteruptime_heartbeat.s1_host.id
-  resource_type          = "Heartbeat"
-  public_name            = "s1"
-  explanation            = "The host pushes a heartbeat every 2 minutes. Reported down when the pushes stop, which includes the home line going out."
-  widget_type            = "history"
-  position               = 0
-}
-
-resource "betteruptime_status_page_resource" "backup" {
-  status_page_id         = betteruptime_status_page.m1sk9.id
-  status_page_section_id = betteruptime_status_page_section.server.id
-  resource_id            = betteruptime_heartbeat.backup.id
-  resource_type          = "Heartbeat"
-  public_name            = "s1-backup"
-  explanation            = "Weekly restic backup to Cloudflare R2, Friday 03:00 JST."
-  widget_type            = "history"
-  position               = 1
-}
-
-resource "betteruptime_status_page_resource" "s2_backup" {
-  status_page_id         = betteruptime_status_page.m1sk9.id
-  status_page_section_id = betteruptime_status_page_section.server.id
-  resource_id            = betteruptime_heartbeat.s2_backup.id
-  resource_type          = "Heartbeat"
-  public_name            = "s2-backup"
-  explanation            = "Weekly restic backup of the k3s state to Cloudflare R2, Friday 03:00 JST."
-  widget_type            = "history"
-  position               = 2
-}
-
-# --- Web ---
-
-resource "betteruptime_status_page_resource" "portfolio" {
-  status_page_id         = betteruptime_status_page.m1sk9.id
-  status_page_section_id = betteruptime_status_page_section.web.id
-  resource_id            = betteruptime_monitor.portfolio.id
-  resource_type          = "Monitor"
-  public_name            = "m1sk9.dev"
-  explanation            = "Served by a Cloudflare Worker. Also watches the TLS certificate expiry."
-  widget_type            = "response_times"
-  position               = 0
-}
-
-# --- Self-hosted ---
-
-resource "betteruptime_status_page_resource" "chime" {
-  status_page_id         = betteruptime_status_page.m1sk9.id
-  status_page_section_id = betteruptime_status_page_section.self_hosted.id
-  resource_id            = betteruptime_heartbeat.chime.id
-  resource_type          = "Heartbeat"
-  public_name            = "chime"
-  explanation            = "Reports its own liveness check, which fails once the scheduler stops ticking."
-  widget_type            = "history"
-  position               = 0
-}
+# --- Discord Bot ---
+#
+# Each bot is reported by a push from s2, which checks that the Deployment has an
+# available replica. For chime that includes its own health command; for the others
+# it proves the Pod is running, and a dropped Discord gateway connection is not
+# visible here.
 
 resource "betteruptime_status_page_resource" "babyrite" {
   status_page_id         = betteruptime_status_page.m1sk9.id
-  status_page_section_id = betteruptime_status_page_section.self_hosted.id
+  status_page_section_id = betteruptime_status_page_section.discord_bot.id
   resource_id            = betteruptime_heartbeat.babyrite.id
   resource_type          = "Heartbeat"
   public_name            = "babyrite"
-  explanation            = "Container liveness only — a dropped Discord gateway connection is not visible here."
+  explanation            = "Pod availability only — a dropped Discord gateway connection is not visible here."
+  widget_type            = "history"
+  position               = 0
+}
+
+resource "betteruptime_status_page_resource" "pythia" {
+  status_page_id         = betteruptime_status_page.m1sk9.id
+  status_page_section_id = betteruptime_status_page_section.discord_bot.id
+  resource_id            = betteruptime_heartbeat.pythia.id
+  resource_type          = "Heartbeat"
+  public_name            = "Pythia"
+  explanation            = "Pod availability only — a dropped Discord gateway connection is not visible here."
   widget_type            = "history"
   position               = 1
 }
 
 resource "betteruptime_status_page_resource" "honeypot" {
   status_page_id         = betteruptime_status_page.m1sk9.id
-  status_page_section_id = betteruptime_status_page_section.self_hosted.id
+  status_page_section_id = betteruptime_status_page_section.discord_bot.id
   resource_id            = betteruptime_heartbeat.honeypot.id
   resource_type          = "Heartbeat"
-  public_name            = "honeypot"
-  explanation            = "Container liveness only — a dropped Discord gateway connection is not visible here."
+  public_name            = "Honeypot"
+  explanation            = "Pod availability only — a dropped Discord gateway connection is not visible here."
   widget_type            = "history"
   position               = 2
 }
 
-resource "betteruptime_status_page_resource" "pythia" {
+resource "betteruptime_status_page_resource" "chime" {
   status_page_id         = betteruptime_status_page.m1sk9.id
-  status_page_section_id = betteruptime_status_page_section.self_hosted.id
-  resource_id            = betteruptime_heartbeat.pythia.id
+  status_page_section_id = betteruptime_status_page_section.discord_bot.id
+  resource_id            = betteruptime_heartbeat.chime.id
   resource_type          = "Heartbeat"
-  public_name            = "pythia"
-  explanation            = "Container liveness only — a dropped Discord gateway connection is not visible here."
+  public_name            = "chime"
+  explanation            = "Reports its own health check, which fails once the scheduler stops ticking."
   widget_type            = "history"
   position               = 3
 }

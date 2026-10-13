@@ -1,5 +1,5 @@
 // Leak alert: posts to Discord when a request for a secret-looking path was
-// answered with 2xx, and pings a Better Stack heartbeat after every clean run.
+// answered with 2xx.
 
 const GRAPHQL_ENDPOINT = "https://api.cloudflare.com/client/v4/graphql";
 
@@ -130,13 +130,6 @@ async function run(env, scheduledTime) {
   const rows = await findLeaks(env, window);
   if (rows.length > 0) {
     await postToDiscord(env, formatMessage(rows, window, env.DISCORD_MENTION_USER_ID));
-  }
-  // Why the heartbeat is sent last and only on success: a failed query or a
-  // failed post must leave the heartbeat silent, so Better Stack raises the
-  // incident that this Worker could not.
-  const hb = await fetch(env.HEARTBEAT_URL);
-  if (!hb.ok) {
-    throw new Error(`heartbeat HTTP ${hb.status}`);
   }
 }
 

@@ -165,11 +165,6 @@ resource "cloudflare_workers_script" "leak_alert" {
       type = "secret_text"
       text = var.leak_alert_discord_webhook_url
     },
-    {
-      name = "HEARTBEAT_URL"
-      type = "secret_text"
-      text = betteruptime_heartbeat.leak_alert.url
-    },
   ]
 }
 
