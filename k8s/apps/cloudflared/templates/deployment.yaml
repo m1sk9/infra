@@ -18,9 +18,14 @@ spec:
       containers:
         - name: cloudflared
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          # http2 because UDP to the edge (QUIC) is dropped on this network. With
+          # the default `auto` the liveness probe kills the Pod while it is still
+          # trying QUIC, so it never gets to fall back.
           args:
             - tunnel
             - --no-autoupdate
+            - --protocol
+            - http2
             - --metrics
             - 0.0.0.0:2000
             - run
@@ -42,7 +47,7 @@ spec:
             httpGet:
               path: /ready
               port: metrics
-            initialDelaySeconds: 10
+            initialDelaySeconds: 30
             periodSeconds: 30
             failureThreshold: 3
           resources:
