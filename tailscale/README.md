@@ -8,6 +8,7 @@ Tailnet のポリシーファイル (ACL) を [`policy.hujson`](./policy.hujson)
 - k3s のノード間通信 (apiserver，kubelet，flannel)
 - Prometheus (s2) から s1 の node-exporter へのスクレイプ
 - NextDNS の割り当て
+- s1 の Exit Node の自動承認 (`autoApprovers`)
 
 ## 適用
 
