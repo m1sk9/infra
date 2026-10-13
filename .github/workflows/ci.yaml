@@ -58,7 +58,6 @@ jobs:
           ansible-playbook playbooks/site.yml --syntax-check
           ansible-playbook playbooks/backup.yml --syntax-check
           ansible-playbook playbooks/monitoring.yml --syntax-check
-          ansible-playbook playbooks/maintenance.yml --syntax-check
           ansible-playbook playbooks/k8s-agent.yml --syntax-check
           ansible-playbook playbooks/k8s.yml --syntax-check
 
@@ -74,7 +73,6 @@ jobs:
         run: |
           ansible-playbook playbooks/backup.yml --check --diff
           ansible-playbook playbooks/monitoring.yml --check --diff
-          ansible-playbook playbooks/maintenance.yml --check --diff
 
       - name: Cleanup
         if: always()
