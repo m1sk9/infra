@@ -34,12 +34,6 @@ output "heartbeat_url_s1_host" {
   sensitive   = true
 }
 
-output "heartbeat_url_wallos" {
-  description = "Better Stack heartbeat URL for the Wallos container on s1"
-  value       = betteruptime_heartbeat.wallos.url
-  sensitive   = true
-}
-
 output "heartbeat_url_chime" {
   description = "Better Stack heartbeat URL for chime"
   value       = betteruptime_heartbeat.chime.url

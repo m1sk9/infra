@@ -94,43 +94,18 @@ resource "betteruptime_status_page_resource" "backup" {
 
 # --- Web ---
 
-resource "betteruptime_status_page_resource" "books" {
+resource "betteruptime_status_page_resource" "portfolio" {
   status_page_id         = betteruptime_status_page.m1sk9.id
   status_page_section_id = betteruptime_status_page_section.web.id
-  resource_id            = betteruptime_monitor.books.id
+  resource_id            = betteruptime_monitor.portfolio.id
   resource_type          = "Monitor"
-  public_name            = "books.m1sk9.dev"
-  explanation            = "Checked end to end through Cloudflare Access and the tunnel to the container."
+  public_name            = "m1sk9.dev"
+  explanation            = "Served by a Cloudflare Worker. Also watches the TLS certificate expiry."
   widget_type            = "response_times"
   position               = 0
 }
 
-# widget_type is history rather than response_times on purpose: the response time
-# here is Cloudflare answering with the Access redirect, which says nothing about
-# the origin and would read as a suspiciously fast service.
-resource "betteruptime_status_page_resource" "wallos_edge" {
-  status_page_id         = betteruptime_status_page.m1sk9.id
-  status_page_section_id = betteruptime_status_page_section.web.id
-  resource_id            = betteruptime_monitor.wallos_edge.id
-  resource_type          = "Monitor"
-  public_name            = "wallos.m1sk9.dev"
-  explanation            = "Edge reachability only — confirms DNS, Cloudflare and Access. The container itself is covered by wallos under Self-hosted."
-  widget_type            = "history"
-  position               = 1
-}
-
 # --- Self-hosted ---
-
-resource "betteruptime_status_page_resource" "wallos" {
-  status_page_id         = betteruptime_status_page.m1sk9.id
-  status_page_section_id = betteruptime_status_page_section.self_hosted.id
-  resource_id            = betteruptime_heartbeat.wallos.id
-  resource_type          = "Heartbeat"
-  public_name            = "wallos"
-  explanation            = "Probed on s1 itself, so this covers the tunnel and the container behind wallos.m1sk9.dev."
-  widget_type            = "history"
-  position               = 0
-}
 
 resource "betteruptime_status_page_resource" "chime" {
   status_page_id         = betteruptime_status_page.m1sk9.id
@@ -140,7 +115,7 @@ resource "betteruptime_status_page_resource" "chime" {
   public_name            = "chime"
   explanation            = "Reports its own liveness check, which fails once the scheduler stops ticking."
   widget_type            = "history"
-  position               = 1
+  position               = 0
 }
 
 resource "betteruptime_status_page_resource" "babyrite" {
@@ -151,7 +126,7 @@ resource "betteruptime_status_page_resource" "babyrite" {
   public_name            = "babyrite"
   explanation            = "Container liveness only — a dropped Discord gateway connection is not visible here."
   widget_type            = "history"
-  position               = 2
+  position               = 1
 }
 
 resource "betteruptime_status_page_resource" "honeypot" {
@@ -162,7 +137,7 @@ resource "betteruptime_status_page_resource" "honeypot" {
   public_name            = "honeypot"
   explanation            = "Container liveness only — a dropped Discord gateway connection is not visible here."
   widget_type            = "history"
-  position               = 3
+  position               = 2
 }
 
 resource "betteruptime_status_page_resource" "pythia" {
@@ -173,5 +148,5 @@ resource "betteruptime_status_page_resource" "pythia" {
   public_name            = "pythia"
   explanation            = "Container liveness only — a dropped Discord gateway connection is not visible here."
   widget_type            = "history"
-  position               = 4
+  position               = 3
 }

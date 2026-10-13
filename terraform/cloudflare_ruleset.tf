@@ -14,13 +14,10 @@ resource "cloudflare_ruleset" "waf_custom" {
   rules = [
     {
       ref         = "block_php"
-      description = "Block .php requests (nothing here runs PHP except Wallos)"
+      description = "Block .php requests (nothing here runs PHP)"
       # Why not rely on Bot Fight Mode: it only challenges what it scores as a
       # bot, and a plain client asking for /x.php still reaches the Worker.
-      # Why wallos.m1sk9.dev is excluded: Wallos is a PHP application
-      # (login.php, settings.php, ...) behind Access, so a zone-wide match would
-      # lock us out of it.
-      expression = "(http.request.uri.path.extension eq \"php\" and http.host ne \"wallos.m1sk9.dev\")"
+      expression = "(http.request.uri.path.extension eq \"php\")"
       action     = "block"
       enabled    = true
     },

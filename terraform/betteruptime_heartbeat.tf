@@ -18,22 +18,13 @@
 # reading, but it is worth knowing before chasing a phantom failure.
 #
 # This is also the check that stays awake through the weekly maintenance reboot:
-# it carries no maintenance window, unlike betteruptime_monitor.books, and a normal
-# reboot fits inside the budget below with room to spare (234 s of the 420 s on
+# it carries no maintenance window, and a normal reboot fits inside the budget
+# below with room to spare (234 s of the 420 s on
 # 2026-08-02). A reboot that fails to come back therefore still reports here.
 resource "betteruptime_heartbeat" "s1_host" {
   name   = "s1"
   period = 300 # timer fires every 2 min, so this tolerates one missed run
   grace  = 120
-  email  = true
-}
-
-# Wallos' container, checked from inside s1 (see betteruptime_monitor.wallos_edge
-# for the other half of this pair).
-resource "betteruptime_heartbeat" "wallos" {
-  name   = "wallos (origin)"
-  period = 420 # timer fires every 3 min
-  grace  = 180
   email  = true
 }
 
