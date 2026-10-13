@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pythia
+spec:
+  replicas: 1
+  # Recreate, never a rolling update: two instances logged in with the same
+  # Discord token answer every message twice.
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: pythia
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: pythia
+      annotations:
+        # Config is mounted with subPath, which does not follow ConfigMap updates,
+        # so a change has to roll the Pod.
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+    spec:
+      # Fixed to s1, not preferred: if s1 is cut off but alive, a Pod rescheduled
+      # to s2 would run beside the old one.
+      nodeSelector:
+        m1sk9.dev/pool: apps
+      containers:
+        - name: app
+          image: ghcr.io/m1sk9/pythia:v3.2.1
+          envFrom:
+            - secretRef:
+                name: pythia-env
+          env:
+            - name: CONFIG_FILE_PATH
+              value: "/config/config.toml"
+          volumeMounts:
+            - name: config
+              mountPath: /config/config.toml
+              subPath: config.toml
+              readOnly: true
+            - name: config
+              mountPath: /config/system_prompt.md
+              subPath: system_prompt.md
+              readOnly: true
+          resources:
+            requests:
+              cpu: 10m
+              memory: 64Mi
+            limits:
+              memory: 512Mi
+      volumes:
+        - name: config
+          configMap:
+            name: pythia-config

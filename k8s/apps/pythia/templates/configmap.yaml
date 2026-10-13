@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pythia-config
+data:
+  config.toml: |
+{{ .Files.Get "config.toml" | indent 4 }}
+  system_prompt.md: |
+{{ .Files.Get "system_prompt.md" | indent 4 }}

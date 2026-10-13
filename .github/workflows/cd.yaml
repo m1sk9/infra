@@ -63,9 +63,6 @@ jobs:
       - name: Write vault password
         run: echo "${{ secrets.ANSIBLE_VAULT_PASSWORD }}" > .vault_pass
 
-      - name: Deploy services
-        run: ansible-playbook playbooks/services.yml
-
       - name: Deploy backup
         run: ansible-playbook playbooks/backup.yml
 

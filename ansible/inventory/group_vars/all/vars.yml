@@ -30,37 +30,10 @@ backup_heartbeat_url: "{{ vault_heartbeat_url_backup }}"
 # The periods configured on the Better Stack side tolerate one missed run, so a
 # single dropped ping is not an incident.
 #
-# Why `docker ps --filter` rather than `docker inspect --format`: the Go template
-# in --format collides with Jinja2, and the filters express the same two questions
-# without any template syntax. (docker_container_info is still out of reach — it
-# requires the requests library on s1.)
+# This is s1's list. The bots run on k3s now, so their checks live on s2, where
+# `k3s kubectl` is available — see inventory/host_vars/s2.yml.
 heartbeat_targets:
   - name: s1-host
     url: "{{ vault_heartbeat_url_s1_host }}"
     oncalendar: "*:0/2"
     # No check_command: the ping arriving at all is the signal.
-
-  # chime ships a real liveness check: it fails once the scheduler stops ticking,
-  # so the container health status means more here than mere process liveness.
-  - name: chime
-    url: "{{ vault_heartbeat_url_chime }}"
-    oncalendar: "*:0/3"
-    check_command: "docker ps --filter 'name=^chime-app-1$' --filter health=healthy -q | grep -q ."
-
-  # babyrite, honeypot and pythia have no healthcheck and hold Discord gateway
-  # websockets, so this only proves the container is running — a dead gateway
-  # inside a live process stays invisible.
-  - name: babyrite
-    url: "{{ vault_heartbeat_url_babyrite }}"
-    oncalendar: "*:0/3"
-    check_command: "docker ps --filter 'name=^babyrite-app-1$' --filter status=running -q | grep -q ."
-
-  - name: honeypot
-    url: "{{ vault_heartbeat_url_honeypot }}"
-    oncalendar: "*:0/3"
-    check_command: "docker ps --filter 'name=^honeypot-app-1$' --filter status=running -q | grep -q ."
-
-  - name: pythia
-    url: "{{ vault_heartbeat_url_pythia }}"
-    oncalendar: "*:0/3"
-    check_command: "docker ps --filter 'name=^pythia-app-1$' --filter status=running -q | grep -q ."
