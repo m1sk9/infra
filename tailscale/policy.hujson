@@ -6,6 +6,13 @@
         "tag:ci":        [],
     },
 
+    // ===== Auto Approvers Declaration =====
+    // OS を入れ直すと Exit Node の承認も消えるため，s1 が広告し直すだけで復帰できるようにしている
+    // s2 は k3s server で負荷を載せたくないので含めない（広告しても手動承認が要る）
+    "autoApprovers": {
+        "exitNode": ["tag:server-s1"],
+    },
+
     // ===== Grants Declaration =====
     "grants": [
         // server-s1 / server-s2 へのフルアクセス - owner / CI / nanai10a
