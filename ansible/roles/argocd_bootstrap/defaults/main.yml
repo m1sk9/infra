@@ -1,0 +1,15 @@
+---
+# Keep in sync with `helm` in mise.toml so CI linting and the bootstrap use the
+# same Helm.
+helm_version: "4.3.0"
+helm_sha256: "86584a54def73570558f66f5111cc53dfed56689637ae32c1201205d494f54fb"
+helm_url: "https://get.helm.sh/helm-v{{ helm_version }}-linux-amd64.tar.gz"
+
+argocd_kubeconfig: /etc/rancher/k3s/k3s.yaml
+argocd_namespace: argocd
+argocd_chart_dir: /var/tmp/argocd-bootstrap
+
+# Chart and root manifest come from the checkout running Ansible, so the chart
+# that is bootstrapped is the one in the commit being deployed.
+argocd_chart_src: "{{ role_path }}/../../../k8s/apps/argocd/"
+argocd_root_manifest: "{{ role_path }}/../../../k8s/bootstrap/root.yaml"

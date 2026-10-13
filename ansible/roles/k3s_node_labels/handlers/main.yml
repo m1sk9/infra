@@ -1,0 +1,9 @@
+---
+# k3s has a single server, so this takes the API down for a few seconds; running
+# Pods survive because the unit uses KillMode=process. A label removed from the
+# config is not removed from the node — that needs `kubectl label node <n> <key>-`.
+- name: Restart k3s
+  ansible.builtin.systemd_service:
+    name: k3s
+    state: restarted
+  when: not ansible_check_mode

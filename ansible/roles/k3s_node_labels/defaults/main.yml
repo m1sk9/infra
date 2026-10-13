@@ -1,0 +1,4 @@
+---
+# Labels k3s applies to this node when it registers. Set per host in the
+# inventory (e.g. `m1sk9.dev/pool=observability`), see #471 for the pools.
+k3s_node_labels: []

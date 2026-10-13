@@ -1,0 +1,5 @@
+# Managed by Ansible (role k3s_node_labels).
+node-label:
+{% for label in k3s_node_labels %}
+  - "{{ label }}"
+{% endfor %}

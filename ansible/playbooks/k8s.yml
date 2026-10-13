@@ -1,0 +1,14 @@
+---
+# Not part of CD yet: the first run is applied by hand while s2 is known to be up.
+- name: Bootstrap k3s on s2
+  hosts: k3s_servers
+  become: true
+
+  tasks:
+    - name: Label the node
+      ansible.builtin.include_role:
+        name: k3s_node_labels
+
+    - name: Bootstrap ArgoCD
+      ansible.builtin.include_role:
+        name: argocd_bootstrap

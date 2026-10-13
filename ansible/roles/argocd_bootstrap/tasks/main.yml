@@ -1,0 +1,113 @@
+---
+# One-shot bootstrap. Once ArgoCD runs it manages itself through k8s/apps/argocd
+# with selfHeal, so re-running `helm upgrade` from here would fight it and revert
+# whatever ArgoCD synced from a newer main. Each step is therefore gated on the
+# object it creates already existing, which makes later runs a no-op.
+- name: "argocd | Check helm version"
+  ansible.builtin.command: /usr/local/bin/helm version --short
+  register: argocd_helm_version
+  changed_when: false
+  failed_when: false
+  check_mode: false
+
+- name: "argocd | Download helm"
+  ansible.builtin.get_url:
+    url: "{{ helm_url }}"
+    dest: "/var/tmp/helm-v{{ helm_version }}.tar.gz"
+    checksum: "sha256:{{ helm_sha256 }}"
+    mode: "0644"
+  when: helm_version not in argocd_helm_version.stdout
+
+- name: "argocd | Install helm"
+  ansible.builtin.unarchive:
+    src: "/var/tmp/helm-v{{ helm_version }}.tar.gz"
+    dest: /usr/local/bin
+    remote_src: true
+    include: linux-amd64/helm
+    extra_opts: ["--strip-components=1"]
+    owner: root
+    group: root
+    mode: "0755"
+  when: helm_version not in argocd_helm_version.stdout
+
+- name: "argocd | Bootstrap"
+  environment:
+    KUBECONFIG: "{{ argocd_kubeconfig }}"
+  block:
+    - name: "argocd | Check the API server is ready"
+      ansible.builtin.command: k3s kubectl get --raw /readyz
+      changed_when: false
+      check_mode: false
+
+    # Without this label the chart's nodeSelector leaves every ArgoCD Pod Pending
+    # and `helm install --wait` only fails after its timeout.
+    - name: "argocd | Look for the control-plane node"
+      ansible.builtin.command: >-
+        k3s kubectl get nodes -l node-role.kubernetes.io/control-plane=true -o name
+      register: argocd_control_plane
+      changed_when: false
+      check_mode: false
+
+    - name: "argocd | Assert a control-plane node exists"
+      ansible.builtin.assert:
+        that: argocd_control_plane.stdout | length > 0
+        fail_msg: "No node carries node-role.kubernetes.io/control-plane; the ArgoCD nodeSelector would match nothing"
+
+    - name: "argocd | Look for an existing ArgoCD"
+      ansible.builtin.command: k3s kubectl -n {{ argocd_namespace }} get deployment argocd-server
+      register: argocd_existing
+      changed_when: false
+      failed_when: false
+      check_mode: false
+
+    - name: "argocd | Install ArgoCD"
+      when: argocd_existing.rc != 0
+      block:
+        - name: "argocd | Copy the chart"
+          ansible.builtin.copy:
+            src: "{{ argocd_chart_src }}"
+            dest: "{{ argocd_chart_dir }}/"
+            mode: "0644"
+
+        # `dependency build` honours Chart.lock but only resolves repositories
+        # already added with `helm repo add`, which s2 has none of. `update` adds
+        # them on the fly; the versions are pinned in Chart.yaml either way.
+        - name: "argocd | Update chart dependencies"
+          ansible.builtin.command:
+            argv: [/usr/local/bin/helm, dependency, update, "{{ argocd_chart_dir }}"]
+
+        # No --atomic: a failed install is left in place so it can be inspected;
+        # the PR's rollback notes cover cleaning it up.
+        - name: "argocd | helm install"
+          ansible.builtin.command:
+            argv:
+              - /usr/local/bin/helm
+              - install
+              - argocd
+              - "{{ argocd_chart_dir }}"
+              - --namespace
+              - "{{ argocd_namespace }}"
+              - --create-namespace
+              - --wait
+              - --timeout
+              - 10m
+          async: 900
+          poll: 10
+      always:
+        - name: "argocd | Remove the chart copy"
+          ansible.builtin.file:
+            path: "{{ argocd_chart_dir }}"
+            state: absent
+
+    - name: "argocd | Look for the root ApplicationSet"
+      ansible.builtin.command: k3s kubectl -n {{ argocd_namespace }} get applicationset apps
+      register: argocd_root
+      changed_when: false
+      failed_when: false
+      check_mode: false
+
+    - name: "argocd | Apply root AppProject and ApplicationSet"
+      ansible.builtin.command:
+        argv: [k3s, kubectl, apply, -f, "-"]
+        stdin: "{{ lookup('ansible.builtin.file', argocd_root_manifest) }}"
+      when: argocd_root.rc != 0
