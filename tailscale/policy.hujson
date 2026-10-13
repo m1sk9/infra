@@ -38,6 +38,13 @@
             "dst": ["tag:server-s1", "tag:server-s2"],
             "ip":  ["tcp:6443", "tcp:10250", "udp:8472"],
         },
+        // Prometheus (s2) が s1 の node-exporter をスクレイプする
+        // 9100/tcp: node-exporter (hostNetwork)．s2 -> s1 の一方向のみで，逆向きは不要
+        {
+            "src": ["tag:server-s2"],
+            "dst": ["tag:server-s1"],
+            "ip":  ["tcp:9100"],
+        },
     ],
 
     // ===== Tailscale SSH Declaration =====
