@@ -52,7 +52,7 @@ resource "betteruptime_status_page" "m1sk9" {
 
 resource "betteruptime_status_page_section" "server" {
   status_page_id = betteruptime_status_page.m1sk9.id
-  name           = "Server (s1)"
+  name           = "Servers"
   position       = 0
 }
 
@@ -68,7 +68,7 @@ resource "betteruptime_status_page_section" "self_hosted" {
   position       = 2
 }
 
-# --- Server (s1) ---
+# --- Servers ---
 
 resource "betteruptime_status_page_resource" "s1_host" {
   status_page_id         = betteruptime_status_page.m1sk9.id
@@ -90,6 +90,17 @@ resource "betteruptime_status_page_resource" "backup" {
   explanation            = "Weekly restic backup to Cloudflare R2, Friday 03:00 JST."
   widget_type            = "history"
   position               = 1
+}
+
+resource "betteruptime_status_page_resource" "s2_backup" {
+  status_page_id         = betteruptime_status_page.m1sk9.id
+  status_page_section_id = betteruptime_status_page_section.server.id
+  resource_id            = betteruptime_heartbeat.s2_backup.id
+  resource_type          = "Heartbeat"
+  public_name            = "s2-backup"
+  explanation            = "Weekly restic backup of the k3s state to Cloudflare R2, Friday 03:00 JST."
+  widget_type            = "history"
+  position               = 2
 }
 
 # --- Web ---

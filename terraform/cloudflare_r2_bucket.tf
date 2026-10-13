@@ -16,6 +16,18 @@ resource "cloudflare_r2_bucket" "s1_backup" {
   location   = "apac"
 }
 
+# R2 bucket for the restic repository shared by s1 and s2.
+#
+# One repository for both hosts, told apart by the host and tag on each snapshot,
+# instead of a bucket per host: a bucket needs its own S3 API token from the
+# dashboard, and the credentials in the vault are the same for both. It replaces
+# s1-backup above, which is kept only until it has been emptied.
+resource "cloudflare_r2_bucket" "infra_backup" {
+  account_id = local.cloudflare_account_id
+  name       = "m1sk9-infra-backup"
+  location   = "apac"
+}
+
 # R2 bucket for Ledger's Discord chat archive (github.com/m1sk9/Ledger).
 #
 # Ledger exports Discord chat history as NDJSON, one line per message, plus a
