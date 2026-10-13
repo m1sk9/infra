@@ -90,6 +90,18 @@ resource "betteruptime_heartbeat" "backup" {
   email           = true
 }
 
+# The weekly restic backup of s2's k3s state to R2.
+#
+# Separate from s1-backup so that one host's job succeeding cannot hide the other
+# failing. Same schedule and tolerance.
+resource "betteruptime_heartbeat" "s2_backup" {
+  name            = "s2-backup"
+  period          = 604800 # 7 days, matching OnCalendar=Fri *-*-* 03:00:00
+  grace           = 21600  # 6 h
+  server_timezone = "Asia/Tokyo"
+  email           = true
+}
+
 # The leak-alert Worker (cloudflare_workers_script.leak_alert).
 #
 # A detector that stops running looks exactly like one that finds nothing, so the
