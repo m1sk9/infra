@@ -49,9 +49,6 @@ jobs:
       - name: Setup Development Environment
         uses: jdx/mise-action@v4
 
-      - name: Install Ansible collections
-        run: ansible-galaxy collection install -r requirements.yml
-
       - name: Connect to Tailscale
         uses: tailscale/github-action@v4
         with:

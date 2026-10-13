@@ -50,9 +50,6 @@ jobs:
       - name: Setup Development Environment
         uses: jdx/mise-action@v4
 
-      - name: Install Ansible collections
-        run: ansible-galaxy collection install -r requirements.yml
-
       - name: Write vault password
         run: echo "${{ secrets.ANSIBLE_VAULT_PASSWORD }}" > .vault_pass
 
