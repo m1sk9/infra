@@ -68,3 +68,48 @@ output "status_page_url" {
   description = "Public status page URL"
   value       = "https://${betteruptime_status_page.m1sk9.custom_domain}"
 }
+
+# k3s cluster access (ArgoCD and Grafana)
+#
+# These feed SealedSecrets and the ArgoCD / Grafana configuration under k8s/, so
+# they are read with `terraform output` and sealed by hand rather than copied
+# into the vault. The secrets are sensitive for the same reason as the heartbeat
+# URLs above: each one is the only credential involved.
+
+output "k8s_tunnel_token" {
+  description = "Connector token for the k8s Cloudflare Tunnel"
+  value       = data.cloudflare_zero_trust_tunnel_cloudflared_token.k8s.token
+  sensitive   = true
+}
+
+output "argocd_oidc_issuer" {
+  description = "OIDC issuer URL of the ArgoCD SSO application"
+  value       = "https://${data.cloudflare_zero_trust_organization.this.auth_domain}/cdn-cgi/access/sso/oidc/${cloudflare_zero_trust_access_application.argocd_sso.saas_app.client_id}"
+}
+
+output "argocd_oidc_client_id" {
+  description = "OIDC client ID of the ArgoCD SSO application"
+  value       = cloudflare_zero_trust_access_application.argocd_sso.saas_app.client_id
+}
+
+output "argocd_oidc_client_secret" {
+  description = "OIDC client secret of the ArgoCD SSO application"
+  value       = cloudflare_zero_trust_access_application.argocd_sso.saas_app.client_secret
+  sensitive   = true
+}
+
+output "grafana_oidc_issuer" {
+  description = "OIDC issuer URL of the Grafana SSO application"
+  value       = "https://${data.cloudflare_zero_trust_organization.this.auth_domain}/cdn-cgi/access/sso/oidc/${cloudflare_zero_trust_access_application.grafana_sso.saas_app.client_id}"
+}
+
+output "grafana_oidc_client_id" {
+  description = "OIDC client ID of the Grafana SSO application"
+  value       = cloudflare_zero_trust_access_application.grafana_sso.saas_app.client_id
+}
+
+output "grafana_oidc_client_secret" {
+  description = "OIDC client secret of the Grafana SSO application"
+  value       = cloudflare_zero_trust_access_application.grafana_sso.saas_app.client_secret
+  sensitive   = true
+}
