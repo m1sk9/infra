@@ -1,0 +1,34 @@
+---
+# Heartbeats for the bots that run on k3s, pushed from s2 because that is where
+# `k3s kubectl` works. The URLs are the same Better Stack heartbeats the Docker
+# era used, so nothing changes on the Better Stack side.
+#
+# Why a Deployment's availableReplicas rather than looking at the node: it goes to
+# 0 when the Pod is Pending (s1 down), crash-looping or failing its readiness
+# probe, and s2 itself going down stops the pings. All three read as an incident.
+#
+# chime ships a real liveness check (its Deployment's readiness probe runs
+# `chime health`), so for chime this is a functional check. babyrite, honeypot and
+# pythia have no health command and hold Discord gateway websockets, so for them
+# this only proves the Pod is running — a dead gateway inside a live process stays
+# invisible.
+heartbeat_targets:
+  - name: chime
+    url: "{{ vault_heartbeat_url_chime }}"
+    oncalendar: "*:0/3"
+    check_command: "test \"$(k3s kubectl -n chime get deployment chime -o jsonpath='{.status.availableReplicas}')\" = 1"
+
+  - name: babyrite
+    url: "{{ vault_heartbeat_url_babyrite }}"
+    oncalendar: "*:0/3"
+    check_command: "test \"$(k3s kubectl -n babyrite get deployment babyrite -o jsonpath='{.status.availableReplicas}')\" = 1"
+
+  - name: honeypot
+    url: "{{ vault_heartbeat_url_honeypot }}"
+    oncalendar: "*:0/3"
+    check_command: "test \"$(k3s kubectl -n honeypot get deployment honeypot -o jsonpath='{.status.availableReplicas}')\" = 1"
+
+  - name: pythia
+    url: "{{ vault_heartbeat_url_pythia }}"
+    oncalendar: "*:0/3"
+    check_command: "test \"$(k3s kubectl -n pythia get deployment pythia -o jsonpath='{.status.availableReplicas}')\" = 1"

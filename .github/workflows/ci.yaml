@@ -59,7 +59,6 @@ jobs:
       - name: Syntax check
         run: |
           ansible-playbook playbooks/site.yml --syntax-check
-          ansible-playbook playbooks/services.yml --syntax-check
           ansible-playbook playbooks/backup.yml --syntax-check
           ansible-playbook playbooks/monitoring.yml --syntax-check
           ansible-playbook playbooks/maintenance.yml --syntax-check
@@ -76,7 +75,6 @@ jobs:
 
       - name: Plan (check + diff)
         run: |
-          ansible-playbook playbooks/services.yml --check --diff
           ansible-playbook playbooks/backup.yml --check --diff
           ansible-playbook playbooks/monitoring.yml --check --diff
           ansible-playbook playbooks/maintenance.yml --check --diff
