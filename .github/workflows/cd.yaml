@@ -15,7 +15,7 @@ concurrency:
 
 jobs:
   terraform-apply:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     defaults:
       run:
         working-directory: ./terraform
@@ -37,7 +37,7 @@ jobs:
         run: terraform apply -input=false -no-color -auto-approve -lock-timeout=10m
 
   ansible-deploy:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     defaults:
       run:
         working-directory: ./ansible
@@ -71,7 +71,7 @@ jobs:
         run: rm -f .vault_pass
 
   tailscale-acl-apply:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     steps:
       - uses: actions/checkout@v7
 
