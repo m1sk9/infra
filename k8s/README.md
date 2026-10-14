@@ -23,7 +23,7 @@ k3s クラスタ (server: s2，agent: s1) で動かすワークロードのマ�
 サービスを追加するときは，`apps/` にディレクトリを追加します．各ディレクトリは Helm chart です．
 
 - **外部の chart を使う場合**: umbrella chart にします．`Chart.yaml` の `dependencies` に chart を書き，上書きする値を `values.yaml` に書きます．`Chart.lock` はコミットし，`charts/` は git-ignore しています．
-- **自作のワークロードの場合**: マニフェストを `templates/` に置きます．イメージは `values.yaml` の `image.repository` / `image.tag` に書き，Renovate が更新します．設定ファイル (`config.toml` など) はディレクトリ直下に置き，`.Files.Get` で ConfigMap に読み込みます．ConfigMap は `subPath` でマウントしており，更新しても Pod に反映されないため，Deployment に `checksum/config` アノテーションを付けて Pod を入れ替えます．
+- **自作のワークロードの場合**: マニフェストを `templates/` に置きます．イメージは `deployment.yaml` の `image` に `<repository>:<tag>` の形で直接書き，Renovate が更新します．設定ファイル (`config.toml` など) はディレクトリ直下に置き，`.Files.Get` で ConfigMap に読み込みます．ConfigMap は `subPath` でマウントしており，更新しても Pod に反映されないため，Deployment に `checksum/config` アノテーションを付けて Pod を入れ替えます．
 
 CI (pull request) では，各 chart に対して `helm dependency update`，`helm lint`，`helm template` を実行します．手元では次のように確認できます．
 
