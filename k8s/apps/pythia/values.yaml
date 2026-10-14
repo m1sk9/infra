@@ -1,0 +1,3 @@
+image:
+  repository: ghcr.io/m1sk9/pythia
+  tag: "v3.2.1"

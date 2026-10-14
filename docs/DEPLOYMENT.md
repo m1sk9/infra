@@ -44,21 +44,29 @@ k8s
 k8s/apps/chime
 ├── Chart.yaml
 ├── config.toml                 # アプリケーションの設定ファイル
+├── values.yaml                 # イメージとタグ
 └── templates
     ├── configmap.yaml          # config.toml を ConfigMap にする
     ├── deployment.yaml
     └── sealedsecret.yaml       # 環境変数で渡すシークレット
 ```
 
-#### 1. `Chart.yaml` を書く
+#### 1. `Chart.yaml` と `values.yaml` を書く
 
-`appVersion` はイメージのタグと揃えます．
+イメージは `values.yaml` の `image.repository` と `image.tag` に書きます．Renovate は `templates/` を読まないため，`values.yaml` に書いたイメージだけを検出して更新の PR を作ります．タグを二重に管理しないよう，`Chart.yaml` に `appVersion` は書きません．
 
 ```yaml
+# Chart.yaml
 apiVersion: v2
 name: <name>
 version: 0.1.0
-appVersion: "v1.0.0"
+```
+
+```yaml
+# values.yaml
+image:
+  repository: ghcr.io/m1sk9/<name>
+  tag: "v1.0.0"
 ```
 
 #### 2. 設定ファイルを ConfigMap にする
@@ -100,7 +108,7 @@ spec:
         m1sk9.dev/pool: apps
       containers:
         - name: app
-          image: ghcr.io/m1sk9/<name>:v1.0.0
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
           envFrom:
             - secretRef:
                 name: <name>-env
@@ -177,7 +185,7 @@ dependencies:
 
 ## サービスを更新する
 
-イメージのバージョンを上げるときは，`deployment.yaml` の `image` と `Chart.yaml` の `appVersion` を同時に更新し，PR を merge します．設定ファイル (`config.toml`) の変更も同じ流れで，`checksum/config` によって Pod が入れ替わります．
+イメージのバージョンは Renovate が `values.yaml` の `image.tag` を更新する PR を作ります．minor / patch は CI が通れば自動で merge されます．手で上げるときも `image.tag` を更新して PR を merge します．設定ファイル (`config.toml`) の変更も同じ流れで，`checksum/config` によって Pod が入れ替わります．
 
 外部の chart は `Chart.yaml` の `version` を上げ，`helm dependency update` で `Chart.lock` を更新してからコミットします．
 

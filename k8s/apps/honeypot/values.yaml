@@ -1,0 +1,3 @@
+image:
+  repository: ghcr.io/m1sk9/honeypot
+  tag: "v0.6.0"
