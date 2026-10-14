@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   terraform-plan:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     defaults:
       run:
         working-directory: ./terraform
@@ -38,7 +38,7 @@ jobs:
         run: terraform plan -input=false -lock-timeout=10m
 
   ansible-plan:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     defaults:
       run:
         working-directory: ./ansible
@@ -79,7 +79,7 @@ jobs:
         run: rm -f .vault_pass
 
   tailscale-acl-test:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     steps:
       - uses: actions/checkout@v7
 
@@ -98,7 +98,7 @@ jobs:
           policy-file: ./tailscale/policy.rendered.hujson
 
   helm:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     defaults:
       run:
         working-directory: ./k8s/apps
