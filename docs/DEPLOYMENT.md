@@ -52,13 +52,12 @@ k8s/apps/chime
 
 #### 1. `Chart.yaml` を書く
 
-`appVersion` はイメージのタグと揃えます．
+Renovate が更新しないため，`appVersion` は書きません．イメージのタグは `deployment.yaml` の `image` だけで管理します．
 
 ```yaml
 apiVersion: v2
 name: <name>
 version: 0.1.0
-appVersion: "v1.0.0"
 ```
 
 #### 2. 設定ファイルを ConfigMap にする
@@ -177,7 +176,7 @@ dependencies:
 
 ## サービスを更新する
 
-イメージのバージョンを上げるときは，`deployment.yaml` の `image` と `Chart.yaml` の `appVersion` を同時に更新し，PR を merge します．設定ファイル (`config.toml`) の変更も同じ流れで，`checksum/config` によって Pod が入れ替わります．
+イメージのバージョンは Renovate が `deployment.yaml` の `image` を更新する PR を作ります．minor / patch は CI が通れば自動で merge されます．手で上げるときも `image` を更新して PR を merge します．Renovate が検出できるよう，`image` はテンプレート変数を使わず `<repository>:<tag>` の形で直接書きます．設定ファイル (`config.toml`) の変更も同じ流れで，`checksum/config` によって Pod が入れ替わります．
 
 外部の chart は `Chart.yaml` の `version` を上げ，`helm dependency update` で `Chart.lock` を更新してからコミットします．
 

@@ -3,6 +3,11 @@
   "extends": [
     "github>m1sk9/renovate-config"
   ],
+  "kubernetes": {
+    "managerFilePatterns": [
+      "/^k8s/apps/[^/]+/templates/.+\\.ya?ml$/"
+    ]
+  },
   "customManagers": [
     {
       "customType": "regex",
