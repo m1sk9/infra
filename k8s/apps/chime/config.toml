@@ -8,12 +8,12 @@ tick_interval_sec = 30
 timezone = "Asia/Tokyo"
 
 ## Status ----
-## 現状対応しているのは Atlassian Statuspage v2 のみです ( /api/v2/incidents.json を使うタイプ)
 
 [[status_pages]]
   name = "github"
   url = "https://www.githubstatus.com"
   webhook = "dev-status"
+  thread_id = "1561079585746059264"
   display_name = "GitHub Status"
   avatar_url = "https://github.com/community.png"
 
@@ -21,6 +21,7 @@ timezone = "Asia/Tokyo"
   name = "proton"
   url = "https://status.proton.me"
   webhook = "dev-status"
+  thread_id = "1561080290514833510"
   display_name = "Proton Status"
   avatar_url = "https://github.com/ProtonMail.png"
 
@@ -28,13 +29,15 @@ timezone = "Asia/Tokyo"
   name = "claude"
   url = "https://status.claude.com"
   webhook = "dev-status"
+  thread_id = "1561079775689183365"
   display_name = "Claude Status"
   avatar_url = "https://github.com/claude.png"
 
 [[status_pages]]
-  name = "The Rust Programming Language"
+  name = "crates-io"
   url = "https://status.crates.io"
   webhook = "dev-status"
+  thread_id = "1561079727689699418"
   display_name = "The Rust Programming Language Status"
   avatar_url = "https://github.com/rust-lang.png"
 
@@ -42,8 +45,52 @@ timezone = "Asia/Tokyo"
   name = "Tailscale"
   url = "https://status.tailscale.com"
   webhook = "dev-status"
+  thread_id = "1561080239524937920"
   display_name = "Tailscale Status"
   avatar_url = "https://github.com/tailscale.png"
+
+[[status_pages]]
+  name = "openai"
+  kind = "incidentio"
+  url = "https://status.openai.com"
+  webhook = "dev-status"
+  thread_id = "1561079840130465842"
+  display_name = "OpenAI Status"
+  avatar_url = "https://github.com/openai.png"
+
+[[status_pages]]
+  name = "openrouter"
+  kind = "datadog"
+  url = "https://status.openrouter.ai"
+  webhook = "dev-status"
+  thread_id = "1561080047799111852"
+  display_name = "OpenRouter Status"
+  avatar_url = "https://github.com/OpenRouterTeam.png"
+
+[[status_pages]]
+  name = "orcarouter"
+  kind = "incidentio"
+  url = "https://statuspage.incident.io/orca-router"
+  webhook = "dev-status"
+  thread_id = "1561080101322358804"
+  display_name = "OrcaRouter Status"
+
+[[status_pages]]
+  name = "perplexity"
+  kind = "incidentio"
+  url = "https://status.perplexity.com"
+  webhook = "dev-status"
+  thread_id = "1561080144272171038"
+  display_name = "Perplexity Status"
+  avatar_url = "https://github.com/perplexityai.png"
+
+[[status_pages]]
+  name = "discord"
+  url = "https://discordstatus.com"
+  webhook = "dev-status"
+  thread_id = "1561080613589483520"
+  display_name = "Discord Status"
+  avatar_url = "https://github.com/discord.png"
 
 ## Browser releases ----
 
@@ -69,5 +116,3 @@ timezone = "Asia/Tokyo"
   webhook = "ai"
   display_name = "Claude Code Changelog"
   avatar_url = "https://github.com/claude.png"
-
-[[res]]
