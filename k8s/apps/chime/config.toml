@@ -116,3 +116,10 @@ timezone = "Asia/Tokyo"
   webhook = "ai"
   display_name = "Claude Code Changelog"
   avatar_url = "https://github.com/claude.png"
+
+[[rss]]
+  name = "grafana-blog"
+  url = "https://grafana.com/blog/index.xml"
+  webhook = "infra"
+  display_name = "Grafana Blog"
+  avatar_url = "https://github.com/grafana.png"
