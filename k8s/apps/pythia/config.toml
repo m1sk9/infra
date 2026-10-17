@@ -7,7 +7,7 @@ allowed_guilds = [1390203929182339092]
 ## "version" ("Running v3.x.y"), "custom" (activity_custom), or "disabled".
 activity_display = "custom"
 ## Required when activity_display = "custom". At most 128 characters.
-activity_custom = "Using Haiku 5.5"
+activity_custom = "Using Claude Haiku 5.5"
 
 [llm]
 ## v3.0.0 supports OpenRouter only.
