@@ -12,7 +12,7 @@ State は [HCP Terraform](https://app.terraform.io/) で管理しています (o
 | [`cloudflare_tunnel.tf`](./cloudflare_tunnel.tf) | k3s クラスタ向けの Cloudflare Tunnel (`argocd.m1sk9.dev`，`grafana.m1sk9.dev`) |
 | [`cloudflare_access.tf`](./cloudflare_access.tf) | Zero Trust Access (GitHub IdP，ArgoCD / Grafana の Access と OIDC，monitor 用と Grafana MCP 用の service token) |
 | [`cloudflare_worker.tf`](./cloudflare_worker.tf) | Workers とそのカスタムドメイン・ルート．スクリプト本体は [`workers/`](./workers) にあります |
-| [`cloudflare_r2_bucket.tf`](./cloudflare_r2_bucket.tf) | R2 バケット (restic バックアップ用，ledger のアーカイブ用) |
+| [`cloudflare_r2_bucket.tf`](./cloudflare_r2_bucket.tf) | R2 バケット (restic バックアップ用) |
 | [`cloudflare_ruleset.tf`](./cloudflare_ruleset.tf) | WAF カスタムルール |
 | [`cloudflare_zone_setting.tf`](./cloudflare_zone_setting.tf) | ゾーン設定 (SSL，HSTS，最小 TLS バージョンなど) |
 | [`cloudflare_bot_management.tf`](./cloudflare_bot_management.tf) | Bot Fight Mode |
