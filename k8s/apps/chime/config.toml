@@ -1,15 +1,19 @@
+# chime configuration
+# https://github.com/m1sk9/chime/blob/main/README.md#configuration
+# https://github.com/m1sk9/chime/blob/main/config/config.toml.example
+
 [system]
 log_level = "info"
 tick_interval_sec = 30
 timezone = "Asia/Tokyo"
 
-# Status ----
-## 現状対応しているのは Atlassian Statuspage v2 のみです ( /api/v2/incidents.json を使うタイプ)
+## Status ----
 
 [[status_pages]]
   name = "github"
   url = "https://www.githubstatus.com"
   webhook = "dev-status"
+  thread_id = "1561079585746059264"
   display_name = "GitHub Status"
   avatar_url = "https://github.com/community.png"
 
@@ -17,6 +21,7 @@ timezone = "Asia/Tokyo"
   name = "proton"
   url = "https://status.proton.me"
   webhook = "dev-status"
+  thread_id = "1561080290514833510"
   display_name = "Proton Status"
   avatar_url = "https://github.com/ProtonMail.png"
 
@@ -24,13 +29,15 @@ timezone = "Asia/Tokyo"
   name = "claude"
   url = "https://status.claude.com"
   webhook = "dev-status"
+  thread_id = "1561079775689183365"
   display_name = "Claude Status"
   avatar_url = "https://github.com/claude.png"
 
 [[status_pages]]
-  name = "The Rust Programming Language"
+  name = "crates-io"
   url = "https://status.crates.io"
   webhook = "dev-status"
+  thread_id = "1561079727689699418"
   display_name = "The Rust Programming Language Status"
   avatar_url = "https://github.com/rust-lang.png"
 
@@ -38,12 +45,54 @@ timezone = "Asia/Tokyo"
   name = "Tailscale"
   url = "https://status.tailscale.com"
   webhook = "dev-status"
+  thread_id = "1561080239524937920"
   display_name = "Tailscale Status"
   avatar_url = "https://github.com/tailscale.png"
 
-## ---
+[[status_pages]]
+  name = "openai"
+  kind = "incidentio"
+  url = "https://status.openai.com"
+  webhook = "dev-status"
+  thread_id = "1561079840130465842"
+  display_name = "OpenAI Status"
+  avatar_url = "https://github.com/openai.png"
 
-# Browser releases ----
+[[status_pages]]
+  name = "openrouter"
+  kind = "datadog"
+  url = "https://status.openrouter.ai"
+  webhook = "dev-status"
+  thread_id = "1561080047799111852"
+  display_name = "OpenRouter Status"
+  avatar_url = "https://github.com/OpenRouterTeam.png"
+
+[[status_pages]]
+  name = "orcarouter"
+  kind = "incidentio"
+  url = "https://statuspage.incident.io/orca-router"
+  webhook = "dev-status"
+  thread_id = "1561080101322358804"
+  display_name = "OrcaRouter Status"
+
+[[status_pages]]
+  name = "perplexity"
+  kind = "incidentio"
+  url = "https://status.perplexity.com"
+  webhook = "dev-status"
+  thread_id = "1561080144272171038"
+  display_name = "Perplexity Status"
+  avatar_url = "https://github.com/perplexityai.png"
+
+[[status_pages]]
+  name = "discord"
+  url = "https://discordstatus.com"
+  webhook = "dev-status"
+  thread_id = "1561080613589483520"
+  display_name = "Discord Status"
+  avatar_url = "https://github.com/discord.png"
+
+## Browser releases ----
 
 [[watches]]
   name = "firefox"
@@ -61,8 +110,6 @@ timezone = "Asia/Tokyo"
 
 ## ---
 
-# RSS ----
-
 [[rss]]
   name = "claude-code-changelog"
   url = "https://code.claude.com/docs/en/changelog/rss.xml"
@@ -70,82 +117,9 @@ timezone = "Asia/Tokyo"
   display_name = "Claude Code Changelog"
   avatar_url = "https://github.com/claude.png"
 
-## ---
-
-# FFXIV reminders are disabled. Kept commented out instead of deleted so they can be restored as-is.
-# [[reminders]]
-#   name = "daily-reset-00"
-#   time = "00:00"
-#   days = ["every"]
-#   webhook = "ffxiv"
-#   message = """<@&1521204034747367456> **デイリーリセット (00:00)**
-# 次のコンテンツがリセットされました:
-# - コンテンツルーレット
-# - 友好部族クエスト
-# - デイリーモブハント
-# - ミニくじテンダー"""
-#
-# [[reminders]]
-#   name = "daily-reset-05"
-#   time = "05:00"
-#   days = ["every"]
-#   webhook = "ffxiv"
-#   message = """<@&1521204034747367456> **デイリーリセット (05:00)**
-# 次のコンテンツがリセットされました:
-# - グランドカンパニー調達任務
-# - 冒険者小隊訓練"""
-#
-# [[reminders]]
-#   name = "daily-reset-cosmic"
-#   time = "18:00"
-#   days = ["every"]
-#   webhook = "ffxiv"
-#   message = "<@&1521204034747367456> **コスモエクスプローラーのデイリー課題** がリセットされました (18:00)"
-#
-# [[reminders]]
-#   name = "daily-leves-reset-09"
-#   time = "09:00"
-#   days = ["every"]
-#   webhook = "ffxiv"
-#   message = "<@&1521204034747367456> **リーフ権** が回復されました"
-#
-# [[reminders]]
-#   name = "daily-leves-reset-21"
-#   time = "21:00"
-#   days = ["every"]
-#   webhook = "ffxiv"
-#   message = "<@&1521204034747367456> **リーフ権** が回復されました"
-#
-# [[reminders]]
-#   name = "weekly-reset"
-#   time = "17:00"
-#   days = ["tue"]
-#   webhook = "ffxiv"
-#   message = """<@&1521204034747367456> **週課リセット (火 17:00)**
-# 次のコンテンツがリセットされました:
-# - レイド・アライアンスレイドの装備取得制限
-# - アラガントームストーン: 数理取得制限
-# - リスキーモブ手配書
-# - お得意様取引
-# - クロの空想帳
-# - ソーチョーの幻想盤
-# - 攻略手帳
-# - マスクカーニバル
-# - 青魔道士ログ
-# - 冒険者小隊の小隊任務"""
-#
-# [[reminders]]
-#   name = "fashioncheck-start"
-#   time = "17:00"
-#   days = ["tue"]
-#   webhook = "ffxiv"
-#   message = """<@&1521204034747367456> **ファッションチェックのお題** が発表されました
-# [お題を確認する](<https://game8.jp/ff14/360622>)"""
-#
-# [[reminders]]
-#   name = "gs-jumbo-cactpot"
-#   time = "21:00"
-#   days = ["sat"]
-#   webhook = "ffxiv"
-#   message = """<@&1521204034747367456> **ジャンボくじテンダー** の結果発表が行われました
-# -# 22:00 までに確認すると獲得 MGP にボーナスが加算されます！"""
+[[rss]]
+  name = "grafana-blog"
+  url = "https://grafana.com/blog/index.xml"
+  webhook = "infra"
+  display_name = "Grafana Blog"
+  avatar_url = "https://github.com/grafana.png"
