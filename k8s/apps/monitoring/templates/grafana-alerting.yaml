@@ -1,0 +1,13 @@
+{{- range $path, $_ := .Files.Glob "alerting/*.yaml" }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-alerting-{{ base $path | trimSuffix ".yaml" }}
+  namespace: {{ $.Release.Namespace }}
+  labels:
+    grafana_alert: "1"
+data:
+  {{ base $path }}: |-
+{{ $.Files.Get $path | indent 4 }}
+{{- end }}

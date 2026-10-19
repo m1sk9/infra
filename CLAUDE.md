@@ -76,6 +76,7 @@ kubeseal --cert k8s/bootstrap/sealed-secrets-cert.pem --format yaml < secret.yam
 - Placement uses the `m1sk9.dev/pool` node label (`apps` on s1, `observability` on s2), set via k3s config by the `k3s_node_labels` / `k3s_agent` roles. Discord bots are hard-pinned with `nodeSelector` and use `strategy: Recreate` (two instances with one token double-reply). Collectors are DaemonSets without a selector. ArgoCD is pinned to the control-plane node.
 - Config mounted with `subPath` doesn't follow ConfigMap updates, so deployments carry a `checksum/config` annotation.
 - Ingress is Cloudflare Tunnel (`k8s/apps/cloudflared`, tunnel + hostnames defined in `terraform/cloudflare_tunnel.tf`). traefik and servicelb are disabled. ArgoCD and Grafana sit behind Cloudflare Access; Prometheus/Loki are tailnet-only.
+- Grafana dashboards (`k8s/apps/monitoring/dashboards/*.json`) and alerting (`alerting/*.yaml`: rules, contact points, policies) are provisioned through the Grafana sidecars from ConfigMaps that `templates/` builds with `.Files.Glob`. Nothing is edited in the UI; the alerting files do not go through the chart's `alerting` values because those are `tpl`-rendered. The Discord webhook URL reaches `contactpoints.yaml` as `${DISCORD_WEBHOOK_URL}` from the `grafana-discord` SealedSecret, and the Loki data source uid is pinned because dashboards and rules reference it.
 - Storage is k3s `local-path`, so PVCs are tied to their node.
 
 ### Ansible

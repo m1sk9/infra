@@ -1,0 +1,12 @@
+apiVersion: 1
+policies:
+  - orgId: 1
+    # Anything without notify=discord is dropped on purpose; every rule sets it.
+    receiver: empty
+    group_by: [grafana_folder, alertname]
+    routes:
+      - receiver: discord-alerts
+        object_matchers:
+          - [notify, "=", discord]
+        group_by: [alertname, instance]
+        repeat_interval: 4h

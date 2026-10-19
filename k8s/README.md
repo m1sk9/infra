@@ -46,6 +46,33 @@ kubectl create secret generic <secret 名> --namespace <name> \
 
 暗号化に使う秘密鍵はクラスタ内にしかなく，s2 のバックアップに含めています ([`ansible/README.md`](../ansible/README.md#バックアップ))．秘密鍵を失うと，Git 上の SealedSecret はすべて復号できなくなります．
 
+## Grafana の設定
+
+`apps/monitoring/` では，自作のダッシュボードとアラート関連の設定をすべてコードで管理しています．`templates/` が，ディレクトリ内のファイルを ConfigMap にして，Grafana の sidecar に読み込ませます．
+
+| 置き場所 | 内容 | 読み込み |
+|---|---|---|
+| `dashboards/*.json` | 自作のダッシュボード (chime，cpu-cooling，honeypot，pythia) | `grafana_dashboard` ラベルの ConfigMap |
+| `alerting/rules.yaml` | アラートルール | `grafana_alert` ラベルの ConfigMap |
+| `alerting/contactpoints.yaml` | Contact point (`discord-alerts`) | 同上 |
+| `alerting/policies.yaml` | Notification policy | 同上 |
+
+管理しているダッシュボードは次のとおりです．
+
+| ダッシュボード | uid | 管理 | データソース | 内容 |
+|---|---|---|---|---|
+| Chime / Polling | `chime-polling` | `dashboards/chime-polling.json` | Loki | chime のポーリング件数・失敗数・転送数，WARN / ERROR ログ |
+| CPU Cooling (s1, s2) | `cpu-cooling-s1-s2` | `dashboards/cpu-cooling-s1-s2.json` | Prometheus | CPU 使用率，コア温度，thermal throttle，`temp_max` までの余裕 |
+| HoneyPot / Detections | `honeypot-detections` | `dashboards/honeypot-detections.json` | Loki | 検知関連イベント，ログ量 (レベル別・モジュール別)，WARN / ERROR ログ |
+| Pythia / LLM Usage | `pythia-llm` | `dashboards/pythia-llm.json` | Loki | クレジット消費，トークン数，応答レイテンシ，WARN / ERROR ログ |
+| Kubernetes / ...，Node Exporter / ...，Prometheus / Overview，CoreDNS，Grafana Overview | chart が採番 | kube-prometheus-stack (chart 同梱) | Prometheus | k8s とノードの標準ダッシュボード |
+
+- 同梱のダッシュボードは，`values.yaml` と chart のバージョンで決まります．このリポジトリに JSON は置きません．
+- Contact point の webhook URL は `grafana-discord` Secret (`DISCORD_WEBHOOK_URL`) から環境変数で渡します．Secret の作り方は[シークレット](#シークレット)のとおりです．
+- ルールは `notify: discord` ラベルを付けると Discord に通知されます．ラベルのないアラートは，policy の root (`empty`) に流れて通知されません．
+- プロビジョニングされたリソースは UI で編集も削除もできません．変更は PR で行います．手順は [`docs/RESOURCE.md`](../docs/RESOURCE.md#grafana) にあります．
+- Loki の Datasource uid は，ダッシュボードとルールが参照しているため `values.yaml` で固定しています．
+
 ## 配置
 
 ノードには `m1sk9.dev/pool` ラベルを付けています．ラベルは k3s の設定の `node-label` で付けるので，ノードを作り直しても消えません．`node-role.kubernetes.io/` 接頭辞は，kubelet が自分自身に設定できない場合があるため使っていません．
