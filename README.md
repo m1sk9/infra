@@ -5,7 +5,7 @@
 
 Managed infrastructure for my open source projects.
 
-デプロイガイドは [`docs/DEPLOYMENT.md`](./docs/DEPLOYMENT.md)，各インフラリソースの利用方法については [`docs/RESOURCE.md`](./docs/RESOURCE.md) を参照してください．
+デプロイガイドは [`docs/DEPLOYMENT.md`](./docs/DEPLOYMENT.md)，各インフラリソースの利用方法については [`docs/RESOURCE.md`](./docs/RESOURCE.md)，各マシンのスペックについては [`docs/machine/`](./docs/machine/) (`dev-m1sk9-s1.md` / `dev-m1sk9-s2.md`) を参照してください．
 
 ----
 
