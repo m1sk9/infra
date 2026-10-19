@@ -1,0 +1,14 @@
+apiVersion: 1
+contactPoints:
+  - orgId: 1
+    name: discord-alerts
+    receivers:
+      - uid: cg146gs9qd6gwb
+        type: discord
+        settings:
+          message: <@586824421470109716> {{ template "default.message" . }}
+          # Injected from the grafana-discord Secret; the URL is a credential.
+          url: ${DISCORD_WEBHOOK_URL}
+          use_discord_username: false
+          use_embed_description: false
+        disableResolveMessage: false

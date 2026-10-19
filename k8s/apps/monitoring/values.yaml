@@ -98,6 +98,22 @@ kube-prometheus-stack:
         allow_assign_grafana_admin: true
     additionalDataSources:
       - name: Loki
+        # Pinned to the uid Grafana generated before this was provisioned; the
+        # dashboards and alert rules reference it, and changing the uid of an
+        # existing data source would orphan them.
+        uid: P8E80F9AEF21F6940
         type: loki
         access: proxy
         url: http://loki.loki.svc.cluster.local:3100
+    # Dashboards (grafana_dashboard) are picked up by the chart's default sidecar.
+    # Alerting files go through the sidecar rather than the chart's `alerting`
+    # values, which are rendered through `tpl` and would need every Grafana
+    # `{{ }}` template escaped.
+    sidecar:
+      alerts:
+        enabled: true
+        label: grafana_alert
+        labelValue: "1"
+    # Holds DISCORD_WEBHOOK_URL, expanded in alerting/contactpoints.yaml.
+    envFromSecrets:
+      - name: grafana-discord

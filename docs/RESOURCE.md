@@ -62,6 +62,16 @@ Grafana では Prometheus のメトリクスと Loki のログを確認できま
 - **Node Exporter / Nodes**: ノードごとの CPU・メモリ・ディスク・ネットワーク．上部の `instance` で `s1` / `s2` を切り替えます．
 - **Kubernetes / Compute Resources / Namespace (Pods)**: namespace ごとの Pod のリソース使用量．
 
+### ダッシュボードとアラートを変更する
+
+自作のダッシュボードとアラートの設定は，`k8s/apps/monitoring/` で管理しています．プロビジョニングされているため，Grafana の UI では保存も削除もできません．変更は PR で行います．
+
+- **ダッシュボード**: UI で作り込み，**Export** → **Export as code** → **Classic** で JSON を書き出して，`dashboards/<名前>.json` を置き換えます．Loki と Prometheus の Datasource は，Export の **Export for sharing externally** を切ったまま (uid 参照のまま) にします．新しいダッシュボードは，ファイルを追加するだけで読み込まれます．
+- **アラートルール**: `alerting/rules.yaml` を編集します．UI でルールを作って **Export** で YAML を取り出し，貼り付けると楽です．通知したいルールには `notify: discord` ラベルを付けます．
+- **Contact point / Notification policy**: `alerting/contactpoints.yaml` と `alerting/policies.yaml` を編集します．webhook URL などの秘密情報はファイルに書かず，`grafana-discord` Secret から環境変数で渡します．
+
+merge 後に ArgoCD が同期し，sidecar が数十秒で Grafana に反映します．
+
 ### ログを検索する
 
 左メニューの **Explore** でデータソースに **Loki** を選び，LogQL でログを検索します．ログには `namespace`，`pod`，`container`，`node` のラベルが付いています．

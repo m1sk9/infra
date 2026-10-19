@@ -1,0 +1,244 @@
+apiVersion: 1
+groups:
+  - orgId: 1
+    name: node
+    folder: Alerts
+    interval: 1m
+    rules:
+      - uid: bg146gshs1ekgf
+        title: Node CPU high
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: prometheus
+            model:
+              expr: (100 - avg by(instance)(rate(node_cpu_seconds_total{mode="idle",instance=~"s1|s2"}[5m])) * 100) > bool 90
+              instant: true
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: A
+          - refId: B
+            datasourceUid: __expr__
+            model:
+              datasource: {type: __expr__, uid: __expr__}
+              expression: A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              reducer: last
+              refId: B
+              settings: {mode: dropNN}
+              type: reduce
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator: {params: [0], type: gt}
+              datasource: {type: __expr__, uid: __expr__}
+              expression: B
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: threshold
+        noDataState: Alerting
+        execErrState: Error
+        for: 5m
+        annotations:
+          summary: CPU usage over 90% for 5m on {{ $labels.instance }}
+        labels:
+          notify: discord
+          severity: warning
+        isPaused: false
+      - uid: ag146gsmkcef4a
+        title: Node RAM high
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: prometheus
+            model:
+              expr: ((1 - node_memory_MemAvailable_bytes{instance=~"s1|s2"} / node_memory_MemTotal_bytes{instance=~"s1|s2"}) * 100) > bool 90
+              instant: true
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: A
+          - refId: B
+            datasourceUid: __expr__
+            model:
+              datasource: {type: __expr__, uid: __expr__}
+              expression: A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              reducer: last
+              refId: B
+              settings: {mode: dropNN}
+              type: reduce
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator: {params: [0], type: gt}
+              datasource: {type: __expr__, uid: __expr__}
+              expression: B
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: threshold
+        noDataState: Alerting
+        execErrState: Error
+        for: 5m
+        annotations:
+          summary: RAM usage over 90% for 5m on {{ $labels.instance }}
+        labels:
+          notify: discord
+          severity: warning
+        isPaused: false
+      - uid: bg146gsr55p8gd
+        title: Node CPU temperature high
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: prometheus
+            model:
+              expr: max by(instance)(node_hwmon_temp_celsius{chip="platform_coretemp_0",instance=~"s1|s2"}) >= bool 80
+              instant: true
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: A
+          - refId: B
+            datasourceUid: __expr__
+            model:
+              datasource: {type: __expr__, uid: __expr__}
+              expression: A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              reducer: last
+              refId: B
+              settings: {mode: dropNN}
+              type: reduce
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator: {params: [0], type: gt}
+              datasource: {type: __expr__, uid: __expr__}
+              expression: B
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: threshold
+        noDataState: Alerting
+        execErrState: Error
+        for: 5m
+        annotations:
+          summary: CPU temperature at or above 80C for 5m on {{ $labels.instance }}
+        labels:
+          notify: discord
+          severity: warning
+        isPaused: false
+  - orgId: 1
+    name: pythia
+    folder: Alerts
+    interval: 1m
+    rules:
+      - uid: eg146gsvdhibkc
+        title: Pythia credits exhausted (HTTP 402)
+        condition: C
+        data:
+          - refId: A
+            queryType: instant
+            relativeTimeRange:
+              from: 600
+              to: 0
+            datasourceUid: P8E80F9AEF21F6940
+            model:
+              expr: sum(count_over_time({namespace="pythia"} | json | fields_message="turn failed" | fields_status="402" [5m]))
+              instant: true
+              intervalMs: 1000
+              maxDataPoints: 43200
+              queryType: instant
+              refId: A
+          - refId: B
+            datasourceUid: __expr__
+            model:
+              datasource: {type: __expr__, uid: __expr__}
+              expression: A
+              intervalMs: 1000
+              maxDataPoints: 43200
+              reducer: last
+              refId: B
+              settings: {mode: dropNN}
+              type: reduce
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator: {params: [0], type: gt}
+              datasource: {type: __expr__, uid: __expr__}
+              expression: B
+              intervalMs: 1000
+              maxDataPoints: 43200
+              refId: C
+              type: threshold
+        noDataState: OK
+        execErrState: Error
+        annotations:
+          summary: Pythia LLM request failed with HTTP 402 (insufficient OpenRouter credits)
+        labels:
+          notify: discord
+          severity: critical
+        isPaused: false
+  - orgId: 1
+    name: chime
+    folder: chime
+    interval: 1m
+    rules:
+      - uid: chime-poll-failing
+        title: chime keeps failing to poll
+        condition: B
+        data:
+          - refId: A
+            datasourceUid: P8E80F9AEF21F6940
+            relativeTimeRange:
+              from: 1800
+              to: 0
+            model:
+              refId: A
+              queryType: instant
+              # A page is polled about every 6 minutes, so 4 failures in
+              # 30 minutes is nearly every poll. A single failed poll is
+              # routine and only delays that page to the next interval.
+              expr: >-
+                sum by (fields_status_page, fields_watch, fields_rss) (
+                count_over_time({namespace="chime", container="app"} | json
+                | fields_message =~ "failed to poll (status page|watch|rss feed)" [30m]))
+          - refId: B
+            datasourceUid: __expr__
+            model:
+              refId: B
+              type: threshold
+              expression: A
+              conditions:
+                - evaluator:
+                    type: gt
+                    params: [3]
+        # No failure logs means no series, which is the healthy state.
+        noDataState: OK
+        execErrState: Error
+        for: 0s
+        annotations:
+          summary: chime failed most polls of one source in the last 30 minutes.
+          description: >-
+            The source is in the fields_status_page, fields_watch or fields_rss
+            label. Its notifications are not being delivered while this fires;
+            check the chime logs for the error.
+        labels:
+          notify: discord
+          severity: warning
