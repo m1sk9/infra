@@ -6,6 +6,13 @@ argo-cd:
       node-role.kubernetes.io/control-plane: "true"
   dex:
     enabled: false
+  controller:
+    # Only the application controller exports argocd_app_info, which the sync and
+    # health alerts use; the other components' metrics have no consumer yet.
+    metrics:
+      enabled: true
+      serviceMonitor:
+        enabled: true
   configs:
     params:
       # TLS ends at Cloudflare; the tunnel reaches the server over plain HTTP inside the cluster.

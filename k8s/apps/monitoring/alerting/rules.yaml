@@ -662,3 +662,88 @@ groups:
           notify: discord
           severity: warning
         isPaused: false
+  - orgId: 1
+    name: argocd
+    folder: Alerts
+    interval: 1m
+    rules:
+      - uid: argocd-app-out-of-sync
+        title: ArgoCD application out of sync
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange: {from: 1200, to: 0}
+            datasourceUid: prometheus
+            model:
+              # Auto-sync with selfHeal converges within minutes of a merge, so 15m means it is stuck.
+              expr: argocd_app_info{sync_status!="Synced"}
+              instant: true
+              refId: A
+          - refId: B
+            datasourceUid: __expr__
+            model:
+              datasource: {type: __expr__, uid: __expr__}
+              expression: A
+              reducer: last
+              refId: B
+              settings: {mode: dropNN}
+              type: reduce
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator: {params: [0], type: gt}
+              datasource: {type: __expr__, uid: __expr__}
+              expression: B
+              refId: C
+              type: threshold
+        # The expression only returns series while the condition holds, so no data is healthy.
+        noDataState: OK
+        execErrState: Error
+        for: 15m
+        annotations:
+          summary: "ArgoCD application {{ $labels.name }} has been {{ $labels.sync_status }} for 15m"
+        labels:
+          notify: discord
+          severity: warning
+        isPaused: false
+      - uid: argocd-app-unhealthy
+        title: ArgoCD application unhealthy
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange: {from: 900, to: 0}
+            datasourceUid: prometheus
+            model:
+              # Progressing is left out: rollouts of Recreate bots pass through it.
+              expr: argocd_app_info{health_status=~"Degraded|Missing"}
+              instant: true
+              refId: A
+          - refId: B
+            datasourceUid: __expr__
+            model:
+              datasource: {type: __expr__, uid: __expr__}
+              expression: A
+              reducer: last
+              refId: B
+              settings: {mode: dropNN}
+              type: reduce
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator: {params: [0], type: gt}
+              datasource: {type: __expr__, uid: __expr__}
+              expression: B
+              refId: C
+              type: threshold
+        # The expression only returns series while the condition holds, so no data is healthy.
+        noDataState: OK
+        execErrState: Error
+        for: 10m
+        annotations:
+          summary: "ArgoCD application {{ $labels.name }} has been {{ $labels.health_status }} for 10m"
+        labels:
+          notify: discord
+          severity: warning
+        isPaused: false

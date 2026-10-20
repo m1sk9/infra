@@ -10,7 +10,7 @@ k3s クラスタ (server: s2，agent: s1) で動かすワークロードのマ�
 
 | アプリ | 内容 |
 |---|---|
-| `argocd` | ArgoCD 自身．導入後は自分自身をこのディレクトリから管理する |
+| `argocd` | ArgoCD 自身．導入後は自分自身をこのディレクトリから管理する (application controller のメトリクスは ServiceMonitor で Prometheus が収集する) |
 | `sealed-secrets` | Sealed Secrets コントローラー |
 | `cloudflared` | Cloudflare Tunnel (ArgoCD / Grafana の入口) |
 | `monitoring` | kube-prometheus-stack (Prometheus，Grafana，node-exporter) |
@@ -85,10 +85,10 @@ kubectl create secret generic <secret 名> --namespace <name> \
 | capacity | Node disk space low | `/` の空きが 15% 未満で 10m 続く | warning |
 | capacity | PVC space low | PVC の空きが 15% 未満で 10m 続く | warning |
 | logs | Bot logged an error | babyrite・chime・honeypot・pythia の ERROR ログ (HTTP 402 を除く) | warning |
+| argocd | ArgoCD application out of sync | `sync_status` が Synced でない状態が 15m 続く | warning |
+| argocd | ArgoCD application unhealthy | `health_status` が Degraded または Missing の状態が 10m 続く | warning |
 | pythia | Pythia credits exhausted (HTTP 402) | OpenRouter のクレジット切れ | critical |
 | chime | chime keeps failing to poll | 1 つのソースで 30m に 4 回超のポーリング失敗 | warning |
-
-ArgoCD の同期失敗は，メトリクスを収集していないため未対応です ([#531](https://github.com/m1sk9/infra/issues/531))．
 
 - ルールは `notify: discord` ラベルを付けると Discord に通知されます．ラベルのないアラートは，policy の root (`empty`) に流れて通知されません．
 - プロビジョニングされたリソースは UI で編集も削除もできません．変更は PR で行います．手順は [`docs/RESOURCE.md`](../docs/RESOURCE.md#grafana) にあります．
