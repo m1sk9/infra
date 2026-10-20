@@ -52,7 +52,7 @@ kubectl create secret generic <secret 名> --namespace <name> \
 
 | 置き場所 | 内容 | 読み込み |
 |---|---|---|
-| `dashboards/*.json` | 自作のダッシュボード (chime，cpu-cooling，honeypot，pythia) | `grafana_dashboard` ラベルの ConfigMap |
+| `dashboards/<フォルダ>/*.json` | 自作のダッシュボード (chime，cpu-cooling，honeypot，pythia)．`<フォルダ>` が Grafana のフォルダ名になる | `grafana_dashboard` ラベルの ConfigMap |
 | `alerting/rules.yaml` | アラートルール | `grafana_alert` ラベルの ConfigMap |
 | `alerting/contactpoints.yaml` | Contact point (`discord-alerts`) | 同上 |
 | `alerting/policies.yaml` | Notification policy | 同上 |
@@ -61,14 +61,35 @@ kubectl create secret generic <secret 名> --namespace <name> \
 
 | ダッシュボード | uid | 管理 | データソース | 内容 |
 |---|---|---|---|---|
-| Chime / Polling | `chime-polling` | `dashboards/chime-polling.json` | Loki | chime のポーリング件数・失敗数・転送数，WARN / ERROR ログ |
-| CPU Cooling (s1, s2) | `cpu-cooling-s1-s2` | `dashboards/cpu-cooling-s1-s2.json` | Prometheus | CPU 使用率，コア温度，thermal throttle，`temp_max` までの余裕 |
-| HoneyPot / Detections | `honeypot-detections` | `dashboards/honeypot-detections.json` | Loki | 検知関連イベント，ログ量 (レベル別・モジュール別)，WARN / ERROR ログ |
-| Pythia / LLM Usage | `pythia-llm` | `dashboards/pythia-llm.json` | Loki | クレジット消費，トークン数，応答レイテンシ，WARN / ERROR ログ |
+| Chime / Polling | `chime-polling` | `dashboards/bots/chime-polling.json` | Loki | chime のポーリング件数・失敗数・転送数，WARN / ERROR ログ |
+| CPU Cooling (s1, s2) | `cpu-cooling-s1-s2` | `dashboards/infrastructure/cpu-cooling-s1-s2.json` | Prometheus | CPU 使用率，コア温度，thermal throttle，`temp_max` までの余裕 |
+| HoneyPot / Detections | `honeypot-detections` | `dashboards/bots/honeypot-detections.json` | Loki | 検知関連イベント，ログ量 (レベル別・モジュール別)，WARN / ERROR ログ |
+| Pythia / LLM Usage | `pythia-llm` | `dashboards/bots/pythia-llm.json` | Loki | クレジット消費，トークン数，応答レイテンシ，WARN / ERROR ログ |
 | Kubernetes / ...，Node Exporter / ...，Prometheus / Overview，CoreDNS，Grafana Overview | chart が採番 | kube-prometheus-stack (chart 同梱) | Prometheus | k8s とノードの標準ダッシュボード |
 
 - 同梱のダッシュボードは，`values.yaml` と chart のバージョンで決まります．このリポジトリに JSON は置きません．
+- フォルダは `Bots` (chime，honeypot，pythia)，`Infrastructure` (cpu-cooling)，`Kubernetes` (同梱のダッシュボード) です．フォルダは `grafana_folder` アノテーションで決めます．自作のものは `templates/` がディレクトリ名から付け，同梱のものは `values.yaml` の `sidecar.dashboards.annotations` で付けます．
 - Contact point の webhook URL は `grafana-discord` Secret (`DISCORD_WEBHOOK_URL`) から環境変数で渡します．Secret の作り方は[シークレット](#シークレット)のとおりです．
+管理しているアラートルールは次のとおりです．すべて `notify: discord` で `discord-alerts` に通知します．
+
+| グループ | ルール | 条件 | severity |
+|---|---|---|---|
+| node | Node CPU high / RAM high / CPU temperature high | CPU・RAM 90% 超，コア温度 80C 以上が 5m 続く | warning |
+| workload | Deployment unavailable | 利用可能な replica が足りない状態が 5m 続く | critical |
+| workload | StatefulSet or DaemonSet unavailable | 準備できていない Pod が 5m 続く | critical |
+| workload | Container restarting repeatedly | 15m に 3 回以上再起動 | warning |
+| workload | Container OOMKilled | 再起動の原因が OOMKilled | warning |
+| workload | Pod cannot start | `ImagePullBackOff` など，または Pending / Failed が 10m 続く | warning |
+| cluster | Node NotReady | Ready でない状態が 3m 続く | critical |
+| cluster | Scrape target down | 主要な Prometheus target が 5m down | warning |
+| capacity | Node disk space low | `/` の空きが 15% 未満で 10m 続く | warning |
+| capacity | PVC space low | PVC の空きが 15% 未満で 10m 続く | warning |
+| logs | Bot logged an error | babyrite・chime・honeypot・pythia の ERROR ログ (HTTP 402 を除く) | warning |
+| pythia | Pythia credits exhausted (HTTP 402) | OpenRouter のクレジット切れ | critical |
+| chime | chime keeps failing to poll | 1 つのソースで 30m に 4 回超のポーリング失敗 | warning |
+
+ArgoCD の同期失敗は，メトリクスを収集していないため未対応です ([#531](https://github.com/m1sk9/infra/issues/531))．
+
 - ルールは `notify: discord` ラベルを付けると Discord に通知されます．ラベルのないアラートは，policy の root (`empty`) に流れて通知されません．
 - プロビジョニングされたリソースは UI で編集も削除もできません．変更は PR で行います．手順は [`docs/RESOURCE.md`](../docs/RESOURCE.md#grafana) にあります．
 - Loki の Datasource uid は，ダッシュボードとルールが参照しているため `values.yaml` で固定しています．

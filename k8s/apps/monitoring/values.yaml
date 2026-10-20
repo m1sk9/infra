@@ -110,6 +110,15 @@ kube-prometheus-stack:
     # values, which are rendered through `tpl` and would need every Grafana
     # `{{ }}` template escaped.
     sidecar:
+      dashboards:
+        # Our own dashboards pick their folder from the grafana_folder annotation
+        # (see templates/grafana-dashboards.yaml). The chart's bundled dashboards
+        # share one annotation, so they do not mix into General with ours.
+        folderAnnotation: grafana_folder
+        provider:
+          foldersFromFilesStructure: true
+        annotations:
+          grafana_folder: Kubernetes
       alerts:
         enabled: true
         label: grafana_alert

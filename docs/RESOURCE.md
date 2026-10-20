@@ -66,7 +66,7 @@ Grafana では Prometheus のメトリクスと Loki のログを確認できま
 
 自作のダッシュボードとアラートの設定は，`k8s/apps/monitoring/` で管理しています．プロビジョニングされているため，Grafana の UI では保存も削除もできません．変更は PR で行います．
 
-- **ダッシュボード**: UI で作り込み，**Export** → **Export as code** → **Classic** で JSON を書き出して，`dashboards/<名前>.json` を置き換えます．Loki と Prometheus の Datasource は，Export の **Export for sharing externally** を切ったまま (uid 参照のまま) にします．新しいダッシュボードは，ファイルを追加するだけで読み込まれます．
+- **ダッシュボード**: UI で作り込み，**Export** → **Export as code** → **Classic** で JSON を書き出して，`dashboards/<フォルダ>/<名前>.json` を置き換えます．Loki と Prometheus の Datasource は，Export の **Export for sharing externally** を切ったまま (uid 参照のまま) にします．新しいダッシュボードは，ファイルを追加するだけで読み込まれ，置いたディレクトリ名 (`bots`，`infrastructure`) が Grafana のフォルダ名になります．新しいフォルダが必要なときは，ディレクトリを追加します．
 - **アラートルール**: `alerting/rules.yaml` を編集します．UI でルールを作って **Export** で YAML を取り出し，貼り付けると楽です．通知したいルールには `notify: discord` ラベルを付けます．
 - **Contact point / Notification policy**: `alerting/contactpoints.yaml` と `alerting/policies.yaml` を編集します．webhook URL などの秘密情報はファイルに書かず，`grafana-discord` Secret から環境変数で渡します．
 

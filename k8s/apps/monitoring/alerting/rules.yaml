@@ -242,3 +242,423 @@ groups:
         labels:
           notify: discord
           severity: warning
+  - orgId: 1
+    name: workload
+    folder: Alerts
+    interval: 1m
+    rules:
+      - uid: workload-deploy-unavailable
+        title: Deployment unavailable
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange: {from: 600, to: 0}
+            datasourceUid: prometheus
+            model:
+              expr: kube_deployment_spec_replicas - kube_deployment_status_replicas_available > 0
+              instant: true
+              refId: A
+          - refId: B
+            datasourceUid: __expr__
+            model:
+              datasource: {type: __expr__, uid: __expr__}
+              expression: A
+              reducer: last
+              refId: B
+              settings: {mode: dropNN}
+              type: reduce
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator: {params: [0], type: gt}
+              datasource: {type: __expr__, uid: __expr__}
+              expression: B
+              refId: C
+              type: threshold
+        # The expression only returns series while the condition holds, so no data is healthy.
+        noDataState: OK
+        execErrState: Error
+        for: 5m
+        annotations:
+          summary: "Deployment {{ $labels.namespace }}/{{ $labels.deployment }} has unavailable replicas for 5m"
+        labels:
+          notify: discord
+          severity: critical
+        isPaused: false
+      - uid: workload-sts-ds-unavailable
+        title: StatefulSet or DaemonSet unavailable
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange: {from: 600, to: 0}
+            datasourceUid: prometheus
+            model:
+              expr: (kube_statefulset_replicas - kube_statefulset_status_replicas_ready > 0) or (kube_daemonset_status_number_unavailable > 0)
+              instant: true
+              refId: A
+          - refId: B
+            datasourceUid: __expr__
+            model:
+              datasource: {type: __expr__, uid: __expr__}
+              expression: A
+              reducer: last
+              refId: B
+              settings: {mode: dropNN}
+              type: reduce
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator: {params: [0], type: gt}
+              datasource: {type: __expr__, uid: __expr__}
+              expression: B
+              refId: C
+              type: threshold
+        # The expression only returns series while the condition holds, so no data is healthy.
+        noDataState: OK
+        execErrState: Error
+        for: 5m
+        annotations:
+          summary: "{{ $labels.namespace }}/{{ $labels.statefulset }}{{ $labels.daemonset }} has unavailable pods for 5m"
+        labels:
+          notify: discord
+          severity: critical
+        isPaused: false
+      - uid: workload-restarting
+        title: Container restarting repeatedly
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange: {from: 900, to: 0}
+            datasourceUid: prometheus
+            model:
+              expr: increase(kube_pod_container_status_restarts_total[15m]) >= 3
+              instant: true
+              refId: A
+          - refId: B
+            datasourceUid: __expr__
+            model:
+              datasource: {type: __expr__, uid: __expr__}
+              expression: A
+              reducer: last
+              refId: B
+              settings: {mode: dropNN}
+              type: reduce
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator: {params: [0], type: gt}
+              datasource: {type: __expr__, uid: __expr__}
+              expression: B
+              refId: C
+              type: threshold
+        # The expression only returns series while the condition holds, so no data is healthy.
+        noDataState: OK
+        execErrState: Error
+        for: 0s
+        annotations:
+          summary: "Container {{ $labels.namespace }}/{{ $labels.pod }}/{{ $labels.container }} restarted 3 or more times in 15m"
+        labels:
+          notify: discord
+          severity: warning
+        isPaused: false
+      - uid: workload-oomkilled
+        title: Container OOMKilled
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange: {from: 600, to: 0}
+            datasourceUid: prometheus
+            model:
+              # last_terminated_reason keeps its value until the next termination, so it is only
+              # trusted together with a restart in the window.
+              expr: (increase(kube_pod_container_status_restarts_total[10m]) > 0) and on(namespace, pod, container) (kube_pod_container_status_last_terminated_reason{reason="OOMKilled"} == 1)
+              instant: true
+              refId: A
+          - refId: B
+            datasourceUid: __expr__
+            model:
+              datasource: {type: __expr__, uid: __expr__}
+              expression: A
+              reducer: last
+              refId: B
+              settings: {mode: dropNN}
+              type: reduce
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator: {params: [0], type: gt}
+              datasource: {type: __expr__, uid: __expr__}
+              expression: B
+              refId: C
+              type: threshold
+        # The expression only returns series while the condition holds, so no data is healthy.
+        noDataState: OK
+        execErrState: Error
+        for: 0s
+        annotations:
+          summary: "Container {{ $labels.namespace }}/{{ $labels.pod }}/{{ $labels.container }} was OOMKilled and restarted"
+        labels:
+          notify: discord
+          severity: warning
+        isPaused: false
+      - uid: workload-pod-cannot-start
+        title: Pod cannot start
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange: {from: 900, to: 0}
+            datasourceUid: prometheus
+            model:
+              expr: (kube_pod_container_status_waiting_reason{reason=~"ImagePullBackOff|ErrImagePull|CreateContainerConfigError|InvalidImageName"} == 1) or (kube_pod_status_phase{phase=~"Pending|Failed|Unknown"} == 1)
+              instant: true
+              refId: A
+          - refId: B
+            datasourceUid: __expr__
+            model:
+              datasource: {type: __expr__, uid: __expr__}
+              expression: A
+              reducer: last
+              refId: B
+              settings: {mode: dropNN}
+              type: reduce
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator: {params: [0], type: gt}
+              datasource: {type: __expr__, uid: __expr__}
+              expression: B
+              refId: C
+              type: threshold
+        # The expression only returns series while the condition holds, so no data is healthy.
+        noDataState: OK
+        execErrState: Error
+        for: 10m
+        annotations:
+          summary: "Pod {{ $labels.namespace }}/{{ $labels.pod }} has not started for 10m"
+        labels:
+          notify: discord
+          severity: warning
+        isPaused: false
+  - orgId: 1
+    name: cluster
+    folder: Alerts
+    interval: 1m
+    rules:
+      - uid: cluster-node-not-ready
+        title: Node NotReady
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange: {from: 600, to: 0}
+            datasourceUid: prometheus
+            model:
+              expr: 1 - kube_node_status_condition{condition="Ready",status="true"} > 0
+              instant: true
+              refId: A
+          - refId: B
+            datasourceUid: __expr__
+            model:
+              datasource: {type: __expr__, uid: __expr__}
+              expression: A
+              reducer: last
+              refId: B
+              settings: {mode: dropNN}
+              type: reduce
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator: {params: [0], type: gt}
+              datasource: {type: __expr__, uid: __expr__}
+              expression: B
+              refId: C
+              type: threshold
+        # The expression only returns series while the condition holds, so no data is healthy.
+        noDataState: OK
+        execErrState: Error
+        for: 3m
+        annotations:
+          summary: "Node {{ $labels.node }} has not been Ready for 3m"
+        labels:
+          notify: discord
+          severity: critical
+        isPaused: false
+      - uid: cluster-target-down
+        title: Scrape target down
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange: {from: 600, to: 0}
+            datasourceUid: prometheus
+            model:
+              expr: 1 - up{job=~"kubelet|node-exporter|kube-state-metrics|monitoring-prometheus|monitoring-grafana|coredns|apiserver"} > 0
+              instant: true
+              refId: A
+          - refId: B
+            datasourceUid: __expr__
+            model:
+              datasource: {type: __expr__, uid: __expr__}
+              expression: A
+              reducer: last
+              refId: B
+              settings: {mode: dropNN}
+              type: reduce
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator: {params: [0], type: gt}
+              datasource: {type: __expr__, uid: __expr__}
+              expression: B
+              refId: C
+              type: threshold
+        # The expression only returns series while the condition holds, so no data is healthy.
+        noDataState: OK
+        execErrState: Error
+        for: 5m
+        annotations:
+          summary: "Prometheus target {{ $labels.job }} {{ $labels.instance }} has been down for 5m"
+        labels:
+          notify: discord
+          severity: warning
+        isPaused: false
+  - orgId: 1
+    name: capacity
+    folder: Alerts
+    interval: 1m
+    rules:
+      - uid: capacity-node-disk-low
+        title: Node disk space low
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange: {from: 600, to: 0}
+            datasourceUid: prometheus
+            model:
+              # Written as a deficit (15 - free%) so that the value stays positive even at 0% free.
+              expr: 15 - 100 * node_filesystem_avail_bytes{instance=~"s1|s2",mountpoint="/",fstype!~"tmpfs|overlay"} / node_filesystem_size_bytes{instance=~"s1|s2",mountpoint="/",fstype!~"tmpfs|overlay"} > 0
+              instant: true
+              refId: A
+          - refId: B
+            datasourceUid: __expr__
+            model:
+              datasource: {type: __expr__, uid: __expr__}
+              expression: A
+              reducer: last
+              refId: B
+              settings: {mode: dropNN}
+              type: reduce
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator: {params: [0], type: gt}
+              datasource: {type: __expr__, uid: __expr__}
+              expression: B
+              refId: C
+              type: threshold
+        # The expression only returns series while the condition holds, so no data is healthy.
+        noDataState: OK
+        execErrState: Error
+        for: 10m
+        annotations:
+          summary: "Less than 15% of the root filesystem is free on {{ $labels.instance }}"
+        labels:
+          notify: discord
+          severity: warning
+        isPaused: false
+      - uid: capacity-pvc-low
+        title: PVC space low
+        condition: C
+        data:
+          - refId: A
+            relativeTimeRange: {from: 600, to: 0}
+            datasourceUid: prometheus
+            model:
+              # The apiserver job exposes the same series with a different namespace label.
+              expr: 15 - 100 * kubelet_volume_stats_available_bytes{job="kubelet"} / kubelet_volume_stats_capacity_bytes{job="kubelet"} > 0
+              instant: true
+              refId: A
+          - refId: B
+            datasourceUid: __expr__
+            model:
+              datasource: {type: __expr__, uid: __expr__}
+              expression: A
+              reducer: last
+              refId: B
+              settings: {mode: dropNN}
+              type: reduce
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator: {params: [0], type: gt}
+              datasource: {type: __expr__, uid: __expr__}
+              expression: B
+              refId: C
+              type: threshold
+        # The expression only returns series while the condition holds, so no data is healthy.
+        noDataState: OK
+        execErrState: Error
+        for: 10m
+        annotations:
+          summary: "Less than 15% of PVC {{ $labels.namespace }}/{{ $labels.persistentvolumeclaim }} is free"
+        labels:
+          notify: discord
+          severity: warning
+        isPaused: false
+  - orgId: 1
+    name: logs
+    folder: Alerts
+    interval: 1m
+    rules:
+      - uid: logs-bot-error
+        title: Bot logged an error
+        condition: C
+        data:
+          - refId: A
+            queryType: instant
+            relativeTimeRange: {from: 600, to: 0}
+            datasourceUid: P8E80F9AEF21F6940
+            model:
+              # Loki has no ERROR lines from the bots over the last 7 days, so any hit is new.
+              expr: sum by (namespace) (count_over_time({namespace=~"babyrite|chime|honeypot|pythia"} | detected_level="error" !~ `"status":\s*"?402"?` [5m]))
+              instant: true
+              queryType: instant
+              refId: A
+          - refId: B
+            datasourceUid: __expr__
+            model:
+              datasource: {type: __expr__, uid: __expr__}
+              expression: A
+              reducer: last
+              refId: B
+              settings: {mode: dropNN}
+              type: reduce
+          - refId: C
+            datasourceUid: __expr__
+            model:
+              conditions:
+                - evaluator: {params: [0], type: gt}
+              datasource: {type: __expr__, uid: __expr__}
+              expression: B
+              refId: C
+              type: threshold
+        # The expression only returns series while the condition holds, so no data is healthy.
+        noDataState: OK
+        execErrState: Error
+        for: 0s
+        annotations:
+          summary: "{{ $labels.namespace }} logged ERROR lines in the last 5m"
+          description: >-
+            Check the logs of the namespace in the summary. HTTP 402 is excluded because the
+            Pythia credits rule already covers it.
+        labels:
+          notify: discord
+          severity: warning
+        isPaused: false

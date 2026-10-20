@@ -1,4 +1,4 @@
-{{- range $path, $_ := .Files.Glob "dashboards/*.json" }}
+{{- range $path, $_ := .Files.Glob "dashboards/*/*.json" }}
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -7,6 +7,9 @@ metadata:
   namespace: {{ $.Release.Namespace }}
   labels:
     grafana_dashboard: "1"
+  annotations:
+    # The directory name becomes the Grafana folder; see sidecar.dashboards in values.yaml.
+    grafana_folder: {{ base (dir $path) | title }}
 data:
   {{ base $path }}: |-
 {{ $.Files.Get $path | indent 4 }}
