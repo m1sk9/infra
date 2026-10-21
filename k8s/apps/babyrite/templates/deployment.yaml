@@ -26,7 +26,7 @@ spec:
         m1sk9.dev/pool: apps
       containers:
         - name: app
-          image: ghcr.io/m1sk9/babyrite:v2.0.2
+          image: ghcr.io/m1sk9/babyrite:v2.0.3
           envFrom:
             - secretRef:
                 name: babyrite-env
