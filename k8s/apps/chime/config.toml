@@ -123,3 +123,10 @@ timezone = "Asia/Tokyo"
   webhook = "infra"
   display_name = "Grafana Blog"
   avatar_url = "https://github.com/grafana.png"
+
+[[rss]]
+  name = "m1sk9-dev"
+  url = "https://m1sk9.dev/posts/feed.xml"
+  webhook = "dev"
+  display_name = "m1sk9.dev"
+  avatar_url = "https://github.com/m1sk9.png"
