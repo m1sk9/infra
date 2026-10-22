@@ -12,40 +12,35 @@ timezone = "Asia/Tokyo"
 [[status_pages]]
   name = "github"
   url = "https://www.githubstatus.com"
-  webhook = "dev-status"
-  thread_id = "1561079585746059264"
+  webhook = "me-status"
   display_name = "GitHub Status"
   avatar_url = "https://github.com/community.png"
 
 [[status_pages]]
   name = "proton"
   url = "https://status.proton.me"
-  webhook = "dev-status"
-  thread_id = "1561080290514833510"
+  webhook = "me-status"
   display_name = "Proton Status"
   avatar_url = "https://github.com/ProtonMail.png"
 
 [[status_pages]]
   name = "claude"
   url = "https://status.claude.com"
-  webhook = "dev-status"
-  thread_id = "1561079775689183365"
+  webhook = "me-status"
   display_name = "Claude Status"
   avatar_url = "https://github.com/claude.png"
 
 [[status_pages]]
   name = "crates-io"
   url = "https://status.crates.io"
-  webhook = "dev-status"
-  thread_id = "1561079727689699418"
+  webhook = "me-status"
   display_name = "The Rust Programming Language Status"
   avatar_url = "https://github.com/rust-lang.png"
 
 [[status_pages]]
   name = "Tailscale"
   url = "https://status.tailscale.com"
-  webhook = "dev-status"
-  thread_id = "1561080239524937920"
+  webhook = "me-status"
   display_name = "Tailscale Status"
   avatar_url = "https://github.com/tailscale.png"
 
@@ -53,8 +48,7 @@ timezone = "Asia/Tokyo"
   name = "openai"
   kind = "incidentio"
   url = "https://status.openai.com"
-  webhook = "dev-status"
-  thread_id = "1561079840130465842"
+  webhook = "me-status"
   display_name = "OpenAI Status"
   avatar_url = "https://github.com/openai.png"
 
@@ -62,8 +56,7 @@ timezone = "Asia/Tokyo"
   name = "openrouter"
   kind = "datadog"
   url = "https://status.openrouter.ai"
-  webhook = "dev-status"
-  thread_id = "1561080047799111852"
+  webhook = "me-status"
   display_name = "OpenRouter Status"
   avatar_url = "https://github.com/OpenRouterTeam.png"
 
@@ -71,24 +64,21 @@ timezone = "Asia/Tokyo"
   name = "orcarouter"
   kind = "incidentio"
   url = "https://statuspage.incident.io/orca-router"
-  webhook = "dev-status"
-  thread_id = "1561080101322358804"
+  webhook = "me-status"
   display_name = "OrcaRouter Status"
 
 [[status_pages]]
   name = "perplexity"
   kind = "incidentio"
   url = "https://status.perplexity.com"
-  webhook = "dev-status"
-  thread_id = "1561080144272171038"
+  webhook = "me-status"
   display_name = "Perplexity Status"
   avatar_url = "https://github.com/perplexityai.png"
 
 [[status_pages]]
   name = "discord"
   url = "https://discordstatus.com"
-  webhook = "dev-status"
-  thread_id = "1561080613589483520"
+  webhook = "me-status"
   display_name = "Discord Status"
   avatar_url = "https://github.com/discord.png"
 
@@ -96,14 +86,16 @@ timezone = "Asia/Tokyo"
 
 [[watches]]
   name = "firefox"
-  webhook = "www"
+  webhook = "me-dev"
+  thread_id = "1562902617485611028"
   source = { kind = "firefox", channel = "release" }
   display_name = "Firefox Releases"
   avatar_url = "https://github.com/mozilla.png"
 
 [[watches]]
   name = "chrome"
-  webhook = "www"
+  webhook = "me-dev"
+  thread_id = "1562902774948044900"
   source = { kind = "chrome", platform = "win", channel = "stable", rollout = "started" }
   display_name = "Chrome Releases"
   avatar_url = "https://github.com/GoogleChrome.png"
@@ -113,32 +105,37 @@ timezone = "Asia/Tokyo"
 [[rss]]
   name = "claude-code-changelog"
   url = "https://code.claude.com/docs/en/changelog/rss.xml"
-  webhook = "ai"
+  webhook = "me-dev"
+  thread_id = "1562903053554942012"
   display_name = "Claude Code Changelog"
   avatar_url = "https://github.com/claude.png"
 
 [[rss]]
   name = "grafana-blog"
   url = "https://grafana.com/blog/index.xml"
-  webhook = "infra"
+  webhook = "me-dev"
+  thread_id = "1562903146123231262"
   display_name = "Grafana Blog"
   avatar_url = "https://github.com/grafana.png"
 
 [[rss]]
   name = "debian-news"
   url = "https://www.debian.org/News/news"
-  webhook = "infra"
+  webhook = "me-dev"
+  thread_id = "1562903273516564570"
   display_name = "Debian News"
 
 [[rss]]
   name = "debian-dsa"
   url = "https://www.debian.org/security/dsa"
-  webhook = "infra"
+  webhook = "me-dev"
+  thread_id = "1562903539662200994"
   display_name = "Debian DSA"
 
 [[rss]]
   name = "m1sk9-dev"
   url = "https://m1sk9.dev/posts/feed.xml"
-  webhook = "dev"
+  webhook = "me-dev"
+  thread_id = "1562903624932262050"
   display_name = "m1sk9.dev"
   avatar_url = "https://github.com/m1sk9.png"
