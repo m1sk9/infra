@@ -149,3 +149,12 @@ timezone = "Asia/Tokyo"
   thread_id = "1562903624932262050"
   display_name = "m1sk9.dev"
   avatar_url = "https://github.com/m1sk9.png"
+
+# Whole blog: chime has no entry filter, so non-patch-note posts come through too.
+[[rss]]
+  name = "discord-blog"
+  url = "https://discord.com/blog/rss.xml"
+  webhook = "me-dev"
+  thread_id = "1562919948639141958"
+  display_name = "Discord Blog"
+  avatar_url = "https://github.com/discord.png"
