@@ -125,6 +125,18 @@ timezone = "Asia/Tokyo"
   avatar_url = "https://github.com/grafana.png"
 
 [[rss]]
+  name = "debian-news"
+  url = "https://www.debian.org/News/news"
+  webhook = "infra"
+  display_name = "Debian News"
+
+[[rss]]
+  name = "debian-dsa"
+  url = "https://www.debian.org/security/dsa"
+  webhook = "infra"
+  display_name = "Debian DSA"
+
+[[rss]]
   name = "m1sk9-dev"
   url = "https://m1sk9.dev/posts/feed.xml"
   webhook = "dev"
