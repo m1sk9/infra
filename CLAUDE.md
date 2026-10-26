@@ -91,7 +91,7 @@ kubeseal --cert k8s/bootstrap/sealed-secrets-cert.pem --format yaml < secret.yam
 ### Terraform
 
 - Flat root module, one file per resource family. Cloudflare account/zone IDs are hard-coded in `main.tf` locals (not secrets).
-- Some Better Stack settings (status page "Advanced settings") cannot be written via API on the free plan; they are deliberately left out of Terraform.
+- Some Better Stack settings (status page "Advanced settings") cannot be written via API on the free plan; they are deliberately left out of Terraform. The status page Personalization (design / theme / layout) is left to the dashboard by choice; heartbeats, monitors, sections and status page resources stay in Terraform.
 
 ## Conventions
 

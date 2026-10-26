@@ -19,10 +19,14 @@
 # the configuration means Terraform does not diff against them, so the manual
 # values survive. subscribable is billed, so it stays off entirely.
 #
-# Everything below sits outside that section and applies cleanly: the identity
-# fields, the whole Personalization block (design / theme / layout) and — despite
-# what the pricing page's "Custom sub-domain" wording suggests — the custom
-# domain.
+# The Personalization block (design / theme / layout) is writable through the API
+# but is left to the dashboard as well, so the look can be tuned without a PR and
+# a production apply. The provider marks those attributes computed, so omitting
+# them keeps whatever the dashboard holds.
+#
+# Everything below is either required by the provider or — despite what the
+# pricing page's "Custom sub-domain" wording suggests — the custom domain, which
+# the DNS record in this repository depends on.
 resource "betteruptime_status_page" "m1sk9" {
   # Better Stack renders this as "<company_name> status", so it holds the name
   # alone. Putting the hostname here reads as "status.m1sk9.dev status".
@@ -38,10 +42,6 @@ resource "betteruptime_status_page" "m1sk9" {
   timezone = "Tokyo"
 
   custom_domain = "status.m1sk9.dev"
-
-  design = "v2" # theme and layout require the modern design
-  theme  = "dark"
-  layout = "vertical"
 
   # The custom domain is verified against the CNAME on creation, so the record
   # has to exist first.
