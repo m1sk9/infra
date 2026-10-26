@@ -1,61 +1,40 @@
 {
-    // ===== Tag Declaration =====
-    // タグはマシンではなく役割に付ける．1 台が複数の役割を持つときはタグを重ねる
-    // (役割と担当マシンの対応は docs/machine/ を参照)
     "tagOwners": {
-        "tag:k3s":           ["autogroup:owner"], // k3s ノード共通
-        "tag:k3s-server":    ["autogroup:owner"], // control-plane
+        "tag:k3s":           ["autogroup:owner"],
+        "tag:k3s-server":    ["autogroup:owner"],
         "tag:k3s-agent":     ["autogroup:owner"],
-        "tag:observability": ["autogroup:owner"], // Prometheus を載せるノード
-        "tag:exit-node":     ["autogroup:owner"],
+        "tag:observability": ["autogroup:owner"],
+        // Only the CI OAuth client may mint this tag.
         "tag:ci":            [],
     },
 
-    // ===== Auto Approvers Declaration =====
-    // OS を入れ直すと Exit Node の承認も消えるため，広告し直すだけで復帰できるようにしている
-    // 用途は学外ネットワークからの経由と開発程度で流量が小さいため，k3s server にも載せてよい
-    "autoApprovers": {
-        "exitNode": ["tag:exit-node"],
-    },
-
-    // ===== Grants Declaration =====
     "grants": [
-        // k3s ノードへのフルアクセス - owner / CI / nanai10a
         {
-            "src": ["autogroup:owner", "tag:ci", "nanai10a@github"],
+            "src": ["autogroup:owner"],
             "dst": ["tag:k3s"],
             "ip":  ["*"],
         },
-        // member - 任意の Exit Node 経由でインターネット
         {
-            "src": ["autogroup:member"],
+            "src": ["tag:ci"],
+            "dst": ["tag:k3s"],
+            "ip":  ["tcp:22"],
+        },
+        {
+            "src": ["autogroup:owner"],
             "dst": ["autogroup:internet"],
             "ip":  ["*"],
         },
-        // kimchi5005 (shared user) - Exit Node 利用のみ
-        // 前提: s1 を machine share し "Allow use as an exit node" を有効化
-        // 経由できる Exit Node は共有したマシンに限られるため，s2 は共有しない（m1sk9 専用）
-        {
-            "src": ["kimchi5005@github"],
-            "dst": ["autogroup:internet"],
-            "ip":  ["*"],
-        },
-        // k3s ノード間通信 - 必要なポートのみ
-        // 6443/tcp: apiserver．接続は常に server 宛てなので dst を k3s-server に絞る
         {
             "src": ["tag:k3s"],
             "dst": ["tag:k3s-server"],
             "ip":  ["tcp:6443"],
         },
-        // 10250/tcp: kubelet (logs / exec，メトリクスの取得)
-        // 8472/udp: flannel vxlan (Pod 間通信)
-        // どちらもノード間で双方向の新規接続が発生するため，向きを絞れない
+        // kubelet and flannel open connections in both directions, so neither can be narrowed to one way.
         {
             "src": ["tag:k3s"],
             "dst": ["tag:k3s"],
             "ip":  ["tcp:10250", "udp:8472"],
         },
-        // Prometheus が各ノードの node-exporter (9100/tcp，hostNetwork) をスクレイプする
         {
             "src": ["tag:observability"],
             "dst": ["tag:k3s"],
@@ -63,8 +42,6 @@
         },
     ],
 
-    // ===== Tailscale SSH Declaration =====
-    // kimchi5005 は意図的に含めない（足さなければ SSH は塞がれたまま）
     "ssh": [
         {
             "action": "accept",
@@ -72,42 +49,26 @@
             "dst":    ["tag:k3s"],
             "users":  ["m1sk9"],
         },
-        {
-            "action": "accept",
-            "src":    ["nanai10a@github"],
-            "dst":    ["tag:k3s"],
-            "users":  ["nanai"],
-        },
     ],
 
-    // ===== Tests =====
-    // ポリシーの変更時に Tailscale が評価し，1 つでも外れたら保存を拒否する
-    // grants / ssh を書き換えても崩してはいけない不変条件をここに置く
     "tests": [
-        // CI はホストに SSH できる
+        {
+            "src":    "m1sk9@github",
+            "accept": ["tag:k3s:22", "tag:k3s-server:6443"],
+        },
         {
             "src":    "tag:ci",
             "accept": ["tag:k3s:22"],
+            "deny":   ["tag:k3s:6443", "tag:k3s:10250", "tag:k3s:9100"],
         },
-        // 共有ユーザーは Exit Node 以外に何も届かない
-        {
-            "src":  "kimchi5005@github",
-            "deny": ["tag:k3s:22", "tag:k3s:6443", "tag:k3s:10250", "tag:k3s:9100"],
-        },
-        // apiserver は server 宛てだけ開く
         {
             "src":    "tag:k3s",
-            "accept": ["tag:k3s-server:6443"],
-            "deny":   ["tag:k3s-agent:6443"],
+            "accept": ["tag:k3s-server:6443", "tag:k3s:10250"],
+            "deny":   ["tag:k3s-agent:6443", "tag:k3s:9100", "tag:k3s:22"],
         },
-        // node-exporter をスクレイプできるのは observability だけ
         {
             "src":    "tag:observability",
             "accept": ["tag:k3s:9100"],
-        },
-        {
-            "src":  "tag:k3s",
-            "deny": ["tag:k3s:9100", "tag:k3s:22"],
         },
     ],
     "sshTests": [
@@ -121,22 +82,10 @@
             "src":    "tag:ci",
             "dst":    ["tag:k3s"],
             "accept": ["m1sk9"],
-            "deny":   ["root", "nanai"],
-        },
-        {
-            "src":    "nanai10a@github",
-            "dst":    ["tag:k3s"],
-            "accept": ["nanai"],
-            "deny":   ["root", "m1sk9"],
-        },
-        {
-            "src":  "kimchi5005@github",
-            "dst":  ["tag:k3s"],
-            "deny": ["root", "m1sk9", "nanai"],
+            "deny":   ["root"],
         },
     ],
 
-    // ===== Node Attributes (Funnel / NextDNS) =====
     "nodeAttrs": [
         {
             "target": ["m1sk9@github", "tag:k3s"],

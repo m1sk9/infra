@@ -26,7 +26,7 @@ k3s の server ノード (control-plane) です．ArgoCD・Sealed Secrets と，
 | ホスト名 (MagicDNS) | `dev-m1sk9-s2` |
 | Ansible inventory | `s2` (`k3s_servers`) |
 | node label | `m1sk9.dev/pool=observability` |
-| Tailscale タグ | `tag:k3s`，`tag:k3s-server`，`tag:observability`，`tag:exit-node` |
+| Tailscale タグ | `tag:k3s`，`tag:k3s-server`，`tag:observability` |
 
 ## ディスク構成
 

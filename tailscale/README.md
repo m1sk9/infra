@@ -2,13 +2,24 @@
 
 Tailnet のポリシーファイル (ACL) を [`policy.hujson`](./policy.hujson) で管理します．
 
-サーバー (s1 / s2) は Tailnet の中からしか到達できません．このファイルで次のアクセスを制御しています．
+サーバー (s1 / s2) は Tailnet の中からしか到達できません．Tailnet のユーザーは owner (m1sk9) だけで，他のユーザーとのマシン共有もしていません．
 
-- サーバーへのアクセスと Tailscale SSH を許可するユーザー・タグ (CI の `tag:ci` を含む)
+ポリシーは明示的に許可したもの以外をすべて拒否します．このファイルで許可しているのは次の通信だけです．
+
+- owner の端末から，サーバーへのアクセスと Tailscale SSH
+- CI (`tag:ci`) から，サーバーへの Tailscale SSH (22/tcp のみ)
+- owner の端末から，Exit Node を経由したインターネット
 - k3s のノード間通信 (apiserver，kubelet，flannel)
 - Prometheus から各ノードの node-exporter へのスクレイプ
-- NextDNS の割り当て
-- Exit Node の自動承認 (`autoApprovers`)
+
+あわせて NextDNS の割り当てを行っています．
+
+Exit Node の自動承認 (`autoApprovers`) は使っていません．Exit Node を広告したら，管理画面で手作業で承認します．
+
+### ポリシーで制御できないもの
+
+- **Taildrop**: 同じユーザーの端末同士では ACL に関係なく使えます．無効にするには，管理画面の **General** で **Send Files** をオフにします．
+- **Taildrive**: `nodeAttrs` に `drive:share` / `drive:access` を書かない限り使えません．現在は書いていないので無効です．
 
 ## タグ
 
@@ -20,13 +31,14 @@ Tailnet のポリシーファイル (ACL) を [`policy.hujson`](./policy.hujson)
 | `tag:k3s-server` | k3s の control-plane | apiserver (6443/tcp) の宛先 |
 | `tag:k3s-agent` | k3s の agent | (現状は固有の許可なし) |
 | `tag:observability` | Prometheus を載せるノード | node-exporter (9100/tcp) のスクレイプ元 |
-| `tag:exit-node` | Exit Node | Exit Node の自動承認 |
-| `tag:ci` | GitHub Actions の runner (エフェメラル) | 管理アクセスと Tailscale SSH の送信元 |
+| `tag:ci` | GitHub Actions の runner (エフェメラル) | Tailscale SSH (22/tcp) の送信元 |
+
+個人の端末 (laptop / mobile) にはタグを付けません．タグを付けるとユーザーの端末として扱われなくなり，鍵の期限切れが無効になり，Taildrop も使えなくなるためです．個人の端末は owner として扱い，Exit Node の利用も owner に限っています．
 
 マシンにタグを付けるには，そのマシンで次を実行します (例は s2)．
 
 ```fish
-sudo tailscale up --ssh --advertise-exit-node --advertise-tags=tag:k3s,tag:k3s-server,tag:observability,tag:exit-node
+sudo tailscale up --ssh --advertise-exit-node --advertise-tags=tag:k3s,tag:k3s-server,tag:observability
 ```
 
 ## 適用
@@ -36,7 +48,7 @@ sudo tailscale up --ssh --advertise-exit-node --advertise-tags=tag:k3s,tag:k3s-s
 - **CI** (pull request): `action: test` でポリシーを検証します．Tailnet には反映しません．読み取り専用のクライアントを使います．
 - **CD** (`main` への push): `action: apply` で検証し，成功すれば Tailnet に反映します．書き込み権限を持つクライアントは，`main` からしか使えない GitHub Environment `tailscale-acl` にだけ置いています．
 
-ポリシーの `tests` / `sshTests` には，崩してはいけないアクセスの条件 (共有ユーザーがサーバーに届かない，apiserver は server 宛てだけ，など) を書いています．どちらの段階でも Tailscale が評価し，1 つでも外れると反映されません．**grants や ssh を変えるときは，対応するテストも更新します．**
+ポリシーの `tests` / `sshTests` には，崩してはいけないアクセスの条件 (CI は SSH 以外に届かない，apiserver は server 宛てだけ，など) を書いています．どちらの段階でも Tailscale が評価し，1 つでも外れると反映されません．**grants や ssh を変えるときは，対応するテストも更新します．**
 
 NextDNS のプロファイル ID は平文でコミットしていません．`${NEXTDNS_PROFILE_ID}` をプレースホルダとして書いておき，Action に渡す前に `envsubst` でシークレットの値に置き換えます．置き換え後のファイル (`policy.rendered.hujson`) は git-ignore しています．
 
