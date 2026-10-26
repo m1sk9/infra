@@ -10,7 +10,7 @@
 
     "grants": [
         {
-            "src": ["autogroup:owner"],
+            "src": ["m1sk9@github"],
             "dst": ["tag:k3s"],
             "ip":  ["*"],
         },
@@ -20,7 +20,7 @@
             "ip":  ["tcp:22"],
         },
         {
-            "src": ["autogroup:owner"],
+            "src": ["m1sk9@github"],
             "dst": ["autogroup:internet"],
             "ip":  ["*"],
         },
@@ -45,7 +45,7 @@
     "ssh": [
         {
             "action": "accept",
-            "src":    ["autogroup:owner", "tag:ci"],
+            "src":    ["m1sk9@github", "tag:ci"],
             "dst":    ["tag:k3s"],
             "users":  ["m1sk9"],
         },
