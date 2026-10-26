@@ -37,13 +37,13 @@ jobs:
       - name: Terraform Plan
         run: terraform plan -input=false -lock-timeout=10m
 
+  # Only a syntax check now: playbooks are applied by hand from the owner's machine,
+  # so CI holds no tailnet access. The name stays because the ruleset requires it.
   ansible-plan:
     runs-on: ubuntu-26.04
     defaults:
       run:
         working-directory: ./ansible
-    env:
-      ANSIBLE_HOST_KEY_CHECKING: "False"
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
@@ -60,19 +60,6 @@ jobs:
           ansible-playbook playbooks/monitoring.yml --syntax-check
           ansible-playbook playbooks/k8s-agent.yml --syntax-check
           ansible-playbook playbooks/k8s.yml --syntax-check
-
-      - name: Connect to Tailscale
-        uses: tailscale/github-action@99a8333667fff04fdd6cffb46dfd409f8329a7bf # v4.3.0
-        with:
-          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
-          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
-          tags: tag:ci
-          use-cache: "true"
-
-      - name: Plan (check + diff)
-        run: |
-          ansible-playbook playbooks/backup.yml --check --diff
-          ansible-playbook playbooks/monitoring.yml --check --diff
 
       - name: Cleanup
         if: always()

@@ -7,7 +7,6 @@ Tailnet のポリシーファイル (ACL) を [`policy.hujson`](./policy.hujson)
 ポリシーは明示的に許可したもの以外をすべて拒否します．このファイルで許可しているのは次の通信だけです．
 
 - owner の端末から，サーバーへのアクセスと Tailscale SSH
-- CI (`tag:ci`) から，サーバーへの Tailscale SSH (22/tcp のみ)
 - owner の端末から，Exit Node を経由したインターネット
 - k3s のノード間通信 (apiserver，kubelet，flannel)
 - Prometheus から各ノードの node-exporter へのスクレイプ
@@ -35,7 +34,6 @@ NextDNS は管理画面の DNS ページで Global nameserver として設定し
 | `tag:k3s-server` | k3s の control-plane | apiserver (6443/tcp) の宛先 |
 | `tag:k3s-agent` | k3s の agent | (現状は固有の許可なし) |
 | `tag:observability` | Prometheus を載せるノード | node-exporter (9100/tcp) のスクレイプ元 |
-| `tag:ci` | GitHub Actions の runner (エフェメラル) | Tailscale SSH (22/tcp) の送信元 |
 
 個人の端末 (laptop / mobile) にはタグを付けません．タグを付けるとユーザーの端末として扱われなくなり，鍵の期限切れが無効になり，Taildrop も使えなくなるためです．個人の端末は owner として扱い，Exit Node の利用も owner に限っています．
 
@@ -52,7 +50,7 @@ sudo tailscale up --ssh --accept-dns=false --advertise-exit-node --advertise-tag
 - **CI** (pull request): `action: test` でポリシーを検証します．Tailnet には反映しません．読み取り専用のクライアントを使います．
 - **CD** (`main` への push): `action: apply` で検証し，成功すれば Tailnet に反映します．書き込み権限を持つクライアントは，`main` からしか使えない GitHub Environment `tailscale-acl` にだけ置いています．
 
-ポリシーの `tests` / `sshTests` には，崩してはいけないアクセスの条件 (CI は SSH 以外に届かない，apiserver は server 宛てだけ，など) を書いています．どちらの段階でも Tailscale が評価し，1 つでも外れると反映されません．**grants や ssh を変えるときは，対応するテストも更新します．**
+ポリシーの `tests` / `sshTests` には，崩してはいけないアクセスの条件 (apiserver は server 宛てだけ，ノード同士は SSH できない，など) を書いています．どちらの段階でも Tailscale が評価し，1 つでも外れると反映されません．**grants や ssh を変えるときは，対応するテストも更新します．**
 
 NextDNS のプロファイル ID は平文でコミットしていません．`${NEXTDNS_PROFILE_ID}` をプレースホルダとして書いておき，Action に渡す前に `envsubst` でシークレットの値に置き換えます．置き換え後のファイル (`policy.rendered.hujson`) は git-ignore しています．
 
@@ -69,7 +67,7 @@ NextDNS のプロファイル ID は平文でコミットしていません．`$
 
 Pull request の workflow は，同じリポジトリのブランチ (Renovate を含む) から実行されると Repository の Secret を読めます．そのため書き込み権限のクライアントは Repository には置きません．
 
-Ansible の CI/CD が使う `TS_OAUTH_CLIENT_ID` / `TS_OAUTH_SECRET` とは別のクライアントです．あちらは `auth_keys` スコープのみで，ポリシーファイルを読み書きできません．
+GitHub Actions の runner は Tailnet に参加しません．使う OAuth クライアントは上の 2 つ (API でポリシーを検証・反映するだけ) で，ノードを作る `auth_keys` スコープのクライアントはありません．
 
 ## 初回セットアップ
 

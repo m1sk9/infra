@@ -65,7 +65,7 @@ ansible-playbook playbooks/backup.yml --check --diff
 ansible-playbook playbooks/backup.yml
 ```
 
-`backup.yml` と `monitoring.yml` は CD が自動で適用します (「CI / CD」を参照)．手元で適用する必要があるのは `k8s.yml` と `k8s-agent.yml` だけです．
+**すべての playbook は手動で適用します．CD は Ansible を適用しません** (「CI / CD」を参照)．`main` に merge した変更は，Tailnet に参加している owner の端末から適用してください．
 
 ## シークレット (ansible-vault)
 
@@ -187,7 +187,7 @@ Better Stack の Free プランでは，ステータスページの **Advanced s
 
 ## k3s
 
-`k8s.yml` と `k8s-agent.yml` は CD に含めず，手動で適用します．
+`k8s.yml` と `k8s-agent.yml` も，他の playbook と同じく手動で適用します．
 
 - **`k8s.yml` (s2) **: ノードラベルを付け，traefik / servicelb を無効化し，ArgoCD を初期導入します．
   - ノードラベルと無効化の設定は，`config.yaml.d/` の drop-in として書き込みます．
@@ -203,17 +203,20 @@ Better Stack の Free プランでは，ステータスページの **Advanced s
 
 ## CI / CD
 
-- **CI** ([`ci.yaml`](../.github/workflows/ci.yaml)，pull request): すべての playbook に `--syntax-check` を実行します．続いて `backup.yml`，`monitoring.yml` を `--check --diff` で実行し，PR で変更内容を確認できるようにします．
-- **CD** ([`cd.yaml`](../.github/workflows/cd.yaml)，`main` への push): Tailnet に参加してから，`backup.yml`，`monitoring.yml` を適用します．
+- **CI** ([`ci.yaml`](../.github/workflows/ci.yaml)，pull request): すべての playbook に `--syntax-check` を実行します．ホストには接続しません．
+- **CD**: Ansible は適用しません．
 
-runner は [Tailscale GitHub Action](https://tailscale.com/kb/1276/tailscale-github-action) で `tag:ci` のエフェメラルノードとして Tailnet に参加し，**Tailscale SSH** でホストに接続します．そのため長期間有効な SSH 鍵は GitHub に置いていません．SSH の認可は [`tailscale/policy.hujson`](../tailscale/policy.hujson) の `ssh` ルールで行います．
+CI / CD はホストへの経路を持ちません．以前は runner が Tailnet に参加し，Tailscale SSH でホストに入って適用していましたが，次の理由でやめました．
+
+- GitHub の Secret が漏れると，サーバーに SSH できる経路が残る
+- Tailnet Lock の下では，runner の参加に署名済みの auth key が必要になり，最長 90 日ごとの更新が発生する
+
+そのため，`main` に merge しただけでは反映されません．merge した後に，手元で `--check --diff` で差分を確認してから適用します．Renovate が `restic_version` を更新する PR は自動 merge せず，本文に適用手順を記載します．
 
 ### GitHub Secrets
 
 | Secret | 用途 |
 |---|---|
-| `ANSIBLE_VAULT_PASSWORD` | vault の復号 |
-| `TS_OAUTH_CLIENT_ID` | Tailscale OAuth クライアント ID (`auth_keys` スコープ，`tag:ci` を所有) |
-| `TS_OAUTH_SECRET` | 上記クライアントのシークレット |
+| `ANSIBLE_VAULT_PASSWORD` | vault の復号 (`--syntax-check` でも `.vault_pass` が必要なため) |
 
-ホスト側では Tailscale SSH を有効にしておく必要があります (`sudo tailscale up --ssh`)．
+ホスト側では Tailscale SSH を有効にしておく必要があります (`sudo tailscale up --ssh`)．手元の端末から接続するためです．

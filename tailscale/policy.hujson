@@ -4,8 +4,6 @@
         "tag:k3s-server":    ["autogroup:owner"],
         "tag:k3s-agent":     ["autogroup:owner"],
         "tag:observability": ["autogroup:owner"],
-        // Only the CI OAuth client may mint this tag.
-        "tag:ci":            [],
     },
 
     "grants": [
@@ -13,11 +11,6 @@
             "src": ["m1sk9@github"],
             "dst": ["tag:k3s"],
             "ip":  ["*"],
-        },
-        {
-            "src": ["tag:ci"],
-            "dst": ["tag:k3s"],
-            "ip":  ["tcp:22"],
         },
         {
             "src": ["m1sk9@github"],
@@ -45,7 +38,7 @@
     "ssh": [
         {
             "action": "accept",
-            "src":    ["m1sk9@github", "tag:ci"],
+            "src":    ["m1sk9@github"],
             "dst":    ["tag:k3s"],
             "users":  ["m1sk9"],
         },
@@ -55,11 +48,6 @@
         {
             "src":    "m1sk9@github",
             "accept": ["tag:k3s:22", "tag:k3s:6443"],
-        },
-        {
-            "src":    "tag:ci",
-            "accept": ["tag:k3s:22"],
-            "deny":   ["tag:k3s:6443", "tag:k3s:10250", "tag:k3s:9100"],
         },
         {
             "src":    "tag:k3s",
@@ -74,12 +62,6 @@
     "sshTests": [
         {
             "src":    "m1sk9@github",
-            "dst":    ["tag:k3s"],
-            "accept": ["m1sk9"],
-            "deny":   ["root"],
-        },
-        {
-            "src":    "tag:ci",
             "dst":    ["tag:k3s"],
             "accept": ["m1sk9"],
             "deny":   ["root"],
