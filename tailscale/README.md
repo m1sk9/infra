@@ -12,9 +12,13 @@ Tailnet のポリシーファイル (ACL) を [`policy.hujson`](./policy.hujson)
 - k3s のノード間通信 (apiserver，kubelet，flannel)
 - Prometheus から各ノードの node-exporter へのスクレイプ
 
-あわせて，owner の端末にだけ NextDNS を割り当てています．サーバーには割り当てません．k3s の CoreDNS とぶつからないよう，名前解決をホスト本来の経路のままにするためです．
-
 Exit Node の自動承認 (`autoApprovers`) は使っていません．Exit Node を広告したら，管理画面で手作業で承認します．
+
+### DNS
+
+NextDNS は管理画面の DNS ページで Global nameserver として設定しており，Tailscale の DNS を受け入れる端末すべてに効きます．ポリシーの `nodeAttrs` で端末ごとにプロファイルを変えることはできますが，端末を NextDNS から外すことはできません．
+
+そのためサーバー (s1 / s2) は `--accept-dns=false` で登録し，Tailscale の DNS を使いません．k3s の CoreDNS が参照するホストの DNS に，NextDNS が入り込まないようにするためです．代わりに MagicDNS 名も引けなくなるので，s1 が join に使う `dev-m1sk9-s2` は，`k3s_agent` role が `/etc/hosts` に書き込みます．
 
 ### ポリシーで制御できないもの
 
@@ -38,7 +42,7 @@ Exit Node の自動承認 (`autoApprovers`) は使っていません．Exit Node
 マシンにタグを付けるには，そのマシンで次を実行します (例は s2)．
 
 ```fish
-sudo tailscale up --ssh --advertise-exit-node --advertise-tags=tag:k3s,tag:k3s-server,tag:observability
+sudo tailscale up --ssh --accept-dns=false --advertise-exit-node --advertise-tags=tag:k3s,tag:k3s-server,tag:observability
 ```
 
 ## 適用

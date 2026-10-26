@@ -42,4 +42,5 @@ k3s の agent ノードです．Discord bot などのアプリケーションワ
 - HDD のため I/O 性能が低いです．PVC は k3s `local-path` でこのノードのディスクに固定されるので，I/O の重い workload は載せないでください．
 - メモリが 4 GB と小さいため，新しい workload を載せる際は `resources.requests` / `limits` を必ず設定してください ([DEPLOYMENT.md](../DEPLOYMENT.md) 参照)．
 - 通信は有線 NIC で行い，無線 NIC は使っていません．LAN の IP アドレスと Tailscale IP は変わりうるため，この文書には記載していません．参照は MagicDNS 名 (`dev-m1sk9-s1`) で行ってください．
+- Tailscale は `--accept-dns=false` で登録しており，MagicDNS 名を引けません．join 先の `dev-m1sk9-s2` は `k3s_agent` role が `/etc/hosts` に書き込みます．s2 の Tailscale IP が変わったら `k8s-agent.yml` を再適用してください ([tailscale/README.md](../../tailscale/README.md#dns) 参照)．
 - 2026-10-13 に Arch Linux から Debian 13 へ再インストールしました (Issue #475)．

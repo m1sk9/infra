@@ -40,5 +40,6 @@ k3s の server ノード (control-plane) です．ArgoCD・Sealed Secrets と，
 
 - 有線接続は USB Ethernet アダプタ経由です．アダプタの抜けや相性で NIC 名が変わると接続が切れるため，注意してください．
 - k3s の `node-ip` は Tailscale IP と一致させる必要があります．Tailscale IP が変わったら `tailscale ip -4` と `/etc/rancher/k3s/config.yaml` の `node-ip` を突き合わせてください．LAN の IP アドレスと Tailscale IP は変わりうるため，この文書には記載していません．
+- Tailscale は `--accept-dns=false` で登録しており，NextDNS を含む Tailscale の DNS を使いません ([tailscale/README.md](../../tailscale/README.md#dns) 参照)．
 - `server:` は agent 側の設定です．server の `config.yaml` に書くと自分自身へ join しようとして再起動ループになります．
 - k3s の datastore (SQLite) と Sealed Secrets の鍵はホストにしか存在しないため，restic でバックアップしています ([ansible/README.md](../../ansible/README.md) 参照)．
