@@ -12,7 +12,7 @@ Tailnet のポリシーファイル (ACL) を [`policy.hujson`](./policy.hujson)
 - k3s のノード間通信 (apiserver，kubelet，flannel)
 - Prometheus から各ノードの node-exporter へのスクレイプ
 
-あわせて NextDNS の割り当てを行っています．
+あわせて，owner の端末にだけ NextDNS を割り当てています．サーバーには割り当てません．k3s の CoreDNS とぶつからないよう，名前解決をホスト本来の経路のままにするためです．
 
 Exit Node の自動承認 (`autoApprovers`) は使っていません．Exit Node を広告したら，管理画面で手作業で承認します．
 

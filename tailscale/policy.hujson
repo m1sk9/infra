@@ -87,8 +87,9 @@
     ],
 
     "nodeAttrs": [
+        // Servers are left out so that k3s CoreDNS keeps resolving through the host's own upstream.
         {
-            "target": ["m1sk9@github", "tag:k3s"],
+            "target": ["m1sk9@github"],
             "attr":   ["nextdns:${NEXTDNS_PROFILE_ID}"],
         },
         {
