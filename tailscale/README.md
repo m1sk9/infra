@@ -33,32 +33,43 @@ sudo tailscale up --advertise-tags=tag:k3s,tag:k3s-server,tag:observability
 
 [`tailscale/gitops-acl-action`](https://tailscale.com/docs/integrations/github/gitops) で同期します．
 
-- **CI** (pull request): `action: test` でポリシーを検証します．Tailnet には反映しません．
-- **CD** (`main` への push): `action: apply` で検証し，成功すれば Tailnet に反映します．
+- **CI** (pull request): `action: test` でポリシーを検証します．Tailnet には反映しません．読み取り専用のクライアントを使います．
+- **CD** (`main` への push): `action: apply` で検証し，成功すれば Tailnet に反映します．書き込み権限を持つクライアントは，`main` からしか使えない GitHub Environment `tailscale-acl` にだけ置いています．
+
+ポリシーの `tests` / `sshTests` には，崩してはいけないアクセスの条件 (共有ユーザーがサーバーに届かない，apiserver は server 宛てだけ，など) を書いています．どちらの段階でも Tailscale が評価し，1 つでも外れると反映されません．**grants や ssh を変えるときは，対応するテストも更新します．**
 
 NextDNS のプロファイル ID は平文でコミットしていません．`${NEXTDNS_PROFILE_ID}` をプレースホルダとして書いておき，Action に渡す前に `envsubst` でシークレットの値に置き換えます．置き換え後のファイル (`policy.rendered.hujson`) は git-ignore しています．
 
 ## GitHub Secrets
 
-| Secret | 用途 |
-|---|---|
-| `TS_OAUTH_CLIENT_ID_ACL` | OAuth クライアント ID (スコープ: `Policy File` の Read + Write) |
-| `TS_OAUTH_SECRET_ACL` | 上記クライアントのシークレット |
-| `TS_TAILNET` | Tailnet 名 (`tailscale status --json` の `CurrentTailnet.Name`) |
-| `NEXTDNS_PROFILE_ID` | ポリシーの `nodeAttrs` で使う NextDNS プロファイル ID |
+| Secret | 置き場所 | 用途 |
+|---|---|---|
+| `TS_OAUTH_CLIENT_ID_ACL_READ` | Repository | CI 用の OAuth クライアント ID (スコープ: `policy_file:read`) |
+| `TS_OAUTH_SECRET_ACL_READ` | Repository | 上記クライアントのシークレット |
+| `TS_OAUTH_CLIENT_ID_ACL` | Environment `tailscale-acl` | CD 用の OAuth クライアント ID (スコープ: `policy_file`) |
+| `TS_OAUTH_SECRET_ACL` | Environment `tailscale-acl` | 上記クライアントのシークレット |
+| `TS_TAILNET` | Repository | Tailnet 名 (`tailscale status --json` の `CurrentTailnet.Name`) |
+| `NEXTDNS_PROFILE_ID` | Repository | ポリシーの `nodeAttrs` で使う NextDNS プロファイル ID |
+
+Pull request の workflow は，同じリポジトリのブランチ (Renovate を含む) から実行されると Repository の Secret を読めます．そのため書き込み権限のクライアントは Repository には置きません．
 
 Ansible の CI/CD が使う `TS_OAUTH_CLIENT_ID` / `TS_OAUTH_SECRET` とは別のクライアントです．あちらは `auth_keys` スコープのみで，ポリシーファイルを読み書きできません．
 
 ## 初回セットアップ
 
-1. Tailscale の管理画面の **Settings → OAuth clients** で，**Policy File** スコープ (Read と Write の両方) を持つクライアントを作成します．
-2. 上記の Secret を登録します．シェル履歴に残さないよう，値は対話プロンプトで入力します．
+1. Tailscale の管理画面の **Settings → Trust credentials** で OAuth クライアントを 2 つ作成します．
+   - CI 用: `policy_file:read` (依存する `devices:core:read` と `devices:posture_attributes:read` も付与)
+   - CD 用: `policy_file` (同上)
+2. GitHub の Environment `tailscale-acl` を，デプロイ元ブランチを `main` に限定して作成します．
+3. Secret を登録します．シェル履歴に残さないよう，値は対話プロンプトで入力します．
 
    ```fish
-   gh secret set TS_OAUTH_CLIENT_ID_ACL --repo m1sk9/infra
-   gh secret set TS_OAUTH_SECRET_ACL --repo m1sk9/infra
+   gh secret set TS_OAUTH_CLIENT_ID_ACL_READ --repo m1sk9/infra
+   gh secret set TS_OAUTH_SECRET_ACL_READ --repo m1sk9/infra
+   gh secret set TS_OAUTH_CLIENT_ID_ACL --repo m1sk9/infra --env tailscale-acl
+   gh secret set TS_OAUTH_SECRET_ACL --repo m1sk9/infra --env tailscale-acl
    gh secret set TS_TAILNET --repo m1sk9/infra
    gh secret set NEXTDNS_PROFILE_ID --repo m1sk9/infra
    ```
 
-3. `policy.hujson` を変更する PR を作成し，`tailscale-acl-test` ジョブが通ることを確認してから merge します．
+4. `policy.hujson` を変更する PR を作成し，`tailscale-acl-test` ジョブが通ることを確認してから merge します．

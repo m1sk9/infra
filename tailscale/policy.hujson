@@ -80,6 +80,62 @@
         },
     ],
 
+    // ===== Tests =====
+    // ポリシーの変更時に Tailscale が評価し，1 つでも外れたら保存を拒否する
+    // grants / ssh を書き換えても崩してはいけない不変条件をここに置く
+    "tests": [
+        // CI はホストに SSH できる
+        {
+            "src":    "tag:ci",
+            "accept": ["tag:k3s:22"],
+        },
+        // 共有ユーザーは Exit Node 以外に何も届かない
+        {
+            "src":  "kimchi5005@github",
+            "deny": ["tag:k3s:22", "tag:k3s:6443", "tag:k3s:10250", "tag:k3s:9100"],
+        },
+        // apiserver は server 宛てだけ開く
+        {
+            "src":    "tag:k3s",
+            "accept": ["tag:k3s-server:6443"],
+            "deny":   ["tag:k3s-agent:6443"],
+        },
+        // node-exporter をスクレイプできるのは observability だけ
+        {
+            "src":    "tag:observability",
+            "accept": ["tag:k3s:9100"],
+        },
+        {
+            "src":  "tag:k3s",
+            "deny": ["tag:k3s:9100", "tag:k3s:22"],
+        },
+    ],
+    "sshTests": [
+        {
+            "src":    "m1sk9@github",
+            "dst":    ["tag:k3s"],
+            "accept": ["m1sk9"],
+            "deny":   ["root"],
+        },
+        {
+            "src":    "tag:ci",
+            "dst":    ["tag:k3s"],
+            "accept": ["m1sk9"],
+            "deny":   ["root", "nanai"],
+        },
+        {
+            "src":    "nanai10a@github",
+            "dst":    ["tag:k3s"],
+            "accept": ["nanai"],
+            "deny":   ["root", "m1sk9"],
+        },
+        {
+            "src":  "kimchi5005@github",
+            "dst":  ["tag:k3s"],
+            "deny": ["root", "m1sk9", "nanai"],
+        },
+    ],
+
     // ===== Node Attributes (Funnel / NextDNS) =====
     "nodeAttrs": [
         {
