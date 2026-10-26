@@ -54,7 +54,7 @@
     "tests": [
         {
             "src":    "m1sk9@github",
-            "accept": ["tag:k3s:22", "tag:k3s-server:6443"],
+            "accept": ["tag:k3s:22", "tag:k3s:6443"],
         },
         {
             "src":    "tag:ci",
