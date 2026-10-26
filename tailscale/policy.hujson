@@ -13,7 +13,7 @@
 
     // ===== Auto Approvers Declaration =====
     // OS を入れ直すと Exit Node の承認も消えるため，広告し直すだけで復帰できるようにしている
-    // k3s server には負荷を載せたくないので tag:exit-node を付けない（広告しても手動承認が要る）
+    // 用途は学外ネットワークからの経由と開発程度で流量が小さいため，k3s server にも載せてよい
     "autoApprovers": {
         "exitNode": ["tag:exit-node"],
     },
@@ -33,8 +33,8 @@
             "ip":  ["*"],
         },
         // kimchi5005 (shared user) - Exit Node 利用のみ
-        // 前提: tag:exit-node のマシンを machine share し "Allow use as an exit node" を有効化
-        // 経由できる Exit Node は共有したマシンに限られる
+        // 前提: s1 を machine share し "Allow use as an exit node" を有効化
+        // 経由できる Exit Node は共有したマシンに限られるため，s2 は共有しない（m1sk9 専用）
         {
             "src": ["kimchi5005@github"],
             "dst": ["autogroup:internet"],

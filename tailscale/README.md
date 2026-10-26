@@ -26,7 +26,7 @@ Tailnet のポリシーファイル (ACL) を [`policy.hujson`](./policy.hujson)
 マシンにタグを付けるには，そのマシンで次を実行します (例は s2)．
 
 ```fish
-sudo tailscale up --advertise-tags=tag:k3s,tag:k3s-server,tag:observability
+sudo tailscale up --ssh --advertise-exit-node --advertise-tags=tag:k3s,tag:k3s-server,tag:observability,tag:exit-node
 ```
 
 ## 適用
