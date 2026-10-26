@@ -27,6 +27,7 @@ k3s の agent ノードです．Discord bot などのアプリケーションワ
 | ホスト名 (MagicDNS) | `dev-m1sk9-s1` |
 | Ansible inventory | `s1` (`k3s_agents`) |
 | node label | `m1sk9.dev/pool=apps` |
+| Tailscale タグ | `tag:k3s`，`tag:k3s-agent`，`tag:exit-node` |
 
 ## ディスク構成
 

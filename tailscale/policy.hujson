@@ -1,24 +1,29 @@
 {
     // ===== Tag Declaration =====
+    // タグはマシンではなく役割に付ける．1 台が複数の役割を持つときはタグを重ねる
+    // (役割と担当マシンの対応は docs/machine/ を参照)
     "tagOwners": {
-        "tag:server-s1": ["autogroup:owner"],
-        "tag:server-s2": ["autogroup:owner"],
-        "tag:ci":        [],
+        "tag:k3s":           ["autogroup:owner"], // k3s ノード共通
+        "tag:k3s-server":    ["autogroup:owner"], // control-plane
+        "tag:k3s-agent":     ["autogroup:owner"],
+        "tag:observability": ["autogroup:owner"], // Prometheus を載せるノード
+        "tag:exit-node":     ["autogroup:owner"],
+        "tag:ci":            [],
     },
 
     // ===== Auto Approvers Declaration =====
-    // OS を入れ直すと Exit Node の承認も消えるため，s1 が広告し直すだけで復帰できるようにしている
-    // s2 は k3s server で負荷を載せたくないので含めない（広告しても手動承認が要る）
+    // OS を入れ直すと Exit Node の承認も消えるため，広告し直すだけで復帰できるようにしている
+    // k3s server には負荷を載せたくないので tag:exit-node を付けない（広告しても手動承認が要る）
     "autoApprovers": {
-        "exitNode": ["tag:server-s1"],
+        "exitNode": ["tag:exit-node"],
     },
 
     // ===== Grants Declaration =====
     "grants": [
-        // server-s1 / server-s2 へのフルアクセス - owner / CI / nanai10a
+        // k3s ノードへのフルアクセス - owner / CI / nanai10a
         {
             "src": ["autogroup:owner", "tag:ci", "nanai10a@github"],
-            "dst": ["tag:server-s1", "tag:server-s2"],
+            "dst": ["tag:k3s"],
             "ip":  ["*"],
         },
         // member - 任意の Exit Node 経由でインターネット
@@ -28,28 +33,32 @@
             "ip":  ["*"],
         },
         // kimchi5005 (shared user) - Exit Node 利用のみ
-        // 前提: server-s1 を machine share し "Allow use as an exit node" を有効化
-        // 共有しているのは server-s1 だけなので，経由できる Exit Node は実質 server-s1 のみ
+        // 前提: tag:exit-node のマシンを machine share し "Allow use as an exit node" を有効化
+        // 経由できる Exit Node は共有したマシンに限られる
         {
             "src": ["kimchi5005@github"],
             "dst": ["autogroup:internet"],
             "ip":  ["*"],
         },
-        // k3s ノード間通信 (s1 agent <-> s2 server) - 必要なポートのみ
-        // 6443/tcp: apiserver (agent -> server の join / 通信)
-        // 10250/tcp: kubelet (server -> agent の logs / exec)
-        // 8472/udp: flannel vxlan (Pod 間通信)
-        // 双方向の新規接続が発生するため，src / dst を両方向に許可している
+        // k3s ノード間通信 - 必要なポートのみ
+        // 6443/tcp: apiserver．接続は常に server 宛てなので dst を k3s-server に絞る
         {
-            "src": ["tag:server-s1", "tag:server-s2"],
-            "dst": ["tag:server-s1", "tag:server-s2"],
-            "ip":  ["tcp:6443", "tcp:10250", "udp:8472"],
+            "src": ["tag:k3s"],
+            "dst": ["tag:k3s-server"],
+            "ip":  ["tcp:6443"],
         },
-        // Prometheus (s2) が s1 の node-exporter をスクレイプする
-        // 9100/tcp: node-exporter (hostNetwork)．s2 -> s1 の一方向のみで，逆向きは不要
+        // 10250/tcp: kubelet (logs / exec，メトリクスの取得)
+        // 8472/udp: flannel vxlan (Pod 間通信)
+        // どちらもノード間で双方向の新規接続が発生するため，向きを絞れない
         {
-            "src": ["tag:server-s2"],
-            "dst": ["tag:server-s1"],
+            "src": ["tag:k3s"],
+            "dst": ["tag:k3s"],
+            "ip":  ["tcp:10250", "udp:8472"],
+        },
+        // Prometheus が各ノードの node-exporter (9100/tcp，hostNetwork) をスクレイプする
+        {
+            "src": ["tag:observability"],
+            "dst": ["tag:k3s"],
             "ip":  ["tcp:9100"],
         },
     ],
@@ -60,13 +69,13 @@
         {
             "action": "accept",
             "src":    ["autogroup:owner", "tag:ci"],
-            "dst":    ["tag:server-s1", "tag:server-s2"],
+            "dst":    ["tag:k3s"],
             "users":  ["m1sk9"],
         },
         {
             "action": "accept",
             "src":    ["nanai10a@github"],
-            "dst":    ["tag:server-s1", "tag:server-s2"],
+            "dst":    ["tag:k3s"],
             "users":  ["nanai"],
         },
     ],
@@ -74,7 +83,7 @@
     // ===== Node Attributes (Funnel / NextDNS) =====
     "nodeAttrs": [
         {
-            "target": ["m1sk9@github", "tag:server-s1", "tag:server-s2"],
+            "target": ["m1sk9@github", "tag:k3s"],
             "attr":   ["nextdns:${NEXTDNS_PROFILE_ID}"],
         },
         {

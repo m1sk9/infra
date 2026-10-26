@@ -6,9 +6,28 @@ Tailnet のポリシーファイル (ACL) を [`policy.hujson`](./policy.hujson)
 
 - サーバーへのアクセスと Tailscale SSH を許可するユーザー・タグ (CI の `tag:ci` を含む)
 - k3s のノード間通信 (apiserver，kubelet，flannel)
-- Prometheus (s2) から s1 の node-exporter へのスクレイプ
+- Prometheus から各ノードの node-exporter へのスクレイプ
 - NextDNS の割り当て
-- s1 の Exit Node の自動承認 (`autoApprovers`)
+- Exit Node の自動承認 (`autoApprovers`)
+
+## タグ
+
+タグはマシンではなく役割に付けます．1 台が複数の役割を持つ場合はタグを重ねます．各マシンに付けているタグは [`docs/machine/`](../docs/machine) に記載しています．
+
+| タグ | 役割 | 許可される主な通信 |
+|---|---|---|
+| `tag:k3s` | k3s ノード共通 | 管理アクセスと Tailscale SSH の宛先，kubelet (10250/tcp) と flannel (8472/udp) |
+| `tag:k3s-server` | k3s の control-plane | apiserver (6443/tcp) の宛先 |
+| `tag:k3s-agent` | k3s の agent | (現状は固有の許可なし) |
+| `tag:observability` | Prometheus を載せるノード | node-exporter (9100/tcp) のスクレイプ元 |
+| `tag:exit-node` | Exit Node | Exit Node の自動承認 |
+| `tag:ci` | GitHub Actions の runner (エフェメラル) | 管理アクセスと Tailscale SSH の送信元 |
+
+マシンにタグを付けるには，そのマシンで次を実行します (例は s2)．
+
+```fish
+sudo tailscale up --advertise-tags=tag:k3s,tag:k3s-server,tag:observability
+```
 
 ## 適用
 
