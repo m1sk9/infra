@@ -1,80 +1,94 @@
 {
-    // ===== Tag Declaration =====
     "tagOwners": {
-        "tag:server-s1": ["autogroup:owner"],
-        "tag:server-s2": ["autogroup:owner"],
-        "tag:ci":        [],
+        "tag:k3s":           ["autogroup:owner"],
+        "tag:k3s-server":    ["autogroup:owner"],
+        "tag:k3s-agent":     ["autogroup:owner"],
+        "tag:observability": ["autogroup:owner"],
+        // Only the CI OAuth client may mint this tag.
+        "tag:ci":            [],
     },
 
-    // ===== Auto Approvers Declaration =====
-    // OS を入れ直すと Exit Node の承認も消えるため，s1 が広告し直すだけで復帰できるようにしている
-    // s2 は k3s server で負荷を載せたくないので含めない（広告しても手動承認が要る）
-    "autoApprovers": {
-        "exitNode": ["tag:server-s1"],
-    },
-
-    // ===== Grants Declaration =====
     "grants": [
-        // server-s1 / server-s2 へのフルアクセス - owner / CI / nanai10a
         {
-            "src": ["autogroup:owner", "tag:ci", "nanai10a@github"],
-            "dst": ["tag:server-s1", "tag:server-s2"],
+            "src": ["m1sk9@github"],
+            "dst": ["tag:k3s"],
             "ip":  ["*"],
         },
-        // member - 任意の Exit Node 経由でインターネット
         {
-            "src": ["autogroup:member"],
+            "src": ["tag:ci"],
+            "dst": ["tag:k3s"],
+            "ip":  ["tcp:22"],
+        },
+        {
+            "src": ["m1sk9@github"],
             "dst": ["autogroup:internet"],
             "ip":  ["*"],
         },
-        // kimchi5005 (shared user) - Exit Node 利用のみ
-        // 前提: server-s1 を machine share し "Allow use as an exit node" を有効化
-        // 共有しているのは server-s1 だけなので，経由できる Exit Node は実質 server-s1 のみ
         {
-            "src": ["kimchi5005@github"],
-            "dst": ["autogroup:internet"],
-            "ip":  ["*"],
+            "src": ["tag:k3s"],
+            "dst": ["tag:k3s-server"],
+            "ip":  ["tcp:6443"],
         },
-        // k3s ノード間通信 (s1 agent <-> s2 server) - 必要なポートのみ
-        // 6443/tcp: apiserver (agent -> server の join / 通信)
-        // 10250/tcp: kubelet (server -> agent の logs / exec)
-        // 8472/udp: flannel vxlan (Pod 間通信)
-        // 双方向の新規接続が発生するため，src / dst を両方向に許可している
+        // kubelet and flannel open connections in both directions, so neither can be narrowed to one way.
         {
-            "src": ["tag:server-s1", "tag:server-s2"],
-            "dst": ["tag:server-s1", "tag:server-s2"],
-            "ip":  ["tcp:6443", "tcp:10250", "udp:8472"],
+            "src": ["tag:k3s"],
+            "dst": ["tag:k3s"],
+            "ip":  ["tcp:10250", "udp:8472"],
         },
-        // Prometheus (s2) が s1 の node-exporter をスクレイプする
-        // 9100/tcp: node-exporter (hostNetwork)．s2 -> s1 の一方向のみで，逆向きは不要
         {
-            "src": ["tag:server-s2"],
-            "dst": ["tag:server-s1"],
+            "src": ["tag:observability"],
+            "dst": ["tag:k3s"],
             "ip":  ["tcp:9100"],
         },
     ],
 
-    // ===== Tailscale SSH Declaration =====
-    // kimchi5005 は意図的に含めない（足さなければ SSH は塞がれたまま）
     "ssh": [
         {
             "action": "accept",
-            "src":    ["autogroup:owner", "tag:ci"],
-            "dst":    ["tag:server-s1", "tag:server-s2"],
+            "src":    ["m1sk9@github", "tag:ci"],
+            "dst":    ["tag:k3s"],
             "users":  ["m1sk9"],
-        },
-        {
-            "action": "accept",
-            "src":    ["nanai10a@github"],
-            "dst":    ["tag:server-s1", "tag:server-s2"],
-            "users":  ["nanai"],
         },
     ],
 
-    // ===== Node Attributes (Funnel / NextDNS) =====
+    "tests": [
+        {
+            "src":    "m1sk9@github",
+            "accept": ["tag:k3s:22", "tag:k3s:6443"],
+        },
+        {
+            "src":    "tag:ci",
+            "accept": ["tag:k3s:22"],
+            "deny":   ["tag:k3s:6443", "tag:k3s:10250", "tag:k3s:9100"],
+        },
+        {
+            "src":    "tag:k3s",
+            "accept": ["tag:k3s-server:6443", "tag:k3s:10250"],
+            "deny":   ["tag:k3s-agent:6443", "tag:k3s:9100", "tag:k3s:22"],
+        },
+        {
+            "src":    "tag:observability",
+            "accept": ["tag:k3s:9100"],
+        },
+    ],
+    "sshTests": [
+        {
+            "src":    "m1sk9@github",
+            "dst":    ["tag:k3s"],
+            "accept": ["m1sk9"],
+            "deny":   ["root"],
+        },
+        {
+            "src":    "tag:ci",
+            "dst":    ["tag:k3s"],
+            "accept": ["m1sk9"],
+            "deny":   ["root"],
+        },
+    ],
+
     "nodeAttrs": [
         {
-            "target": ["m1sk9@github", "tag:server-s1", "tag:server-s2"],
+            "target": ["m1sk9@github"],
             "attr":   ["nextdns:${NEXTDNS_PROFILE_ID}"],
         },
         {

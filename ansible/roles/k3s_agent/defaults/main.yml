@@ -5,6 +5,7 @@ k3s_version: "v1.36.5+k3s1"
 k3s_arch: amd64
 k3s_url: "https://github.com/k3s-io/k3s/releases/download/{{ k3s_version | replace('+', '%2B') }}"
 
-k3s_server_url: "https://dev-m1sk9-s2:6443"
+k3s_server_host: dev-m1sk9-s2
+k3s_server_url: "https://{{ k3s_server_host }}:6443"
 k3s_token: "{{ vault_k3s_token }}"
 k3s_agent_node_labels: []

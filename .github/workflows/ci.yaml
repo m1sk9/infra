@@ -17,10 +17,10 @@ jobs:
     env:
       TF_TOKEN_app_terraform_io: ${{ secrets.TF_TOKEN_APP_TERRAFORM_IO }}
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Setup Development Environment
-        uses: jdx/mise-action@v5
+        uses: jdx/mise-action@82a612c5ab8bcda7cc5db6b7e81a8e7584c3dc6e # v5.2.3
 
       - name: Terraform Format
         run: terraform fmt -check -recursive
@@ -45,10 +45,10 @@ jobs:
     env:
       ANSIBLE_HOST_KEY_CHECKING: "False"
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Setup Development Environment
-        uses: jdx/mise-action@v5
+        uses: jdx/mise-action@82a612c5ab8bcda7cc5db6b7e81a8e7584c3dc6e # v5.2.3
 
       - name: Write vault password
         run: echo "${{ secrets.ANSIBLE_VAULT_PASSWORD }}" > .vault_pass
@@ -62,7 +62,7 @@ jobs:
           ansible-playbook playbooks/k8s.yml --syntax-check
 
       - name: Connect to Tailscale
-        uses: tailscale/github-action@v4
+        uses: tailscale/github-action@99a8333667fff04fdd6cffb46dfd409f8329a7bf # v4.3.0
         with:
           oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
           oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
@@ -81,7 +81,7 @@ jobs:
   tailscale-acl-test:
     runs-on: ubuntu-26.04
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Render policy file
         run: envsubst '${NEXTDNS_PROFILE_ID}' < tailscale/policy.hujson > tailscale/policy.rendered.hujson
@@ -89,10 +89,12 @@ jobs:
           NEXTDNS_PROFILE_ID: ${{ secrets.NEXTDNS_PROFILE_ID }}
 
       - name: Test ACL
-        uses: tailscale/gitops-acl-action@v1
+        uses: tailscale/gitops-acl-action@5a4a17f5708e9bf96f4ee915a95e9f83c2eebe1a # v1.5.2
         with:
-          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID_ACL }}
-          oauth-secret: ${{ secrets.TS_OAUTH_SECRET_ACL }}
+          # A read-only client (policy_file:read): PR workflows run for every same-repo
+          # branch, including Renovate's, so they must not hold the write credential.
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID_ACL_READ }}
+          oauth-secret: ${{ secrets.TS_OAUTH_SECRET_ACL_READ }}
           tailnet: ${{ secrets.TS_TAILNET }}
           action: test
           policy-file: ./tailscale/policy.rendered.hujson
@@ -103,10 +105,10 @@ jobs:
       run:
         working-directory: ./k8s/apps
     steps:
-      - uses: actions/checkout@v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Setup Development Environment
-        uses: jdx/mise-action@v5
+        uses: jdx/mise-action@82a612c5ab8bcda7cc5db6b7e81a8e7584c3dc6e # v5.2.3
 
       - name: Helm Dependency Update
         run: |

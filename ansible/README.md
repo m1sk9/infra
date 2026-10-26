@@ -183,6 +183,8 @@ Better Stack の Free プランでは，ステータスページの **Advanced s
 | Replace top navigation links | m1sk9.dev へのリンク |
 | **Status page access → Published** | **有効 (無効だとページが公開されない) ** |
 
+また，Personalization (design，theme，layout) は API から書き込めますが，PR を経ずに調整できるよう dashboard で設定しています．Terraform はこれらの値を変更しません．
+
 ## k3s
 
 `k8s.yml` と `k8s-agent.yml` は CD に含めず，手動で適用します．

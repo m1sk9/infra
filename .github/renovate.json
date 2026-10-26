@@ -1,7 +1,15 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "github>m1sk9/renovate-config"
+    "github>m1sk9/renovate-config",
+    "helpers:pinGitHubActionDigests"
+  ],
+  "packageRules": [
+    {
+      "description": "Actions run with the deploy credentials, so an upstream release must not reach main without review",
+      "matchManagers": ["github-actions"],
+      "automerge": false
+    }
   ],
   "kubernetes": {
     "managerFilePatterns": [

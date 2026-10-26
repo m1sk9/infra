@@ -32,6 +32,24 @@
   ansible.builtin.set_fact:
     k3s_agent_node_ip: "{{ k3s_agent_tailscale_ip.stdout_lines | first }}"
 
+# The hosts run with --accept-dns=false so that the tailnet's NextDNS stays out of
+# the resolver CoreDNS forwards to, which also takes MagicDNS away. `tailscale ip`
+# looks the peer up in the netmap rather than DNS, so it still works.
+- name: "k3s agent | Read the server's Tailscale IPv4"
+  ansible.builtin.command: "tailscale ip -4 {{ k3s_server_host }}"
+  register: k3s_agent_server_ip
+  changed_when: false
+  check_mode: false
+
+- name: "k3s agent | Pin the server hostname"
+  ansible.builtin.lineinfile:
+    path: /etc/hosts
+    regexp: '\s{{ k3s_server_host }}$'
+    line: "{{ k3s_agent_server_ip.stdout_lines | first }} {{ k3s_server_host }}"
+    mode: "0644"
+    owner: root
+    group: root
+
 - name: "k3s agent | Create config directory"
   ansible.builtin.file:
     path: /etc/rancher/k3s
