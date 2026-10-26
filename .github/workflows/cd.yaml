@@ -36,40 +36,6 @@ jobs:
       - name: Terraform Apply
         run: terraform apply -input=false -no-color -auto-approve -lock-timeout=10m
 
-  ansible-deploy:
-    runs-on: ubuntu-26.04
-    defaults:
-      run:
-        working-directory: ./ansible
-    env:
-      ANSIBLE_HOST_KEY_CHECKING: "False"
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-
-      - name: Setup Development Environment
-        uses: jdx/mise-action@82a612c5ab8bcda7cc5db6b7e81a8e7584c3dc6e # v5.2.3
-
-      - name: Connect to Tailscale
-        uses: tailscale/github-action@99a8333667fff04fdd6cffb46dfd409f8329a7bf # v4.3.0
-        with:
-          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
-          oauth-secret: ${{ secrets.TS_OAUTH_SECRET }}
-          tags: tag:ci
-          use-cache: "true"
-
-      - name: Write vault password
-        run: echo "${{ secrets.ANSIBLE_VAULT_PASSWORD }}" > .vault_pass
-
-      - name: Deploy backup
-        run: ansible-playbook playbooks/backup.yml
-
-      - name: Deploy monitoring
-        run: ansible-playbook playbooks/monitoring.yml
-
-      - name: Cleanup
-        if: always()
-        run: rm -f .vault_pass
-
   tailscale-acl-apply:
     runs-on: ubuntu-26.04
     # The write credential lives only in this environment, which admits main alone,

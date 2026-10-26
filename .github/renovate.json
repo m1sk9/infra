@@ -9,6 +9,14 @@
       "description": "Actions run with the deploy credentials, so an upstream release must not reach main without review",
       "matchManagers": ["github-actions"],
       "automerge": false
+    },
+    {
+      "description": "Ansible is not applied by CD, so a restic bump must be merged and applied by hand",
+      "matchDepNames": ["restic/restic"],
+      "automerge": false,
+      "prBodyNotes": [
+        "> [!IMPORTANT]\n> Ansible is not applied by CD. After merging, apply this from a machine on the tailnet:\n>\n> ```sh\n> cd ansible && ansible-playbook playbooks/backup.yml\n> ```"
+      ]
     }
   ],
   "kubernetes": {

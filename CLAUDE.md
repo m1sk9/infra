@@ -11,11 +11,11 @@ IaC for m1sk9's self-hosted infrastructure. Four independent layers live side by
 | Directory | What it manages | How it is applied |
 |---|---|---|
 | `terraform/` | Cloudflare (DNS, Tunnel, Access, Workers, R2, rulesets, zone settings) and Better Stack (heartbeats, HTTP monitors, status page) | HCP Terraform (`m1sk9-terraform-org` / `infra`), CD on merge |
-| `ansible/` | Host-level config on s1 / s2: restic backups, heartbeat timers, k3s bootstrap | CD on merge (`backup.yml`, `monitoring.yml` only) |
+| `ansible/` | Host-level config on s1 / s2: restic backups, heartbeat timers, k3s bootstrap | By hand from the owner's machine on the tailnet; CI only runs `--syntax-check` |
 | `k8s/` | Workloads on the k3s cluster (s2 = server, s1 = agent) | ArgoCD syncs `k8s/apps/*` from `main` |
 | `tailscale/policy.hujson` | Tailnet ACL | `gitops-acl-action` (test on PR, apply on merge) |
 
-**Merging to `main` is a production deploy for every layer at once** — CD runs `terraform apply`, the Ansible playbooks, and the ACL apply, and ArgoCD picks up `k8s/` changes. There is no `paths` gating: every PR runs every CI job.
+**Merging to `main` is a production deploy for every layer except Ansible** — CD runs `terraform apply` and the ACL apply, and ArgoCD picks up `k8s/` changes. Ansible changes must be applied by hand after merge: CI/CD holds no tailnet access, so a leaked GitHub secret cannot reach the hosts and Tailnet Lock needs no signed CI keys. There is no `paths` gating: every PR runs every CI job.
 
 Hosts are reachable only inside the tailnet (MagicDNS `dev-m1sk9-s1`, `dev-m1sk9-s2`); nothing outside can poll them, so liveness is push-based (systemd timers → Better Stack heartbeats).
 
@@ -84,7 +84,7 @@ kubeseal --cert k8s/bootstrap/sealed-secrets-cert.pem --format yaml < secret.yam
 - Inventory groups: `k3s_servers` (s2), `k3s_agents` (s1). Per-host data lives in `inventory/hosts.yml` and `inventory/host_vars/`.
 - Roles are data-driven: `restic_backup` reads `backup_targets` (`sqlite_dbs`, `paths`, `pre_commands`), `heartbeat` reads `heartbeat_targets` (`name`, `url`, `oncalendar`, optional `check_command`). Add entries in vars, not role code. s1's lists are in `group_vars/all/vars.yml`, s2's override in `host_vars/s2.yml` (bot heartbeats run on s2 because that is where `k3s kubectl` works).
 - Secrets: raw values in `group_vars/all/vault.yml` as `vault_*`, referenced from `vars.yml`. Heartbeat URLs are Terraform outputs copied into the vault by hand (Ansible can't read Terraform state).
-- `k8s.yml` (s2 bootstrap, incl. one-shot ArgoCD install) and `k8s-agent.yml` (s1 join) are **not in CD**; they are run by hand. `argocd_bootstrap` is gated so re-runs are no-ops — ArgoCD manages itself afterwards via `k8s/apps/argocd`.
+- No playbook is in CD; all are run by hand, including `k8s.yml` (s2 bootstrap, incl. one-shot ArgoCD install) and `k8s-agent.yml` (s1 join). `argocd_bootstrap` is gated so re-runs are no-ops — ArgoCD manages itself afterwards via `k8s/apps/argocd`.
 - s1 and s2 share one restic repository; s2's backup is offset by 30 min because `forget --prune` takes an exclusive lock.
 - `helm_version` in `roles/argocd_bootstrap/defaults/main.yml` must match `helm` in `mise.toml`.
 
