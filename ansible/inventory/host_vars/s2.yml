@@ -13,6 +13,12 @@
 # this only proves the Pod is running — a dead gateway inside a live process stays
 # invisible.
 heartbeat_targets:
+  # Redefined here because host_vars replaces the s1-host list in group_vars
+  # rather than merging with it.
+  - name: s2-host
+    url: "{{ vault_heartbeat_url_s2_host }}"
+    oncalendar: "*:0/2"
+
   - name: chime
     url: "{{ vault_heartbeat_url_chime }}"
     oncalendar: "*:0/3"

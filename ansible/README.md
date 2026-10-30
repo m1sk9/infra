@@ -155,6 +155,7 @@ heartbeat_targets:
 | ホスト | 対象 | 何を確認しているか |
 |---|---|---|
 | s1 | `s1-host` | ping が届くこと自体を確認する．ただし確認できるのは「s1 からインターネットに出られる」ことまでで，回線障害でも同じように落ちる |
+| s2 | `s2-host` | `s1-host` と同じ．ping が届くこと自体を確認する |
 | s2 | `chime` | Deployment の `availableReplicas` が 1 であること．readiness probe で `chime health` を実行しているので，アプリの動作まで確認できる |
 | s2 | `babyrite`，`honeypot`，`pythia` | Deployment の `availableReplicas` が 1 であること．Pod が動いていることしか確認できず，Discord gateway の切断は検知できない |
 
@@ -166,7 +167,7 @@ heartbeat の URL は Terraform が発行しますが，Ansible は Terraform �
 
 ```fish
 cd terraform
-terraform output -raw heartbeat_url_s1_host
+terraform output -raw heartbeat_url_s1_host   # s2 は heartbeat_url_s2_host
 cd ../ansible
 ansible-vault edit inventory/group_vars/all/vault.yml
 ```
