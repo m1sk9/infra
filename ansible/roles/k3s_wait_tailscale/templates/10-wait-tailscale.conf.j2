@@ -1,0 +1,10 @@
+# Managed by Ansible (role k3s_wait_tailscale).
+# After=tailscaled.service alone is not enough: tailscaled reports ready before
+# tailscale0 has its address, and flannel (flannel-iface: tailscale0) then exits
+# and takes k3s down with it until systemd restarts the unit.
+[Unit]
+Wants=tailscaled.service
+After=tailscaled.service
+
+[Service]
+ExecStartPre=/usr/bin/timeout 60 /bin/sh -c 'until ip -4 -o addr show dev tailscale0 2>/dev/null | grep -q inet; do sleep 1; done'

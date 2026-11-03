@@ -1,0 +1,19 @@
+---
+# A drop-in rather than a managed unit: s2's k3s.service was written by the
+# upstream installer and is otherwise left as it is.
+- name: "k3s tailscale wait | Ensure k3s.service.d exists"
+  ansible.builtin.file:
+    path: /etc/systemd/system/k3s.service.d
+    state: directory
+    mode: "0755"
+    owner: root
+    group: root
+
+- name: "k3s tailscale wait | Deploy wait drop-in"
+  ansible.builtin.template:
+    src: 10-wait-tailscale.conf.j2
+    dest: /etc/systemd/system/k3s.service.d/10-wait-tailscale.conf
+    mode: "0644"
+    owner: root
+    group: root
+  notify: Reload systemd

@@ -13,6 +13,10 @@
       ansible.builtin.include_role:
         name: k3s_disable_addons
 
+    - name: Start k3s after tailscale0 is up
+      ansible.builtin.include_role:
+        name: k3s_wait_tailscale
+
     - name: Bootstrap ArgoCD
       ansible.builtin.include_role:
         name: argocd_bootstrap
