@@ -1,0 +1,7 @@
+---
+# Only reloads: the drop-in matters at the next start, and restarting k3s here
+# would take the single API server down for nothing.
+- name: Reload systemd
+  ansible.builtin.systemd_service:
+    daemon_reload: true
+  when: not ansible_check_mode

@@ -32,6 +32,7 @@ ansible/
 │   ├── k3s_agent/               # s1 を k3s agent として参加させる
 │   ├── k3s_node_labels/         # s2 のノードラベル
 │   ├── k3s_disable_addons/      # s2 で traefik / servicelb を無効化
+│   ├── k3s_wait_tailscale/      # s2 の k3s を tailscale0 の起動後に開始する
 │   └── argocd_bootstrap/        # ArgoCD の初期導入 (一度だけ)
 └── playbooks/
     ├── site.yml                 # 疎通確認
@@ -190,11 +191,13 @@ Better Stack の Free プランでは，ステータスページの **Advanced s
 
 `k8s.yml` と `k8s-agent.yml` も，他の playbook と同じく手動で適用します．
 
-- **`k8s.yml` (s2) **: ノードラベルを付け，traefik / servicelb を無効化し，ArgoCD を初期導入します．
+- **`k8s.yml` (s2) **: ノードラベルを付け，traefik / servicelb を無効化し，k3s の起動を tailscale0 の後に揃え，ArgoCD を初期導入します．
   - ノードラベルと無効化の設定は，`config.yaml.d/` の drop-in として書き込みます．
+  - k3s の unit に drop-in を追加し，tailscale0 に IPv4 が付くまで起動を待たせます．flannel は tailscale0 を使うため，先に起動すると flannel ごと k3s が落ちます．drop-in の反映は次回の起動時なので，適用しても k3s は再起動しません．
   - ArgoCD の初期導入は一度だけ行います．導入後は ArgoCD が `k8s/apps/argocd` を通じて自分自身を管理するため，2 回目以降の実行では何もしません．
 - **`k8s-agent.yml` (s1) **: k3s のバイナリをチェックサムで検証してインストールし，s2 に join します．
   - node IP は `tailscale ip -4` から取得します．
+  - unit は tailscale0 に IPv4 が付くまで起動を待ちます (s2 と同じ理由です)．
   - join トークンは `vault_k3s_token` から読みます．
 
 バージョンを上げるときの注意:
