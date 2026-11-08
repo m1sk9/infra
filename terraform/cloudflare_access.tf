@@ -1,5 +1,7 @@
 # Cloudflare Zero Trust Access
 
+# Kept although no application allows it: dropping the resource would delete the
+# IdP, and re-adding GitHub as a login method is then a one-line allowed_idps change.
 resource "cloudflare_zero_trust_access_identity_provider" "github" {
   account_id = local.cloudflare_account_id
   name       = "GitHub"
@@ -10,9 +12,8 @@ resource "cloudflare_zero_trust_access_identity_provider" "github" {
   }
 }
 
-# Why auto prompt stays off: with it on, every visit fires a browser passkey
-# dialog before the user can pick another method, which gets in the way during
-# the transition while GitHub is still allowed.
+# Why auto prompt stays off: it fires a browser passkey dialog on every visit,
+# which gets in the way when enrolling a new key through the login page.
 resource "cloudflare_zero_trust_access_identity_provider" "passkeys" {
   account_id = local.cloudflare_account_id
   name       = "Passkeys"
@@ -25,14 +26,14 @@ resource "cloudflare_zero_trust_access_identity_provider" "passkeys" {
 # Cloudflare Zero Trust Access for the k3s cluster (ArgoCD and Grafana)
 #
 # Each app is covered twice. A self-hosted application puts the hostname behind
-# the GitHub IdP, so nothing about ArgoCD or Grafana is reachable before sign-in.
+# the Passkeys IdP, so nothing about ArgoCD or Grafana is reachable before sign-in.
 # A SaaS application then makes Access the OIDC provider for the app's own login,
 # which is what lets each app map the signed-in email to a role — a self-hosted
 # policy alone gives every allowed address the same access.
 #
-# Why Access as the OIDC provider rather than Dex: ArgoCD cannot use GitHub
-# directly, and running Dex only to front the same IdP would add a component and
-# a second set of OAuth credentials.
+# Why Access as the OIDC provider rather than Dex: ArgoCD cannot use Passkeys
+# or GitHub directly, and running Dex only to front the same IdP would add a
+# component and a second set of OAuth credentials.
 #
 # The break-glass path is the local admin account in each app, which sits behind
 # the self-hosted policy but not behind OIDC.
@@ -55,10 +56,7 @@ resource "cloudflare_zero_trust_access_application" "argocd" {
   type             = "self_hosted"
   session_duration = "24h"
 
-  allowed_idps = [
-    cloudflare_zero_trust_access_identity_provider.passkeys.id,
-    cloudflare_zero_trust_access_identity_provider.github.id,
-  ]
+  allowed_idps = [cloudflare_zero_trust_access_identity_provider.passkeys.id]
 
   policies = [{
     id         = cloudflare_zero_trust_access_policy.k8s_admins.id
@@ -73,10 +71,7 @@ resource "cloudflare_zero_trust_access_application" "grafana" {
   type             = "self_hosted"
   session_duration = "24h"
 
-  allowed_idps = [
-    cloudflare_zero_trust_access_identity_provider.passkeys.id,
-    cloudflare_zero_trust_access_identity_provider.github.id,
-  ]
+  allowed_idps = [cloudflare_zero_trust_access_identity_provider.passkeys.id]
 
   policies = [
     {
@@ -95,10 +90,7 @@ resource "cloudflare_zero_trust_access_application" "argocd_sso" {
   name       = "ArgoCD SSO"
   type       = "saas"
 
-  allowed_idps = [
-    cloudflare_zero_trust_access_identity_provider.passkeys.id,
-    cloudflare_zero_trust_access_identity_provider.github.id,
-  ]
+  allowed_idps = [cloudflare_zero_trust_access_identity_provider.passkeys.id]
 
   saas_app = {
     auth_type     = "oidc"
@@ -118,10 +110,7 @@ resource "cloudflare_zero_trust_access_application" "grafana_sso" {
   name       = "Grafana SSO"
   type       = "saas"
 
-  allowed_idps = [
-    cloudflare_zero_trust_access_identity_provider.passkeys.id,
-    cloudflare_zero_trust_access_identity_provider.github.id,
-  ]
+  allowed_idps = [cloudflare_zero_trust_access_identity_provider.passkeys.id]
 
   saas_app = {
     auth_type     = "oidc"
@@ -154,7 +143,7 @@ data "cloudflare_zero_trust_organization" "this" {
 # does not inherit rules from the broader application, so each of these grants one
 # health path and nothing else. ArgoCD's /healthz and Grafana's /api/health need no
 # login and return a bare status, so a leaked token buys an attacker that and
-# nothing more, while the apps themselves stay behind the GitHub IdP.
+# nothing more, while the apps themselves stay behind the Passkeys IdP.
 #
 # Note that this also means those two paths stop being reachable from a browser
 # signed in as an admin — non_identity admits service tokens only.
@@ -202,7 +191,7 @@ resource "cloudflare_zero_trust_access_application" "grafana_health" {
 
 # Grafana MCP server access
 #
-# The MCP server runs on a workstation and cannot complete the GitHub IdP login,
+# The MCP server runs on a workstation and cannot complete a passkey login,
 # so it presents a service token at the edge and a Grafana service account token
 # (Viewer) at the origin. The Access token alone gets no further than Grafana's
 # own login, which is why it is admitted to the whole hostname rather than scoped
