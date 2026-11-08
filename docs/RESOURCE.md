@@ -11,7 +11,7 @@ k3s クラスタで動かしている管理用ツールの簡単な使い方で�
 
 どちらも Cloudflare Access で保護しており，ログインは 2 段階です．
 
-1. URL を開くと Cloudflare Access のログイン画面が表示されるので，GitHub でログインします．
+1. URL を開くと Cloudflare Access のログイン画面が表示されるので，Passkey (または GitHub) でログインします．初めての Passkey は，ログイン画面の「Sign in with a passkey」から「Don't have a passkey? Set one up.」を選んで登録します．
 2. ツールのログイン画面で **Cloudflare Access** を選びます．Cloudflare Access がそのまま OIDC プロバイダーになっているため，追加の入力なしでログインできます．
 
 アクセスを許可するメールアドレスは [`terraform/cloudflare_access.tf`](../terraform/cloudflare_access.tf) の Access policy で管理しています．権限はツールごとに次のように決まります．
