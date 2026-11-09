@@ -118,4 +118,4 @@ PVC はバックアップしていません．Prometheus と Loki のボリュ�
 ## アクセス
 
 - Prometheus や Loki など，クラスタ内でしか使わないコンポーネントには Tailscale 経由でのみアクセスできます．
-- ArgoCD (`argocd.m1sk9.dev`) と Grafana (`grafana.m1sk9.dev`) は他の管理者も使います．そのため Cloudflare Tunnel を通し，Cloudflare Access (GitHub IdP) で保護しています．さらに各アプリ側でも GitHub OAuth によるロール制御を行っています．Tunnel と Access は [`terraform/`](../terraform/README.md) で管理しています．
+- ArgoCD (`argocd.m1sk9.dev`) と Grafana (`grafana.m1sk9.dev`) は他の管理者も使います．そのため Cloudflare Tunnel を通し，Cloudflare Access (Passkey) で保護しています．さらに各アプリは Access を OIDC プロバイダーとして使い，ログインしたメールアドレスからロールを決めています．Tunnel と Access は [`terraform/`](../terraform/README.md) で管理しています．
