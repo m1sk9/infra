@@ -10,6 +10,18 @@ resource "cloudflare_zero_trust_access_identity_provider" "github" {
   }
 }
 
+# Why auto prompt stays off: with it on, every visit fires a browser passkey
+# dialog before the user can pick another method, which gets in the way during
+# the transition while GitHub is still allowed.
+resource "cloudflare_zero_trust_access_identity_provider" "passkeys" {
+  account_id = local.cloudflare_account_id
+  name       = "Passkeys"
+  type       = "passkeys"
+  config = {
+    login_page_auto_prompt = false
+  }
+}
+
 # Cloudflare Zero Trust Access for the k3s cluster (ArgoCD and Grafana)
 #
 # Each app is covered twice. A self-hosted application puts the hostname behind
@@ -43,7 +55,10 @@ resource "cloudflare_zero_trust_access_application" "argocd" {
   type             = "self_hosted"
   session_duration = "24h"
 
-  allowed_idps = [cloudflare_zero_trust_access_identity_provider.github.id]
+  allowed_idps = [
+    cloudflare_zero_trust_access_identity_provider.passkeys.id,
+    cloudflare_zero_trust_access_identity_provider.github.id,
+  ]
 
   policies = [{
     id         = cloudflare_zero_trust_access_policy.k8s_admins.id
@@ -58,7 +73,10 @@ resource "cloudflare_zero_trust_access_application" "grafana" {
   type             = "self_hosted"
   session_duration = "24h"
 
-  allowed_idps = [cloudflare_zero_trust_access_identity_provider.github.id]
+  allowed_idps = [
+    cloudflare_zero_trust_access_identity_provider.passkeys.id,
+    cloudflare_zero_trust_access_identity_provider.github.id,
+  ]
 
   policies = [
     {
@@ -77,7 +95,10 @@ resource "cloudflare_zero_trust_access_application" "argocd_sso" {
   name       = "ArgoCD SSO"
   type       = "saas"
 
-  allowed_idps = [cloudflare_zero_trust_access_identity_provider.github.id]
+  allowed_idps = [
+    cloudflare_zero_trust_access_identity_provider.passkeys.id,
+    cloudflare_zero_trust_access_identity_provider.github.id,
+  ]
 
   saas_app = {
     auth_type     = "oidc"
@@ -97,7 +118,10 @@ resource "cloudflare_zero_trust_access_application" "grafana_sso" {
   name       = "Grafana SSO"
   type       = "saas"
 
-  allowed_idps = [cloudflare_zero_trust_access_identity_provider.github.id]
+  allowed_idps = [
+    cloudflare_zero_trust_access_identity_provider.passkeys.id,
+    cloudflare_zero_trust_access_identity_provider.github.id,
+  ]
 
   saas_app = {
     auth_type     = "oidc"
