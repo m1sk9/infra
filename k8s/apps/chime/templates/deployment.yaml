@@ -26,7 +26,7 @@ spec:
         m1sk9.dev/pool: apps
       containers:
         - name: app
-          image: ghcr.io/m1sk9/chime:v0.8.2
+          image: ghcr.io/m1sk9/chime:v0.8.3
           envFrom:
             - secretRef:
                 name: chime-env
