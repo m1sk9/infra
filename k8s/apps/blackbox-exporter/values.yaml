@@ -8,9 +8,14 @@ prometheus-blackbox-exporter:
   hostNetwork: true
 
   # With hostNetwork the new pod cannot bind :9115 while the old one holds it,
-  # and the chart's maxUnavailable: 0 would leave the rollout stuck.
+  # so the old pod has to go first. Recreate would say that directly, but the
+  # chart's rollingUpdate default cannot be removed from an umbrella chart and
+  # the API server rejects the two together.
   strategy:
-    type: Recreate
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 0
+      maxUnavailable: 1
 
   nodeSelector:
     m1sk9.dev/pool: observability
