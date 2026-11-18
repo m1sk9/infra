@@ -108,7 +108,7 @@ kubectl create secret generic <secret 名> --namespace <name> \
 - ワークロードは，このラベルを使って `nodeSelector` で固定します．
 - Discord bot は s1 に固定しています (preferred ではありません)．s1 が切り離されたまま生きていると，s2 に再スケジュールされた Pod が旧 Pod と並んで動いてしまうためです．同じ理由で `strategy: Recreate` にしています．同じトークンでログインした 2 つのインスタンスは，すべてのメッセージに二重に返信します．
 - メトリクスとログの収集は DaemonSet で，`nodeSelector` を付けずに両ノードで動かします．
-- blackbox-exporter は `hostNetwork` で動かします．Pod ネットワーク (flannel) は IPv4 だけで，Pod の中からは IPv6 を測れないためです．ホストのポート 9115 を使うので，`strategy: Recreate` にしています．
+- blackbox-exporter は `hostNetwork` で動かします．Pod ネットワーク (flannel) は IPv4 だけで，Pod の中からは IPv6 を測れないためです．ホストのポート 9115 を使うので，古い Pod を先に止めるよう `maxSurge: 0` / `maxUnavailable: 1` にしています．
 - ArgoCD と cloudflared は，k3s が自動で付ける `node-role.kubernetes.io/control-plane` で k3s server (s2) に固定します．s1 の OS を再インストールしている間も止まらないようにするためです．
 - taint は使っていません．
 
