@@ -53,7 +53,7 @@ kubectl create secret generic <secret 名> --namespace <name> \
 
 | 置き場所 | 内容 | 読み込み |
 |---|---|---|
-| `dashboards/<フォルダ>/*.json` | 自作のダッシュボード (chime，cpu-cooling，honeypot，pythia)．`<フォルダ>` が Grafana のフォルダ名になる | `grafana_dashboard` ラベルの ConfigMap |
+| `dashboards/<フォルダ>/*.json` | 自作のダッシュボード (chime，cpu-cooling，honeypot，internet-connectivity，pythia)．`<フォルダ>` が Grafana のフォルダ名になる | `grafana_dashboard` ラベルの ConfigMap |
 | `alerting/rules.yaml` | アラートルール | `grafana_alert` ラベルの ConfigMap |
 | `alerting/contactpoints.yaml` | Contact point (`discord-alerts`) | 同上 |
 | `alerting/policies.yaml` | Notification policy | 同上 |
@@ -64,12 +64,13 @@ kubectl create secret generic <secret 名> --namespace <name> \
 |---|---|---|---|---|
 | Chime / Polling | `chime-polling` | `dashboards/bots/chime-polling.json` | Loki | chime のポーリング件数・失敗数・転送数，WARN / ERROR ログ |
 | CPU Cooling (s1, s2) | `cpu-cooling-s1-s2` | `dashboards/infrastructure/cpu-cooling-s1-s2.json` | Prometheus | CPU 使用率，コア温度，thermal throttle，`temp_max` までの余裕 |
+| Internet Connectivity | `internet-connectivity` | `dashboards/infrastructure/internet-connectivity.json` | Prometheus | 自宅回線の ICMP RTT，1 MB のダウンロード速度，HTTP の応答時間，失敗したプローブ (IPv4 / IPv6 別) |
 | HoneyPot / Detections | `honeypot-detections` | `dashboards/bots/honeypot-detections.json` | Loki | 検知関連イベント，ログ量 (レベル別・モジュール別)，WARN / ERROR ログ |
 | Pythia / LLM Usage | `pythia-llm` | `dashboards/bots/pythia-llm.json` | Loki | クレジット消費，トークン数，応答レイテンシ，WARN / ERROR ログ |
 | Kubernetes / ...，Node Exporter / ...，Prometheus / Overview，CoreDNS，Grafana Overview | chart が採番 | kube-prometheus-stack (chart 同梱) | Prometheus | k8s とノードの標準ダッシュボード |
 
 - 同梱のダッシュボードは，`values.yaml` と chart のバージョンで決まります．このリポジトリに JSON は置きません．
-- フォルダは `Bots` (chime，honeypot，pythia)，`Infrastructure` (cpu-cooling)，`Kubernetes` (同梱のダッシュボード) です．フォルダは `grafana_folder` アノテーションで決めます．自作のものは `templates/` がディレクトリ名から付け，同梱のものは `values.yaml` の `sidecar.dashboards.annotations` で付けます．
+- フォルダは `Bots` (chime，honeypot，pythia)，`Infrastructure` (cpu-cooling，internet-connectivity)，`Kubernetes` (同梱のダッシュボード) です．フォルダは `grafana_folder` アノテーションで決めます．自作のものは `templates/` がディレクトリ名から付け，同梱のものは `values.yaml` の `sidecar.dashboards.annotations` で付けます．
 - Contact point の webhook URL は `grafana-discord` Secret (`DISCORD_WEBHOOK_URL`) から環境変数で渡します．Secret の作り方は[シークレット](#シークレット)のとおりです．
 管理しているアラートルールは次のとおりです．すべて `notify: discord` で `discord-alerts` に通知します．
 
