@@ -23,6 +23,7 @@ k8s
 │   ├── alloy
 │   ├── argocd
 │   ├── babyrite
+│   ├── blackbox-exporter
 │   ├── chime
 │   ├── cloudflared
 │   ├── honeypot

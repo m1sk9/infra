@@ -16,6 +16,7 @@ k3s クラスタ (server: s2，agent: s1) で動かすワークロードのマ�
 | `monitoring` | kube-prometheus-stack (Prometheus，Grafana，node-exporter) |
 | `loki` | ログの保存 |
 | `alloy` | ログの収集 |
+| `blackbox-exporter` | 自宅回線の外形監視．HGW と Cloudflare / Google への ICMP，HTTP の応答時間，1 MB のダウンロード時間を IPv4 / IPv6 別々に計測する |
 | `babyrite`，`chime`，`honeypot`，`pythia` | 自作の Discord bot |
 
 ## サービスの追加
@@ -101,11 +102,12 @@ kubectl create secret generic <secret 名> --namespace <name> \
 | ノード | ラベル | ワークロード |
 |---|---|---|
 | s1 | `m1sk9.dev/pool=apps` | babyrite，chime，honeypot，pythia |
-| s2 | `m1sk9.dev/pool=observability` | Prometheus，Grafana，Loki |
+| s2 | `m1sk9.dev/pool=observability` | Prometheus，Grafana，Loki，blackbox-exporter |
 
 - ワークロードは，このラベルを使って `nodeSelector` で固定します．
 - Discord bot は s1 に固定しています (preferred ではありません)．s1 が切り離されたまま生きていると，s2 に再スケジュールされた Pod が旧 Pod と並んで動いてしまうためです．同じ理由で `strategy: Recreate` にしています．同じトークンでログインした 2 つのインスタンスは，すべてのメッセージに二重に返信します．
 - メトリクスとログの収集は DaemonSet で，`nodeSelector` を付けずに両ノードで動かします．
+- blackbox-exporter は `hostNetwork` で動かします．Pod ネットワーク (flannel) は IPv4 だけで，Pod の中からは IPv6 を測れないためです．ホストのポート 9115 を使うので，`strategy: Recreate` にしています．
 - ArgoCD と cloudflared は，k3s が自動で付ける `node-role.kubernetes.io/control-plane` で k3s server (s2) に固定します．s1 の OS を再インストールしている間も止まらないようにするためです．
 - taint は使っていません．
 
