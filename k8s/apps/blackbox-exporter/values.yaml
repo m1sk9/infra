@@ -70,6 +70,21 @@ prometheus-blackbox-exporter:
         http:
           preferred_ip_protocol: ip6
           ip_protocol_fallback: false
+      # A lost SYN shows up as a connect time of about 1 s (the first SYN
+      # retransmit). In 2026-11 IPv4 connects stalled like this in the evening
+      # while ping stayed flat, so connect time is measured on its own.
+      tcp_ip4:
+        prober: tcp
+        timeout: 5s
+        tcp:
+          preferred_ip_protocol: ip4
+          ip_protocol_fallback: false
+      tcp_ip6:
+        prober: tcp
+        timeout: 5s
+        tcp:
+          preferred_ip_protocol: ip6
+          ip_protocol_fallback: false
 
   serviceMonitor:
     enabled: true
@@ -123,3 +138,33 @@ prometheus-blackbox-exporter:
         interval: 5m
         scrapeTimeout: 30s
         additionalMetricsRelabels: {family: ipv6, check: download}
+      # The chart writes url into YAML unquoted, so a bracketed IPv6 address
+      # carries its own quotes or it parses as a flow sequence.
+      # 15 s, since a stall hitting a few percent of connects would otherwise
+      # appear only a handful of times an hour.
+      - name: tcp-cloudflare-v4
+        url: 1.1.1.1:443
+        module: tcp_ip4
+        interval: 15s
+        additionalMetricsRelabels: {family: ipv4, check: tcp}
+      - name: tcp-cloudflare-v6
+        url: "'[2606:4700:4700::1111]:443'"
+        module: tcp_ip6
+        interval: 15s
+        additionalMetricsRelabels: {family: ipv6, check: tcp}
+      - name: tcp-google-v4
+        url: 8.8.8.8:443
+        module: tcp_ip4
+        interval: 15s
+        additionalMetricsRelabels: {family: ipv4, check: tcp}
+      - name: tcp-google-v6
+        url: "'[2001:4860:4860::8888]:443'"
+        module: tcp_ip6
+        interval: 15s
+        additionalMetricsRelabels: {family: ipv6, check: tcp}
+      # pixiv's image server has no AAAA record, so it always goes through MAP-E.
+      - name: tcp-pximg-v4
+        url: i.pximg.net:443
+        module: tcp_ip4
+        interval: 15s
+        additionalMetricsRelabels: {family: ipv4, check: tcp}

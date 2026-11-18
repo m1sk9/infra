@@ -16,7 +16,7 @@ k3s クラスタ (server: s2，agent: s1) で動かすワークロードのマ�
 | `monitoring` | kube-prometheus-stack (Prometheus，Grafana，node-exporter) |
 | `loki` | ログの保存 |
 | `alloy` | ログの収集 |
-| `blackbox-exporter` | 自宅回線の外形監視．HGW と Cloudflare / Google への ICMP，HTTP の応答時間，1 MB のダウンロード時間を IPv4 / IPv6 別々に計測する |
+| `blackbox-exporter` | 自宅回線の外形監視．HGW と Cloudflare / Google への ICMP，TCP の接続確立時間 (pixiv の画像サーバーを含む)，HTTP の応答時間，1 MB のダウンロード時間を IPv4 / IPv6 別々に計測する |
 | `babyrite`，`chime`，`honeypot`，`pythia` | 自作の Discord bot |
 
 ## サービスの追加
@@ -64,7 +64,7 @@ kubectl create secret generic <secret 名> --namespace <name> \
 |---|---|---|---|---|
 | Chime / Polling | `chime-polling` | `dashboards/bots/chime-polling.json` | Loki | chime のポーリング件数・失敗数・転送数，WARN / ERROR ログ |
 | CPU Cooling (s1, s2) | `cpu-cooling-s1-s2` | `dashboards/infrastructure/cpu-cooling-s1-s2.json` | Prometheus | CPU 使用率，コア温度，thermal throttle，`temp_max` までの余裕 |
-| Internet Connectivity | `internet-connectivity` | `dashboards/infrastructure/internet-connectivity.json` | Prometheus | 自宅回線の ICMP RTT，1 MB のダウンロード速度，HTTP の応答時間，失敗したプローブ (IPv4 / IPv6 別) |
+| Internet Connectivity | `internet-connectivity` | `dashboards/infrastructure/internet-connectivity.json` | Prometheus | 自宅回線の ICMP RTT，1 MB のダウンロード速度，TCP の接続確立時間と 0.5 秒を超えた回数，HTTP の応答時間，失敗したプローブ (IPv4 / IPv6 別) |
 | HoneyPot / Detections | `honeypot-detections` | `dashboards/bots/honeypot-detections.json` | Loki | 検知関連イベント，ログ量 (レベル別・モジュール別)，WARN / ERROR ログ |
 | Pythia / LLM Usage | `pythia-llm` | `dashboards/bots/pythia-llm.json` | Loki | クレジット消費，トークン数，応答レイテンシ，WARN / ERROR ログ |
 | Kubernetes / ...，Node Exporter / ...，Prometheus / Overview，CoreDNS，Grafana Overview | chart が採番 | kube-prometheus-stack (chart 同梱) | Prometheus | k8s とノードの標準ダッシュボード |
