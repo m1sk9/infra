@@ -55,6 +55,8 @@ Grafana では Prometheus のメトリクスと Loki のログを確認できま
 - **Prometheus**: ノード (s1 / s2) と k8s のメトリクスです．保持期間は 15 日です．
 - **Loki**: すべての Pod のログです．Alloy が両ノードから収集しています．
 
+自宅回線の状態は **Internet Connectivity** ダッシュボード (`Infrastructure` フォルダ) で確認できます．blackbox-exporter が s2 から IPv4 / IPv6 別々に計測しています．HGW (192.168.1.1) への RTT も外への RTT と一緒に上がっていれば HGW が，外だけが上がっていれば回線側が詰まっています．
+
 ### ダッシュボードを見る
 
 左メニューの **Dashboards** に，kube-prometheus-stack に同梱されているダッシュボードが入っています．よく使うものは次のとおりです．

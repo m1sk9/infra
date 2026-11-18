@@ -1,0 +1,120 @@
+prometheus-blackbox-exporter:
+  fullnameOverride: blackbox-exporter
+
+  # The pod network (flannel) is IPv4 only, so IPv6 probes need the host's
+  # stack. It also puts the probes on the same path as the hosts' own traffic.
+  # ICMP needs no NET_RAW: the hosts' net.ipv4.ping_group_range covers every gid,
+  # so the non-root exporter can use unprivileged ping sockets.
+  hostNetwork: true
+
+  # With hostNetwork the new pod cannot bind :9115 while the old one holds it,
+  # and the chart's maxUnavailable: 0 would leave the rollout stuck.
+  strategy:
+    type: Recreate
+
+  nodeSelector:
+    m1sk9.dev/pool: observability
+
+  resources:
+    requests:
+      cpu: 10m
+      memory: 32Mi
+    limits:
+      memory: 128Mi
+
+  # Every module pins one address family with no fallback; a probe that quietly
+  # fell back to the other family would hide exactly the difference being
+  # measured.
+  config:
+    modules:
+      icmp_ip4:
+        prober: icmp
+        timeout: 5s
+        icmp:
+          preferred_ip_protocol: ip4
+          ip_protocol_fallback: false
+      icmp_ip6:
+        prober: icmp
+        timeout: 5s
+        icmp:
+          preferred_ip_protocol: ip6
+          ip_protocol_fallback: false
+      http_ip4:
+        prober: http
+        timeout: 10s
+        http:
+          preferred_ip_protocol: ip4
+          ip_protocol_fallback: false
+      http_ip6:
+        prober: http
+        timeout: 10s
+        http:
+          preferred_ip_protocol: ip6
+          ip_protocol_fallback: false
+      # Latency alone missed the 2026-11 slowdown, where RTT stayed low while
+      # single flows stalled; the time to fetch 1 MB catches that.
+      download_ip4:
+        prober: http
+        timeout: 25s
+        http:
+          preferred_ip_protocol: ip4
+          ip_protocol_fallback: false
+      download_ip6:
+        prober: http
+        timeout: 25s
+        http:
+          preferred_ip_protocol: ip6
+          ip_protocol_fallback: false
+
+  serviceMonitor:
+    enabled: true
+    defaults:
+      interval: 30s
+      scrapeTimeout: 10s
+    targets:
+      # The home gateway (NTT HGW). If it slows down along with everything
+      # beyond it, the gateway is the bottleneck rather than the ISP.
+      - name: hgw-v4
+        url: 192.168.1.1
+        module: icmp_ip4
+        additionalMetricsRelabels: {family: ipv4, check: icmp}
+      - name: cloudflare-dns-v4
+        url: 1.1.1.1
+        module: icmp_ip4
+        additionalMetricsRelabels: {family: ipv4, check: icmp}
+      - name: cloudflare-dns-v6
+        url: 2606:4700:4700::1111
+        module: icmp_ip6
+        additionalMetricsRelabels: {family: ipv6, check: icmp}
+      - name: google-dns-v4
+        url: 8.8.8.8
+        module: icmp_ip4
+        additionalMetricsRelabels: {family: ipv4, check: icmp}
+      - name: google-dns-v6
+        url: 2001:4860:4860::8888
+        module: icmp_ip6
+        additionalMetricsRelabels: {family: ipv6, check: icmp}
+      - name: cloudflare-trace-v4
+        url: https://www.cloudflare.com/cdn-cgi/trace
+        module: http_ip4
+        interval: 1m
+        scrapeTimeout: 15s
+        additionalMetricsRelabels: {family: ipv4, check: http}
+      - name: cloudflare-trace-v6
+        url: https://www.cloudflare.com/cdn-cgi/trace
+        module: http_ip6
+        interval: 1m
+        scrapeTimeout: 15s
+        additionalMetricsRelabels: {family: ipv6, check: http}
+      - name: cloudflare-download-v4
+        url: https://speed.cloudflare.com/__down?bytes=1000000
+        module: download_ip4
+        interval: 5m
+        scrapeTimeout: 30s
+        additionalMetricsRelabels: {family: ipv4, check: download}
+      - name: cloudflare-download-v6
+        url: https://speed.cloudflare.com/__down?bytes=1000000
+        module: download_ip6
+        interval: 5m
+        scrapeTimeout: 30s
+        additionalMetricsRelabels: {family: ipv6, check: download}
