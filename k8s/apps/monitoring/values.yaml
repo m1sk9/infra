@@ -126,3 +126,20 @@ kube-prometheus-stack:
     # Holds DISCORD_WEBHOOK_URL, expanded in alerting/contactpoints.yaml.
     envFromSecrets:
       - name: grafana-discord
+    imageRenderer:
+      enabled: true
+      # The chart's generated token relies on `lookup`, which ArgoCD does not
+      # run, so it would be regenerated on every sync and drift from what the
+      # running pods read at startup.
+      existingSecret: grafana-image-renderer
+      image:
+        tag: v5.12.11
+        pullPolicy: IfNotPresent
+      nodeSelector:
+        m1sk9.dev/pool: observability
+      resources:
+        requests:
+          cpu: 50m
+          memory: 256Mi
+        limits:
+          memory: 768Mi

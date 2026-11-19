@@ -72,6 +72,7 @@ kubectl create secret generic <secret 名> --namespace <name> \
 - 同梱のダッシュボードは，`values.yaml` と chart のバージョンで決まります．このリポジトリに JSON は置きません．
 - フォルダは `Bots` (chime，honeypot，pythia)，`Infrastructure` (cpu-cooling，internet-connectivity)，`Kubernetes` (同梱のダッシュボード) です．フォルダは `grafana_folder` アノテーションで決めます．自作のものは `templates/` がディレクトリ名から付け，同梱のものは `values.yaml` の `sidecar.dashboards.annotations` で付けます．
 - Contact point の webhook URL は `grafana-discord` Secret (`DISCORD_WEBHOOK_URL`) から環境変数で渡します．Secret の作り方は[シークレット](#シークレット)のとおりです．
+- パネルを PNG に書き出すため，Grafana Image Renderer を別の Pod として s2 で動かしています (`values.yaml` の `grafana.imageRenderer`)．Grafana と Renderer が使う認証 token は `grafana-image-renderer` Secret (`token`) にあります．chart が自動で作る token は Helm の `lookup` に頼っていて，ArgoCD では同期のたびに作り直されるため使っていません．イメージのバージョンは Renovate が更新します．
 管理しているアラートルールは次のとおりです．すべて `notify: discord` で `discord-alerts` に通知します．
 
 | グループ | ルール | 条件 | severity |
@@ -103,7 +104,7 @@ kubectl create secret generic <secret 名> --namespace <name> \
 | ノード | ラベル | ワークロード |
 |---|---|---|
 | s1 | `m1sk9.dev/pool=apps` | babyrite，chime，honeypot，pythia |
-| s2 | `m1sk9.dev/pool=observability` | Prometheus，Grafana，Loki，blackbox-exporter |
+| s2 | `m1sk9.dev/pool=observability` | Prometheus，Grafana，Grafana Image Renderer，Loki，blackbox-exporter |
 
 - ワークロードは，このラベルを使って `nodeSelector` で固定します．
 - Discord bot は s1 に固定しています (preferred ではありません)．s1 が切り離されたまま生きていると，s2 に再スケジュールされた Pod が旧 Pod と並んで動いてしまうためです．同じ理由で `strategy: Recreate` にしています．同じトークンでログインした 2 つのインスタンスは，すべてのメッセージに二重に返信します．

@@ -86,9 +86,13 @@ merge 後に ArgoCD が同期し，sidecar が数十秒で Grafana に反映し�
 {node="dev-m1sk9-s1"} |= "error"
 ```
 
+### パネルを画像にする
+
+パネルのメニューの **Share** から，パネルを PNG に書き出せます．描画は Grafana Image Renderer (s2) が行います．問い合わせや報告にグラフを添付するときに使います．
+
 ### Claude Code から使う (Grafana MCP)
 
-リポジトリの `.mcp.json` に [Grafana MCP サーバー](https://github.com/grafana/mcp-grafana) を登録しています．Claude Code からダッシュボードの参照やメトリクス・ログの検索ができます．`--disable-write` を付けているため読み取り専用です．
+リポジトリの `.mcp.json` に [Grafana MCP サーバー](https://github.com/grafana/mcp-grafana) を登録しています．Claude Code からダッシュボードの参照やメトリクス・ログの検索ができます．`--disable-write` を付けているため読み取り専用です．パネルの画像も `get_panel_image` で取得できます．
 
 MCP サーバーは GitHub ログインを通れません．そのため，次の 2 つの token で認証します．
 
