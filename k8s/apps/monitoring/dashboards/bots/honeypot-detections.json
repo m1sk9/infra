@@ -616,7 +616,7 @@
     "to": "now"
   },
   "timepicker": {},
-  "timezone": "browser",
+  "timezone": "Asia/Tokyo",
   "title": "HoneyPot / Detections",
   "uid": "honeypot-detections",
   "weekStart": ""

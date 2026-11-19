@@ -1072,7 +1072,7 @@
     "to": "now"
   },
   "timepicker": {},
-  "timezone": "browser",
+  "timezone": "Asia/Tokyo",
   "title": "Chime / Polling",
   "uid": "chime-polling",
   "weekStart": ""

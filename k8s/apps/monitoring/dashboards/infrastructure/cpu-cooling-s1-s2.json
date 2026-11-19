@@ -535,7 +535,7 @@
       "1d"
     ]
   },
-  "timezone": "browser",
+  "timezone": "Asia/Tokyo",
   "title": "CPU Cooling (s1, s2)",
   "uid": "cpu-cooling-s1-s2",
   "weekStart": ""
