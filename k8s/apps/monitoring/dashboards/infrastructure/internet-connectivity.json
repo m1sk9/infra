@@ -409,7 +409,7 @@
     "from": "now-7d",
     "to": "now"
   },
-  "timezone": "browser",
+  "timezone": "Asia/Tokyo",
   "title": "Internet Connectivity",
   "uid": "internet-connectivity"
 }

@@ -1235,7 +1235,7 @@
     "to": "now"
   },
   "timepicker": {},
-  "timezone": "browser",
+  "timezone": "Asia/Tokyo",
   "title": "Pythia / LLM Usage",
   "uid": "pythia-llm",
   "weekStart": ""
