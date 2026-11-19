@@ -36,8 +36,8 @@ loki:
       limits:
         memory: 2Gi
 
-  # Single binary only: the scalable-mode components, caches, gateway and the
-  # bundled MinIO have nothing to do on two nodes with a local disk.
+  # Single binary only: the scalable-mode components, caches and gateway have
+  # nothing to do on two nodes with a local disk.
   read:
     replicas: 0
   write:
@@ -53,6 +53,4 @@ loki:
   lokiCanary:
     enabled: false
   test:
-    enabled: false
-  minio:
     enabled: false
