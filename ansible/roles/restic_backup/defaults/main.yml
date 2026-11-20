@@ -1,7 +1,7 @@
 ---
 # restic release to install. Pinned so upgrades are reviewed; the version is
 # tracked by a Renovate customManager (see .github/renovate.json).
-restic_version: "0.19.1"
+restic_version: "0.20.0"
 restic_arch: "amd64"
 restic_install_path: /usr/local/bin/restic
 
