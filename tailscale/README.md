@@ -7,6 +7,7 @@ Tailnet のポリシーファイル (ACL) を [`policy.hujson`](./policy.hujson)
 ポリシーは明示的に許可したもの以外をすべて拒否します．このファイルで許可しているのは次の通信だけです．
 
 - owner の端末から，サーバーへのアクセスと Tailscale SSH
+- owner の端末同士の SSH (22/tcp)．スマホから laptop の Herdr に入るために使う
 - owner の端末から，Exit Node を経由したインターネット
 - k3s のノード間通信 (apiserver，kubelet，flannel)
 - Prometheus から各ノードの node-exporter へのスクレイプ

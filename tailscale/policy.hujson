@@ -18,6 +18,11 @@
             "ip":  ["*"],
         },
         {
+            "src": ["m1sk9@github"],
+            "dst": ["autogroup:self"],
+            "ip":  ["tcp:22"],
+        },
+        {
             "src": ["tag:k3s"],
             "dst": ["tag:k3s-server"],
             "ip":  ["tcp:6443"],
@@ -50,9 +55,14 @@
             "accept": ["tag:k3s:22", "tag:k3s:6443"],
         },
         {
+            "src":    "m1sk9@github",
+            "accept": ["100.83.51.110:22"],
+            "deny":   ["100.83.51.110:80"],
+        },
+        {
             "src":    "tag:k3s",
             "accept": ["tag:k3s-server:6443", "tag:k3s:10250"],
-            "deny":   ["tag:k3s-agent:6443", "tag:k3s:9100", "tag:k3s:22"],
+            "deny":   ["tag:k3s-agent:6443", "tag:k3s:9100", "tag:k3s:22", "100.83.51.110:22"],
         },
         {
             "src":    "tag:observability",
