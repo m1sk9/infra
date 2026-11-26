@@ -98,6 +98,18 @@ prometheus-blackbox-exporter:
         url: 192.168.1.1
         module: icmp_ip4
         additionalMetricsRelabels: {family: ipv4, check: icmp}
+      # NTT East's resolvers inside NGN, reached before traffic is handed to
+      # the VNE (JPIX). Evening loss here but not to the public resolvers
+      # places the congestion in NGN; loss only beyond them places it at or
+      # past the NGN-VNE interconnect.
+      - name: ngn-dns-a-v6
+        url: 2404:1a8:7f01:a::3
+        module: icmp_ip6
+        additionalMetricsRelabels: {family: ipv6, check: icmp}
+      - name: ngn-dns-b-v6
+        url: 2404:1a8:7f01:b::3
+        module: icmp_ip6
+        additionalMetricsRelabels: {family: ipv6, check: icmp}
       - name: cloudflare-dns-v4
         url: 1.1.1.1
         module: icmp_ip4

@@ -16,7 +16,7 @@ k3s クラスタ (server: s2，agent: s1) で動かすワークロードのマ�
 | `monitoring` | kube-prometheus-stack (Prometheus，Grafana，node-exporter) |
 | `loki` | ログの保存 |
 | `alloy` | ログの収集 |
-| `blackbox-exporter` | 自宅回線の外形監視．HGW と Cloudflare / Google への ICMP，TCP の接続確立時間 (pixiv の画像サーバーを含む)，HTTP の応答時間，1 MB のダウンロード時間を IPv4 / IPv6 別々に計測する |
+| `blackbox-exporter` | 自宅回線の外形監視．HGW，NTT 東日本の NGN 内の DNS，Cloudflare / Google への ICMP，TCP の接続確立時間 (pixiv の画像サーバーを含む)，HTTP の応答時間，1 MB のダウンロード時間を IPv4 / IPv6 別々に計測する |
 | `babyrite`，`chime`，`honeypot`，`pythia` | 自作の Discord bot |
 
 ## サービスの追加
