@@ -16,7 +16,7 @@ k3s クラスタ (server: s2，agent: s1) で動かすワークロードのマ�
 | `monitoring` | kube-prometheus-stack (Prometheus，Grafana，node-exporter) |
 | `loki` | ログの保存 |
 | `alloy` | ログの収集 |
-| `blackbox-exporter` | 自宅回線の外形監視．HGW と Cloudflare / Google への ICMP，TCP の接続確立時間 (NTT 東日本の NGN 内の DNS と pixiv の画像サーバーを含む)，HTTP の応答時間，1 MB のダウンロード時間を IPv4 / IPv6 別々に計測する |
+| `blackbox-exporter` | 自宅回線の外形監視．HGW と Cloudflare / Google への ICMP，TCP の接続確立時間 (NTT 東日本の NGN 内の DNS と pixiv の画像サーバーを含む)，HTTP の応答時間，1 MB のダウンロード時間を IPv4 / IPv6 別々に計測する．ゲームサーバー (FF14) も `group: game` を付けて計測し，Internet Connectivity からは外している |
 | `babyrite`，`chime`，`honeypot`，`pythia` | 自作の Discord bot |
 
 ## サービスの追加
@@ -53,7 +53,7 @@ kubectl create secret generic <secret 名> --namespace <name> \
 
 | 置き場所 | 内容 | 読み込み |
 |---|---|---|
-| `dashboards/<フォルダ>/*.json` | 自作のダッシュボード (chime，cpu-cooling，honeypot，internet-connectivity，pythia)．`<フォルダ>` が Grafana のフォルダ名になる | `grafana_dashboard` ラベルの ConfigMap |
+| `dashboards/<フォルダ>/*.json` | 自作のダッシュボード (chime，cpu-cooling，game-servers，honeypot，internet-connectivity，pythia)．`<フォルダ>` が Grafana のフォルダ名になる | `grafana_dashboard` ラベルの ConfigMap |
 | `alerting/rules.yaml` | アラートルール | `grafana_alert` ラベルの ConfigMap |
 | `alerting/contactpoints.yaml` | Contact point (`discord-alerts`) | 同上 |
 | `alerting/policies.yaml` | Notification policy | 同上 |
@@ -64,13 +64,14 @@ kubectl create secret generic <secret 名> --namespace <name> \
 |---|---|---|---|---|
 | Chime / Polling | `chime-polling` | `dashboards/bots/chime-polling.json` | Loki | chime のポーリング件数・失敗数・転送数，WARN / ERROR ログ |
 | CPU Cooling (s1, s2) | `cpu-cooling-s1-s2` | `dashboards/infrastructure/cpu-cooling-s1-s2.json` | Prometheus | CPU 使用率，コア温度，thermal throttle，`temp_max` までの余裕 |
+| Game Servers | `game-servers` | `dashboards/infrastructure/game-servers.json` | Prometheus | ゲームサーバー (FF14) への TCP の接続確立時間，ICMP RTT，0.5 秒を超えた回数，失敗率．WARP を通さない s2 からの計測 |
 | Internet Connectivity | `internet-connectivity` | `dashboards/infrastructure/internet-connectivity.json` | Prometheus | 自宅回線の ICMP RTT，1 MB のダウンロード速度，TCP の接続確立時間と 0.5 秒を超えた回数，HTTP の応答時間，失敗したプローブ (IPv4 / IPv6 別) |
 | HoneyPot / Detections | `honeypot-detections` | `dashboards/bots/honeypot-detections.json` | Loki | 検知関連イベント，ログ量 (レベル別・モジュール別)，WARN / ERROR ログ |
 | Pythia / LLM Usage | `pythia-llm` | `dashboards/bots/pythia-llm.json` | Loki | クレジット消費，トークン数，応答レイテンシ，WARN / ERROR ログ |
 | Kubernetes / ...，Node Exporter / ...，Prometheus / Overview，CoreDNS，Grafana Overview | chart が採番 | kube-prometheus-stack (chart 同梱) | Prometheus | k8s とノードの標準ダッシュボード |
 
 - 同梱のダッシュボードは，`values.yaml` と chart のバージョンで決まります．このリポジトリに JSON は置きません．
-- フォルダは `Bots` (chime，honeypot，pythia)，`Infrastructure` (cpu-cooling，internet-connectivity)，`Kubernetes` (同梱のダッシュボード) です．フォルダは `grafana_folder` アノテーションで決めます．自作のものは `templates/` がディレクトリ名から付け，同梱のものは `values.yaml` の `sidecar.dashboards.annotations` で付けます．
+- フォルダは `Bots` (chime，honeypot，pythia)，`Infrastructure` (cpu-cooling，game-servers，internet-connectivity)，`Kubernetes` (同梱のダッシュボード) です．フォルダは `grafana_folder` アノテーションで決めます．自作のものは `templates/` がディレクトリ名から付け，同梱のものは `values.yaml` の `sidecar.dashboards.annotations` で付けます．
 - Contact point の webhook URL は `grafana-discord` Secret (`DISCORD_WEBHOOK_URL`) から環境変数で渡します．Secret の作り方は[シークレット](#シークレット)のとおりです．
 - パネルを PNG に書き出すため，Grafana Image Renderer を別の Pod として s2 で動かしています (`values.yaml` の `grafana.imageRenderer`)．Grafana と Renderer が使う認証 token は `grafana-image-renderer` Secret (`token`) にあります．chart が自動で作る token は Helm の `lookup` に頼っていて，ArgoCD では同期のたびに作り直されるため使っていません．イメージのバージョンは Renovate が更新します．
 管理しているアラートルールは次のとおりです．すべて `notify: discord` で `discord-alerts` に通知します．

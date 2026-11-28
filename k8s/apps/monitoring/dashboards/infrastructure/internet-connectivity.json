@@ -69,7 +69,7 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "probe_icmp_duration_seconds{job=\"blackbox-exporter\", phase=\"rtt\"}",
+          "expr": "probe_icmp_duration_seconds{job=\"blackbox-exporter\", group!=\"game\", phase=\"rtt\"}",
           "legendFormat": "{{target}}",
           "refId": "A"
         }
@@ -127,7 +127,7 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "8 / probe_duration_seconds{job=\"blackbox-exporter\", check=\"download\"} and on(target) probe_success == 1",
+          "expr": "8 / probe_duration_seconds{job=\"blackbox-exporter\", group!=\"game\", check=\"download\"} and on(target) probe_success == 1",
           "legendFormat": "{{family}}",
           "refId": "A"
         }
@@ -185,7 +185,7 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "probe_duration_seconds{job=\"blackbox-exporter\", check=\"tcp\"} - probe_dns_lookup_time_seconds{job=\"blackbox-exporter\", check=\"tcp\"}",
+          "expr": "probe_duration_seconds{job=\"blackbox-exporter\", group!=\"game\", check=\"tcp\"} - probe_dns_lookup_time_seconds{job=\"blackbox-exporter\", group!=\"game\", check=\"tcp\"}",
           "legendFormat": "{{target}}",
           "refId": "A"
         },
@@ -194,7 +194,7 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "probe_http_duration_seconds{job=\"blackbox-exporter\", check=\"http\", phase=\"connect\"}",
+          "expr": "probe_http_duration_seconds{job=\"blackbox-exporter\", group!=\"game\", check=\"http\", phase=\"connect\"}",
           "legendFormat": "http-connect-{{family}}",
           "refId": "B"
         }
@@ -253,7 +253,7 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sum by (target) (count_over_time(((probe_duration_seconds{job=\"blackbox-exporter\", check=\"tcp\"} - probe_dns_lookup_time_seconds{job=\"blackbox-exporter\", check=\"tcp\"}) > 0.5)[1h:15s])) or sum by (target) (count_over_time(probe_success{job=\"blackbox-exporter\", check=\"tcp\"}[1h])) * 0",
+          "expr": "sum by (target) (count_over_time(((probe_duration_seconds{job=\"blackbox-exporter\", group!=\"game\", check=\"tcp\"} - probe_dns_lookup_time_seconds{job=\"blackbox-exporter\", group!=\"game\", check=\"tcp\"}) > 0.5)[1h:15s])) or sum by (target) (count_over_time(probe_success{job=\"blackbox-exporter\", group!=\"game\", check=\"tcp\"}[1h])) * 0",
           "legendFormat": "{{target}}",
           "refId": "A"
         }
@@ -311,7 +311,7 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "sum by (family) (probe_http_duration_seconds{job=\"blackbox-exporter\", check=\"http\"})",
+          "expr": "sum by (family) (probe_http_duration_seconds{job=\"blackbox-exporter\", group!=\"game\", check=\"http\"})",
           "legendFormat": "{{family}}",
           "refId": "A"
         }
@@ -370,7 +370,7 @@
             "type": "prometheus",
             "uid": "${datasource}"
           },
-          "expr": "1 - probe_success{job=\"blackbox-exporter\"}",
+          "expr": "1 - probe_success{job=\"blackbox-exporter\", group!=\"game\"}",
           "legendFormat": "{{target}}",
           "refId": "A"
         }

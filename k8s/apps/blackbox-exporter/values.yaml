@@ -183,3 +183,18 @@ prometheus-blackbox-exporter:
         module: tcp_ip4
         interval: 15s
         additionalMetricsRelabels: {family: ipv4, check: tcp}
+      # Game servers go to the Game Servers dashboard, kept apart from the
+      # line-quality targets by `group: game`. This is the FFXIV server the
+      # client keeps its only connection to (port 54992) on the Gaia data
+      # centre, and it stays the same across data centre travel and duties.
+      # VALORANT is absent: its match servers change every match, sit in
+      # different Riot networks, and answer neither ICMP nor TCP.
+      - name: ffxiv-gaia-v4
+        url: 119.252.37.23
+        module: icmp_ip4
+        additionalMetricsRelabels: {family: ipv4, check: icmp, group: game}
+      - name: tcp-ffxiv-gaia-v4
+        url: 119.252.37.23:54992
+        module: tcp_ip4
+        interval: 15s
+        additionalMetricsRelabels: {family: ipv4, check: tcp, group: game}
