@@ -57,6 +57,8 @@ Grafana では Prometheus のメトリクスと Loki のログを確認できま
 
 自宅回線の状態は **Internet Connectivity** ダッシュボード (`Infrastructure` フォルダ) で確認できます．blackbox-exporter が s2 から IPv4 / IPv6 別々に計測しています．HGW (192.168.1.1) への RTT も外への RTT と一緒に上がっていれば HGW が，外だけが上がっていれば回線側が詰まっています．NGN 内の DNS (`tcp-ngn-dns-*-v6`) は，JPIX に渡される前の NTT 網の中にあります．ICMP に応答しないため，TCP の 53 番ポートへの接続時間で測っています．夜にここでも遅い接続 (Slow connects) が増えれば NTT 網が，Cloudflare / Google だけで増えれば NTT 網と JPIX の接続点か JPIX の網が詰まっています．
 
+ゲームサーバーへの経路は **Game Servers** ダッシュボード (`Infrastructure` フォルダ) で確認できます．s2 は WARP を通さないので，WARP を使っている端末の体感との差が WARP の効果です．FF14 は Gaia のサーバー (`119.252.37.23`) を測っています．接続先が変わったら，ログイン中の d1 で `Get-NetTCPConnection -State Established -OwningProcess (Get-Process ffxiv_dx11).Id` を実行して確かめ，`k8s/apps/blackbox-exporter/values.yaml` を更新します．VALORANT のサーバーは試合ごとに変わり，ICMP にも TCP にも応答しないため測っていません．ゲーム内の統計情報 (Stats) のグラフで確認します．
+
 ### ダッシュボードを見る
 
 左メニューの **Dashboards** に，kube-prometheus-stack に同梱されているダッシュボードが入っています．よく使うものは次のとおりです．
